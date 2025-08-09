@@ -1,0 +1,252 @@
+/* Set font family globally */
+body {
+  font-family: "Roboto", sans-serif;
+  background: linear-gradient(135deg, #dbeafe, #f0f9ff);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.pageCss {
+  padding: 2rem;
+}
+
+.modal_outDiv {
+  max-height: 70vh !important;
+  overflow-y: auto !important;
+}
+
+/* Button hover transition (optional) */
+.button-gradient-hover:hover {
+  background: linear-gradient(to right, #2563eb, #1e40af) !important;
+}
+
+/* Error alert */
+.error-alert {
+  font-size: 0.85rem;
+}
+
+/* Small button text */
+.small-text-button {
+  color: #3b82f6;
+  font-size: 0.8rem;
+  text-transform: none;
+}
+
+/* Login.css */
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  padding-bottom: 80px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+}
+
+.login-wrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-card {
+  border-radius: 18px !important;
+  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.12) !important;
+  border: none !important;
+}
+
+.login-card .ant-card-body {
+  padding: 32px !important;
+}
+
+.login-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.login-header {
+  text-align: center;
+}
+
+.login-title {
+  margin-bottom: 4px !important;
+}
+
+.login-subtitle {
+  color: #64748b !important;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-item {
+  margin-bottom: 16px !important;
+}
+
+.form-input {
+  border-radius: 10px !important;
+  height: 44px !important;
+  border-color: #d1d5db !important;
+  transition: all 0.2s ease !important;
+}
+
+.form-input:hover {
+  border-color: #60a5fa !important;
+}
+
+.form-input:focus,
+.form-input.ant-input-focused {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.form-input.ant-input-affix-wrapper:hover {
+  border-color: #60a5fa !important;
+}
+
+.form-input.ant-input-affix-wrapper:focus,
+.form-input.ant-input-affix-wrapper-focused {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.input-prefix {
+  color: #9ca3af !important;
+}
+
+.login-button {
+  background: linear-gradient(to right, #3b82f6, #2563eb) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  height: 44px !important;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.2) !important;
+  transition: all 0.2s ease !important;
+}
+
+.login-button:hover {
+  background: linear-gradient(to right, #2563eb, #1d4ed8) !important;
+  box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+.login-button:active {
+  transform: translateY(0) !important;
+}
+
+.login-button:disabled {
+  background: #9ca3af !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.login-actions {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-button {
+  padding: 0 !important;
+  height: auto !important;
+  color: #2563eb !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.action-button:hover {
+  color: #1d4ed8 !important;
+  text-decoration: underline !important;
+}
+
+.error-alert {
+  margin-bottom: 8px !important;
+  border-radius: 8px !important;
+}
+
+/* Form validation styles */
+.ant-form-item-has-error .form-input {
+  border-color: #ef4444 !important;
+}
+
+.ant-form-item-has-error .form-input:focus,
+.ant-form-item-has-error .form-input.ant-input-focused {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Loading state styles */
+.login-button .ant-btn-loading-icon {
+  margin-right: 8px !important;
+}
+
+/* Password input specific styles */
+.form-input.ant-input-password {
+  padding-right: 32px !important;
+}
+
+/* Focus outline removal for better custom styling */
+.form-input:focus,
+.form-input.ant-input-focused,
+.login-button:focus {
+  outline: none !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .login-container {
+    padding: 12px;
+    padding-bottom: 60px;
+  }
+
+  .login-wrapper {
+    max-width: 100%;
+  }
+
+  .login-card .ant-card-body {
+    padding: 24px !important;
+  }
+
+  .login-content {
+    gap: 20px;
+  }
+
+  .form-item {
+    margin-bottom: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card .ant-card-body {
+    padding: 20px !important;
+  }
+
+  .login-title {
+    font-size: 1.5rem !important;
+  }
+}
+
+.ant-message {
+  z-index: 9999 !important;
+  display: block !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+  top: 16px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
