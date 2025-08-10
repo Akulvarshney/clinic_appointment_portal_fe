@@ -202,7 +202,7 @@ const RoleManagement = () => {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
+    <div>
       <div
         style={{
           display: "flex",
@@ -216,14 +216,6 @@ const RoleManagement = () => {
           Create Role
         </Button>
       </div>
-
-      {/* <Table
-        columns={roleColumns}
-        dataSource={roles}
-        rowKey="id"
-        bordered
-        pagination={false}
-      /> */}
 
       <div className="bg-white rounded-lg shadow">
         <Table

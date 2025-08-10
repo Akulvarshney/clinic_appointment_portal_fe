@@ -95,24 +95,27 @@ const Sidebar = () => {
           )}
 
           <ul className="p-4 space-y-3">
-            {tabs.map((tab) => (
-              <li
-                key={tab.tab_id}
-                onClick={() => navigate(`${tab.tab_path}`)}
-                className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-300 cursor-pointer ${
-                  location.pathname === tab.tab_path
-                    ? "bg-white text-blue-800 shadow-inner"
-                    : "hover:bg-blue-500 hover:shadow-md"
-                }`}
-              >
-                <span className="p-2 rounded-full bg-white text-blue-700">
-                  <FaChartBar />
-                </span>
-                {!collapsed && (
-                  <span className="font-semibold">{tab.tab_name}</span>
-                )}
-              </li>
-            ))}
+            {tabs
+              .slice()
+              .sort((a, b) => a.tab_number - b.tab_number)
+              .map((tab) => (
+                <li
+                  key={tab.tab_id}
+                  onClick={() => navigate(`${tab.tab_path}`)}
+                  className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-300 cursor-pointer ${
+                    location.pathname === tab.tab_path
+                      ? "bg-white text-blue-800 shadow-inner"
+                      : "hover:bg-blue-500 hover:shadow-md"
+                  }`}
+                >
+                  <span className="p-2 rounded-full bg-white text-blue-700">
+                    <FaChartBar />
+                  </span>
+                  {!collapsed && (
+                    <span className="font-semibold">{tab.tab_name}</span>
+                  )}
+                </li>
+              ))}
           </ul>
         </div>
 

@@ -28,13 +28,10 @@ import Settings from "./pages/settings/Settings";
 import ClientManagement from "./pages/ClientManagement";
 
 function App() {
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [role, setRole] = useState(null);
-
   const { isLoggedIn, role, isAuthReady } = useAuth();
 
   if (!isAuthReady) {
-    return null; // Or show a loading spinner
+    return null;
   }
 
   return (
@@ -60,7 +57,6 @@ function App() {
           <Route path="/resourceManagement" element={<ResourceManagement />} />
           <Route path="/servicesManagement" element={<ServicesManagement />} />
           <Route path="/appointments" element={<AppointmentPage />} />
-
           <Route path="*" element={<Navigate to="/dashboard" />} />
         </Route>
       ) : (

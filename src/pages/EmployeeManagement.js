@@ -14,7 +14,7 @@ import {
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import Sidebar from "../components/SideBar";
-import { BACKEND_URL } from "../assets/constants";
+import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 
 const { Option } = Select;
 
@@ -31,8 +31,14 @@ const UserManagement = () => {
 
   const orgId = localStorage.getItem("selectedOrgId");
   const token = localStorage.getItem("token");
+  const [isAllowedToAddEmployee, setIsAllowedToAddEmployee] = useState(false);
+
+  console.log("isAllowedToAddEmployee", isAllowedToAddEmployee);
 
   useEffect(() => {
+    setIsAllowedToAddEmployee(
+      isFeatureValid("EMPLOYEE_MANAGEMENT", "ADD_EMPLOYEE")
+    );
     fetchRoles();
     fetchEmployeeDetails();
   }, []);
@@ -225,14 +231,16 @@ const UserManagement = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
             Employee Management
           </h1>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddEmployee}
-            size="large"
-          >
-            Add Employee
-          </Button>
+          {isAllowedToAddEmployee ? (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAddEmployee}
+              size="large"
+            >
+              Add Employee
+            </Button>
+          ) : null}
         </div>
 
         {successMsg && (

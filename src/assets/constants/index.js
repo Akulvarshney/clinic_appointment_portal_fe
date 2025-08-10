@@ -1,14 +1,17 @@
 export const BACKEND_URL = "http://localhost:8080/api/v1";
 
-const data = localStorage.getItem("organizations");
-const data1 = data ? JSON.parse(data) : null;
+const data1 = localStorage.getItem("organizations");
+const data = data1 ? JSON.parse(data1) : null;
 console.log("data", data);
 
-export const isFeatureValid = (data, tabUniqueName, featureUniqueName) => {
+export const isFeatureValid = (tabUniqueName, featureUniqueName) => {
   if (!data || !tabUniqueName || !featureUniqueName) {
     console.log("Missing data or identifiers");
     return false;
   }
+
+  console.log("tabUniqueName", tabUniqueName);
+  console.log("featureUniqueName", featureUniqueName);
 
   for (const org of data) {
     for (const role of org.roles || []) {

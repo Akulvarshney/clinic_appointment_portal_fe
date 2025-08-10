@@ -29,6 +29,8 @@ const ClientManagement = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [roleId, setRoleId] = useState(null);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -43,6 +45,7 @@ const ClientManagement = () => {
     fetchRoleId();
     checkMobileView();
     fetchClients();
+    fetchCategories();
   }, []);
 
   useEffect(() => {
@@ -116,6 +119,32 @@ const ClientManagement = () => {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        `${BACKEND_URL}/clientadmin/userMgmt/category?organization_id=${localStorage.getItem(
+          "selectedOrgId"
+        )}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (res.status !== 200) {
+        throw new Error("Failed to fetch categories");
+      }
+      console.log("Categories fetched:", res.data.categories);
+      setCategories(res.data.categories || []);
+    } catch (err) {
+      message.error("Failed to fetch categories");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAddClient = () => {
     form.resetFields();
     setIsModalVisible(true);
@@ -155,6 +184,7 @@ const ClientManagement = () => {
           email: values.email,
           emergencyContact: values.emergency_contact,
           organization_id: orgId,
+          category: values.category,
           roleId: roleId,
         },
         {
@@ -244,6 +274,12 @@ const ClientManagement = () => {
       ellipsis: true,
     },
     {
+      title: "Category",
+      key: "category",
+      render: (_, record) => record.categories?.category_name || "-",
+    },
+
+    {
       title: "Email",
       dataIndex: "email",
       key: "email",
@@ -312,7 +348,7 @@ const ClientManagement = () => {
             columns={columns}
             dataSource={clients}
             loading={tableLoading}
-            rowKey={(record) => record.id || record.portal_id}
+            rowKey={(record) => record.id || record.portalid}
             pagination={{
               ...pagination,
               showSizeChanger: false,
@@ -395,6 +431,22 @@ const ClientManagement = () => {
 
                 <Form.Item label="Emergency Contact" name="emergency_contact">
                   <Input placeholder="Enter emergency contact" />
+                </Form.Item>
+
+                <Form.Item
+                  label="Category"
+                  name="category"
+                  rules={[
+                    { required: true, message: "Please select category!" },
+                  ]}
+                >
+                  <Select placeholder="Select category" loading={loading}>
+                    {categories?.map((category) => (
+                      <Option key={category.id} value={category.id}>
+                        {category.category_name}
+                      </Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </div>
 

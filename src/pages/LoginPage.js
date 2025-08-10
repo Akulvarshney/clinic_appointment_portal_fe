@@ -1,26 +1,15 @@
 import React, { useState } from "react";
-import axios from "axios";
-import {
-  Paper,
-  Stack,
-  TextField,
-  Alert,
-  Button,
-  Box,
-  Typography,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
 import { useAuth } from "../layouts/AuthContext";
+import { Form, Input, Button, Typography, Card, Alert, Space } from "antd";
+
+const { Title, Text } = Typography;
 
 const LoginPage = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
-
-  const { login } = useAuth(); // Assuming you have a useAuth hook for context
+  const { login } = useAuth();
 
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +19,7 @@ const LoginPage = () => {
   const handleLogin = async () => {
     setErrorMsg("");
     if (!loginId || !password) {
-      setErrorMsg("LoginId and password are required.");
+      setErrorMsg("Login ID and password are required.");
       return;
     }
 
@@ -43,9 +32,6 @@ const LoginPage = () => {
       });
 
       const { token, user, organizations } = response.data.data;
-      console.log("response data:", response.data.data);
-
-      console.log("asd", token, user, organizations);
 
       // Save to localStorage
       localStorage.setItem("token", token);
@@ -56,16 +42,10 @@ const LoginPage = () => {
         organizations?.[0]?.organizationId || null
       );
 
-      // Extract role for login context:
       const finalRole = user?.role || organizations?.[0]?.roles?.[0] || null;
-
-      // Call context login
       login(user, token, organizations, finalRole);
-
-      console.log("Login success:", response.data);
-      navigate("/dashboard");
+      window.location.reload();
     } catch (error) {
-      console.log(error);
       if (error.response?.status === 401) {
         setErrorMsg(error.response.data.message);
       } else {
@@ -75,114 +55,89 @@ const LoginPage = () => {
 
     setLoading(false);
   };
+
   return (
-    <Box>
-      <Box
-        sx={{
-          minHeight: "calc(100vh - 64px)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          px: 2,
-          pb: 10,
+    <div className="min-h-[90vh] justify-center items-center flex flex-col  bg-gray-50">
+      <Card
+        style={{
+          width: 400,
+          borderRadius: "12px",
+          boxShadow: "0 12px 28px rgba(59, 130, 246, 0.12)",
         }}
       >
-        <Paper
-          elevation={6}
-          sx={{
-            width: isMobile ? "100%" : 400,
-            p: 4,
-            borderRadius: "18px",
-            backgroundColor: "#ffffff",
-            boxShadow: "0 12px 28px rgba(59, 130, 246, 0.12)",
-          }}
-        >
-          <Stack spacing={3}>
-            <Box textAlign="center">
-              <Typography
-                variant="h5"
-                fontWeight="bold"
-                sx={{ color: "#1e3a8a", fontSize: "1.7rem" }}
-              >
-                Sign in
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#475569" }}>
-                Enter your credentials to continue
-              </Typography>
-            </Box>
+        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+          <Title level={3} style={{ color: "#1e3a8a", marginBottom: "0.3rem" }}>
+            Sign in
+          </Title>
+          <Text type="secondary">Enter your credentials to continue</Text>
+        </div>
 
-            {errorMsg && (
-              <Alert severity="error" className="error-alert">
-                {errorMsg}
-              </Alert>
-            )}
+        {errorMsg && (
+          <Alert
+            message={errorMsg}
+            type="error"
+            showIcon
+            style={{ marginBottom: "1rem" }}
+          />
+        )}
 
-            <TextField
-              fullWidth
-              label="Login Id"
+        <Form layout="vertical" onFinish={handleLogin}>
+          <Form.Item label="Login ID" required>
+            <Input
               value={loginId}
               onChange={(e) => setLoginId(e.target.value)}
-              size="small"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "10px",
-                  fontSize: "0.9rem",
-                  height: 42,
-                },
-              }}
+              placeholder="Enter Login ID"
+              size="large"
             />
+          </Form.Item>
 
-            <TextField
-              fullWidth
-              type="password"
-              label="Password"
+          <Form.Item label="Password" required>
+            <Input.Password
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              size="small"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "10px",
-                  fontSize: "0.9rem",
-                  height: 42,
-                },
-              }}
+              placeholder="Enter Password"
+              size="large"
             />
+          </Form.Item>
 
+          <Form.Item>
             <Button
-              variant="contained"
-              fullWidth
-              disabled={loading}
-              onClick={handleLogin}
-              sx={{
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              block
+              style={{
                 background: "linear-gradient(to right, #3b82f6, #2563eb)",
+                border: "none",
                 fontWeight: "600",
-                fontSize: "0.9rem",
-                borderRadius: "10px",
-                py: 1.1,
-                textTransform: "none",
               }}
-              className="button-gradient-hover"
             >
               {loading ? "Signing in..." : "Sign in"}
             </Button>
+          </Form.Item>
+        </Form>
 
-            <Box textAlign="center" className="flex flex-col">
-              <Button variant="text" size="small" className="small-text-button">
-                Forgot your password?
-              </Button>
-              <Button
-                onClick={() => navigate("/superAdmin/login")}
-                variant="text"
-                size="small"
-                className="small-text-button"
-              >
-                Login as Super Admin
-              </Button>
-            </Box>
-          </Stack>
-        </Paper>
-      </Box>
-    </Box>
+        <Space
+          direction="vertical"
+          style={{
+            width: "100%",
+            textAlign: "center",
+            marginTop: "10px",
+          }}
+        >
+          <Button type="link" size="small">
+            Forgot your password?
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => navigate("/superAdmin/login")}
+          >
+            Login as Super Admin
+          </Button>
+        </Space>
+      </Card>
+    </div>
   );
 };
 
