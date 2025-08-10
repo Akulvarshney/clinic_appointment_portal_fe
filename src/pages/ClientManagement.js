@@ -62,6 +62,7 @@ const ClientManagement = () => {
       );
 
       const roles = response.data.response || [];
+      console.log("roles>>> " ,  roles )
       const clientRole = roles.find(
         (role) =>
           role.name === "CLIENT" && role.description === "DEFAULT CLIENT"

@@ -54,6 +54,7 @@ const DoctorManagement = () => {
   const fetchDoctorDetails = async () => {
     setTableLoading(true);
     try {
+      console.log("orgId123 " , orgId)
       const response = await axios.get(
         `${BACKEND_URL}/clientAdmin/userMgmt/getDoctors?orgId=${orgId}`,
         {

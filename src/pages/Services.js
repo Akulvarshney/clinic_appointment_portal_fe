@@ -149,8 +149,8 @@ const Services = () => {
     try {
       setLoadingServiceId(id);
       await axios.patch(
-        `${BACKEND_URL}/clientadmin/serviceManagement/updateServiceStatus?id=${id}`,
-        { is_valid: newStatus },
+        `${BACKEND_URL}/clientadmin/serviceManagement/updateService?id=${id}`,
+        { status: newStatus },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -221,25 +221,28 @@ const Services = () => {
       ellipsis: true,
     },
     {
-      title: "Status",
-      dataIndex: "is_valid",
-      key: "is_valid",
-      // width: 120,
-      render: (is_valid, record) => (
-        <Popconfirm
-          title={`Are you sure you want to ${
-            is_valid ? "disable" : "enable"
-          } this service?`}
-          onConfirm={() => handleStatusChange(record.id, !is_valid)}
-          okText="Yes"
-          cancelText="No"
-        >
-          <Tag color={is_valid ? "green" : "red"} style={{ cursor: "pointer" }}>
-            {is_valid ? "ENABLED" : "DISABLED"}
-          </Tag>
-        </Popconfirm>
-      ),
-    },
+  title: "Status",
+  dataIndex: "status",
+  key: "status",
+  render: (status, record) => {
+    const isEnabled = status === "ENABLED";
+    return (
+      <Popconfirm
+        title={`Are you sure you want to ${isEnabled ? "disable" : "enable"} this service?`}
+        onConfirm={() =>
+          handleStatusChange(record.id, isEnabled ? "DISABLED" : "ENABLED")
+        }
+        okText="Yes"
+        cancelText="No"
+      >
+        <Tag color={isEnabled ? "green" : "red"} style={{ cursor: "pointer" }}>
+          {status}
+        </Tag>
+      </Popconfirm>
+    );
+  },
+},
+
     {
       title: "Actions",
       key: "actions",
