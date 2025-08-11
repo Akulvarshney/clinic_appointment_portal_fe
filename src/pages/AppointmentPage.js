@@ -1,5 +1,12 @@
+// AppointmentPage.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
+import { Modal, Form, Input, Select, DatePicker, message } from "antd";
+import axios from "axios";
+import dayjs from "dayjs";
+import { BACKEND_URL } from "../assets/constants";
+
+const { Option } = Select;
 
 const START_HOUR = 8;
 const END_HOUR = 21;
@@ -28,7 +35,6 @@ function timeLabel(h, m = 0) {
 function mkId() {
   return Math.random().toString(36).slice(2, 9);
 }
-
 function isOverlapping(newAppt, appointmentsList) {
   return appointmentsList.some((a) => {
     if (a.id === newAppt.id) return false;
@@ -41,61 +47,65 @@ function isOverlapping(newAppt, appointmentsList) {
   });
 }
 
-const Modal = ({ children, onClose }) =>
+// Simple Portal modal wrapper if you ever need custom modal (we use antd Modal below)
+const PortalModal = ({ children, onClose }) =>
   ReactDOM.createPortal(
-    React.createElement(
-      "div",
-      {
-        onClick: onClose,
-        style: {
-          position: "fixed",
-          inset: 0,
-          backgroundColor: "rgba(0,0,0,0.3)",
-          zIndex: 1000,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        },
-      },
-      React.createElement(
-        "div",
-        {
-          onClick: (e) => e.stopPropagation(),
-          style: {
-            background: "#fff",
-            borderRadius: 10,
-            maxWidth: 400,
-            width: "100%",
-            padding: 20,
-            boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
-            maxHeight: "90vh",
-            overflowY: "auto",
-            fontFamily: "Arial, sans-serif",
-            fontSize: 14,
-            color: "#222",
-          },
-        },
-        children
-      )
-    ),
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(0,0,0,0.3)",
+        zIndex: 1000,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#fff",
+          borderRadius: 10,
+          maxWidth: 400,
+          width: "100%",
+          padding: 20,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          fontFamily: "Arial, sans-serif",
+          fontSize: 14,
+          color: "#222",
+        }}
+      >
+        {children}
+      </div>
+    </div>,
     document.body
   );
 
 export default function AppointmentPage() {
+  // date is a Date object for calculations; we also keep dayjs for display convenience
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   });
-  const [resources, setResources] = useState([]);
+
+  const [Employees, setEmployees] = useState([]); // resources / columns
   const [appointments, setAppointments] = useState([]);
   const colRefs = useRef({});
   const timeRulerRef = useRef(null);
   const mainColumnsRef = useRef(null);
 
   const [showNewApptModal, setShowNewApptModal] = useState(false);
-  const [newApptInfo, setNewApptInfo] = useState(null);
+  const [newApptInfo, setNewApptInfo] = useState(null); // { resourceId, start, end }
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailAppt, setDetailAppt] = useState(null);
+
+  const [form] = Form.useForm();
+
+  const orgId = localStorage.getItem("selectedOrgId");
+  const token = localStorage.getItem("token");
 
   const moveDay = (delta) => {
     setCurrentDate((prev) => {
@@ -104,10 +114,15 @@ export default function AppointmentPage() {
       return d;
     });
   };
+  const goToday = () => {
+    const d = new Date();
+    setCurrentDate(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+  };
 
   const totalMinutes = (END_HOUR - START_HOUR) * 60;
   const slotCount = totalMinutes / SLOT_MINUTES;
 
+  // build times array (for time-ruler rows)
   const timeSlots = useMemo(() => {
     const out = [];
     for (let h = START_HOUR; h < END_HOUR; h++) {
@@ -116,52 +131,80 @@ export default function AppointmentPage() {
     return out;
   }, []);
 
+  // Fetch employees/resources (keeps your integration)
   useEffect(() => {
-    setResources([
-      { id: "doc-1", name: "Dr. Smith", color: "#e3f2fd", dot: "#2196f3" },
-      { id: "doc-2", name: "Dr. Johnson", color: "#e0f7fa", dot: "#00bcd4" },
-      { id: "doc-3", name: "Dr. Patel", color: "#fce4ec", dot: "#e91e63" },
-      { id: "doc-4", name: "Dr. Liu", color: "#fff8e1", dot: "#ffc107" },
-    ]);
-    const d = new Date(currentDate);
-    const at = (h, m) =>
-      new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m);
-    setAppointments([
-      {
-        id: mkId(),
-        title: "Initial Consult",
-        start: at(9, 0),
-        end: at(9, 45),
-        resourceId: "doc-1",
-        client: "John Doe",
-      },
-      {
-        id: mkId(),
-        title: "Follow-up",
-        start: at(10, 30),
-        end: at(11, 15),
-        resourceId: "doc-2",
-        client: "Jane Smith",
-      },
-      {
-        id: mkId(),
-        title: "New Patient",
-        start: at(13, 0),
-        end: at(14, 0),
-        resourceId: "doc-3",
-        client: "A. Iyer",
-      },
-      {
-        id: mkId(),
-        title: "Therapy",
-        start: at(15, 30),
-        end: at(16, 30),
-        resourceId: "doc-4",
-        client: "P. Kumar",
-      },
-    ]);
-  }, [currentDate]);
+    async function fetchEmployees() {
+      try {
+        const response = await axios.get(
+          `${BACKEND_URL}/clientAdmin/resourceManagement/getResources?orgId=${orgId}&status=ENABLED`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
+        const roles = response.data.response || [];
+        const formatted = roles.map((emp) => ({
+          id: emp.id,
+          name: emp.name,
+          color: "#e3f2fd",
+          dot: emp.color || "#789",
+        }));
+        setEmployees(formatted);
+
+        // create dummy appointments AFTER we have resources (if appointments are empty)
+        setTimeout(() => {
+          setAppointments((prev) => {
+            if (prev.length > 0) return prev; // don't overwrite existing
+            if (formatted.length === 0) return [];
+            // make two dummy appointments for first two columns (if available)
+            const d = new Date(currentDate);
+            const at = (h, m) =>
+              new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m);
+            const sample = [];
+            if (formatted[0]) {
+              sample.push({
+                id: mkId(),
+                title: "Demo: Initial Consult",
+                start: at(9, 0),
+                end: at(9, 45),
+                resourceId: formatted[0].id,
+                client: "John Doe",
+              });
+            }
+            if (formatted[1]) {
+              sample.push({
+                id: mkId(),
+                title: "Demo: Follow-up",
+                start: at(10, 30),
+                end: at(11, 15),
+                resourceId: formatted[1].id,
+                client: "Jane Smith",
+              });
+            }
+            return sample;
+          });
+        }, 30);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchEmployees();
+    // re-fetch when date changes? keep resources fetch independent of date
+  }, [orgId, token /* not depending on currentDate so resources persist */]);
+
+  // synchronize vertical scrolling between time ruler and main columns
+  useEffect(() => {
+    const timeElem = timeRulerRef.current;
+    const mainElem = mainColumnsRef.current;
+    if (!timeElem || !mainElem) return;
+    const syncScroll = () => {
+      timeElem.scrollTop = mainElem.scrollTop;
+    };
+    mainElem.addEventListener("scroll", syncScroll);
+    return () => mainElem.removeEventListener("scroll", syncScroll);
+  }, []);
+
+  // Drag start
   const onDragStart = (e, appt) => {
     const duration = Math.max(15, (appt.end - appt.start) / 60000);
     const rect = e.currentTarget.getBoundingClientRect();
@@ -172,7 +215,6 @@ export default function AppointmentPage() {
     );
     e.dataTransfer.effectAllowed = "move";
   };
-
   const onDragOverCol = (e) => e.preventDefault();
 
   const applyMove = (id, resourceId, clientY, offsetY) => {
@@ -235,6 +277,7 @@ export default function AppointmentPage() {
     );
   };
 
+  // Resize handlers
   const startResize = (e, id, direction) => {
     e.preventDefault();
     e.stopPropagation();
@@ -324,8 +367,11 @@ export default function AppointmentPage() {
     document.addEventListener("mouseup", onUp);
   };
 
+
   const onDoubleClickCol = (e, resourceId) => {
+    //alert(resourceId)
     const col = colRefs.current[resourceId];
+
     if (!col) return;
     const rect = col.getBoundingClientRect();
     const y = e.clientY - rect.top;
@@ -342,6 +388,13 @@ export default function AppointmentPage() {
     );
     const end = new Date(start.getTime() + SLOT_MINUTES * 60000);
     setNewApptInfo({ resourceId, start, end });
+    form.setFieldsValue({
+      title: "",
+      client: "",
+      employeeId: "",
+      notes: "",
+      date: dayjs(currentDate),
+    });
     setShowNewApptModal(true);
   };
 
@@ -350,21 +403,28 @@ export default function AppointmentPage() {
     setShowDetailModal(true);
   };
 
-  const saveNewAppointment = ({ title, client }) => {
-    if (!title || !client) {
-      alert("Please enter a title and client name.");
+  const saveNewAppointment = (valuesFromForm) => {
+    // values come from Antd Form; we'll also accept direct call
+    const values = valuesFromForm || form.getFieldsValue();
+    const title = values.title || "Appointment";
+    const client = values.client || "";
+    const resourceId = newApptInfo?.resourceId;
+    const start = newApptInfo?.start;
+    const end = newApptInfo?.end;
+    if (!resourceId || !start || !end) {
+      message.error("Slot not selected properly");
       return;
     }
     const newAppt = {
       id: mkId(),
       title,
       client,
-      resourceId: newApptInfo.resourceId,
-      start: newApptInfo.start,
-      end: newApptInfo.end,
+      resourceId,
+      start,
+      end,
     };
     if (isOverlapping(newAppt, appointments)) {
-      alert("Cannot create: appointment overlaps an existing appointment.");
+      message.error("Cannot create: overlaps existing appointment");
       return;
     }
     setAppointments((prev) => [...prev, newAppt]);
@@ -376,198 +436,16 @@ export default function AppointmentPage() {
     setShowNewApptModal(false);
     setNewApptInfo(null);
   };
-
   const closeDetailModal = () => {
     setShowDetailModal(false);
     setDetailAppt(null);
   };
 
-  const NewAppointmentForm = () => {
-    const [title, setTitle] = useState("");
-    const [client, setClient] = useState("");
-
-    return React.createElement(
-      "div",
-      null,
-      React.createElement(
-        "h2",
-        {
-          style: {
-            marginTop: 0,
-            marginBottom: 10,
-            fontFamily: "Arial, sans-serif",
-          },
-        },
-        "New Appointment"
-      ),
-      React.createElement(
-        "div",
-        { style: { marginBottom: 10 } },
-        React.createElement(
-          "label",
-          null,
-          "Title:",
-          React.createElement("br", null),
-          React.createElement("input", {
-            type: "text",
-            value: title,
-            onChange: (e) => setTitle(e.target.value),
-            style: {
-              width: "100%",
-              padding: 6,
-              fontSize: 14,
-              fontFamily: "Arial, sans-serif",
-            },
-          })
-        )
-      ),
-      React.createElement(
-        "div",
-        { style: { marginBottom: 10 } },
-        React.createElement(
-          "label",
-          null,
-          "Client:",
-          React.createElement("br", null),
-          React.createElement("input", {
-            type: "text",
-            value: client,
-            onChange: (e) => setClient(e.target.value),
-            style: {
-              width: "100%",
-              padding: 6,
-              fontSize: 14,
-              fontFamily: "Arial, sans-serif",
-            },
-          })
-        )
-      ),
-      React.createElement(
-        "div",
-        { style: { marginTop: 20, textAlign: "right" } },
-        React.createElement(
-          "button",
-          {
-            onClick: closeNewApptModal,
-            style: {
-              marginRight: 10,
-              padding: "6px 12px",
-              borderRadius: 4,
-              border: "1px solid #ccc",
-              cursor: "pointer",
-              fontFamily: "Arial, sans-serif",
-            },
-          },
-          "Cancel"
-        ),
-        React.createElement(
-          "button",
-          {
-            onClick: () =>
-              saveNewAppointment({
-                title: title.trim(),
-                client: client.trim(),
-              }),
-            style: {
-              padding: "6px 12px",
-              borderRadius: 4,
-              border: "none",
-              backgroundColor: "#2196f3",
-              color: "white",
-              cursor: "pointer",
-              fontFamily: "Arial, sans-serif",
-            },
-          },
-          "Save"
-        )
-      )
-    );
-  };
-
-  const AppointmentDetail = ({ appt }) =>
-    React.createElement(
-      "div",
-      null,
-      React.createElement(
-        "h2",
-        {
-          style: {
-            marginTop: 0,
-            marginBottom: 10,
-            fontFamily: "Arial, sans-serif",
-          },
-        },
-        "Appointment Details"
-      ),
-      React.createElement(
-        "div",
-        null,
-        React.createElement("b", null, "Title:"),
-        " ",
-        appt.title
-      ),
-      React.createElement(
-        "div",
-        null,
-        React.createElement("b", null, "Client:"),
-        " ",
-        appt.client || "N/A"
-      ),
-      React.createElement(
-        "div",
-        null,
-        React.createElement("b", null, "Time:"),
-        " ",
-        timeLabel(appt.start.getHours(), appt.start.getMinutes()),
-        " — ",
-        timeLabel(appt.end.getHours(), appt.end.getMinutes())
-      ),
-      React.createElement(
-        "div",
-        null,
-        React.createElement("b", null, "Resource:"),
-        " ",
-        (resources.find((r) => r.id === appt.resourceId) || {}).name ||
-          appt.resourceId
-      ),
-      React.createElement(
-        "div",
-        { style: { marginTop: 20, textAlign: "right" } },
-        React.createElement(
-          "button",
-          {
-            onClick: closeDetailModal,
-            style: {
-              padding: "6px 12px",
-              borderRadius: 4,
-              border: "1px solid #ccc",
-              backgroundColor: "#f9f9f9",
-              cursor: "pointer",
-              fontFamily: "Arial, sans-serif",
-            },
-          },
-          "Close"
-        )
-      )
-    );
-
-  useEffect(() => {
-    const timeElem = timeRulerRef.current;
-    const mainElem = mainColumnsRef.current;
-    if (!timeElem || !mainElem) return;
-    const syncScroll = () => {
-      timeElem.scrollTop = mainElem.scrollTop;
-    };
-    mainElem.addEventListener("scroll", syncScroll);
-    return () => mainElem.removeEventListener("scroll", syncScroll);
-  }, []);
-
-  // Helper functions to render elements
+  // Render helpers (JSX) — kept styling similar to your original file
   function renderToolbar() {
-    return React.createElement(
-      "div",
-      {
-        style: {
+    return (
+      <div
+        style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -578,84 +456,74 @@ export default function AppointmentPage() {
           fontSize: 14,
           color: "#222",
           userSelect: "none",
-        },
-      },
-      React.createElement(
-        "div",
-        { style: { display: "flex", alignItems: "center", gap: 12 } },
-        React.createElement(
-          "button",
-          {
-            type: "button",
-            onClick: () => moveDay(-1),
-            style: {
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button
+            type="button"
+            onClick={() => moveDay(-1)}
+            style={{
               padding: "0 10px",
               borderRadius: 6,
               border: "none",
               background: "#fff",
               cursor: "pointer",
-            },
-            "aria-label": "Previous day",
-          },
-          "\u2190"
-        ),
-        React.createElement(
-          "div",
-          null,
-          currentDate.toLocaleDateString(undefined, {
-            weekday: "long",
-            month: "short",
-            day: "numeric",
-          })
-        ),
-        React.createElement(
-          "button",
-          {
-            type: "button",
-            onClick: () => moveDay(1),
-            style: {
+            }}
+            aria-label="Previous day"
+          >
+            ←
+          </button>
+          <div>
+            {currentDate.toLocaleDateString(undefined, {
+              weekday: "long",
+              month: "short",
+              day: "numeric",
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={() => moveDay(1)}
+            style={{
               padding: "0 10px",
               borderRadius: 6,
               border: "none",
               background: "#fff",
               cursor: "pointer",
-            },
-            "aria-label": "Next day",
-          },
-          "\u2192"
-        ),
-        React.createElement(
-          "button",
-          {
-            type: "button",
-            onClick: () => setCurrentDate(new Date()),
-            style: {
+            }}
+            aria-label="Next day"
+          >
+            →
+          </button>
+
+          <button
+            type="button"
+            onClick={goToday}
+            style={{
               marginLeft: 12,
               padding: "0 10px",
               borderRadius: 6,
               border: "none",
               background: "#e0e7ef",
               cursor: "pointer",
-            },
-            "aria-label": "Today",
-          },
-          "Today"
-        )
-      ),
-      React.createElement(
-        "div",
-        { style: { fontSize: 13, fontWeight: 500, color: "#555" } },
-        "Drag to move \u2022 Drag edges to resize \u2022 Double-click to add \u2022 Click appointment"
-      )
+            }}
+            aria-label="Today"
+          >
+            Today
+          </button>
+        </div>
+
+        <div style={{ fontSize: 13, fontWeight: 500, color: "#555" }}>
+          Drag to move • Drag edges to resize • Double-click to add • Click appointment
+        </div>
+      </div>
     );
   }
 
   function renderTimeRuler() {
-    return React.createElement(
-      "div",
-      {
-        ref: timeRulerRef,
-        style: {
+    return (
+      <div
+        ref={timeRulerRef}
+        style={{
           borderRight: "1px solid #e0e7ef",
           background: "#f8fafc",
           position: "relative",
@@ -663,18 +531,13 @@ export default function AppointmentPage() {
           scrollbarWidth: "none",
           msOverflowStyle: "none",
           userSelect: "none",
-        },
-        onScroll: () => {},
-      },
-      React.createElement("div", {
-        style: { height: HEADER_H, borderBottom: "1px solid #e0e7ef" },
-      }),
-      timeSlots.map(({ h, m }, i) =>
-        React.createElement(
-          "div",
-          {
-            key: i,
-            style: {
+        }}
+      >
+        <div style={{ height: HEADER_H, borderBottom: "1px solid #e0e7ef" }} />
+        {timeSlots.map(({ h, m }, i) => (
+          <div
+            key={i}
+            style={{
               height: SLOT_HEIGHT,
               borderBottom: "1px dashed #e0e7ef",
               paddingRight: 8,
@@ -684,17 +547,16 @@ export default function AppointmentPage() {
               display: "flex",
               alignItems: "flex-start",
               userSelect: "none",
-            },
-          },
-          m === 0 || m === 30
-            ? React.createElement(
-                "span",
-                { style: { transform: "translateY(-2px)", width: "100%" } },
-                timeLabel(h, m)
-              )
-            : null
-        )
-      )
+            }}
+          >
+            {(m === 0 || m === 30) && (
+              <span style={{ transform: "translateY(-2px)", width: "100%" }}>
+                {timeLabel(h, m)}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
     );
   }
 
@@ -705,19 +567,25 @@ export default function AppointmentPage() {
       const topPx = (minsTop / SLOT_MINUTES) * SLOT_HEIGHT;
       const durMins = Math.max(15, (a.end - a.start) / 60000);
       const heightPx = Math.max(16, (durMins / SLOT_MINUTES) * SLOT_HEIGHT);
-      return React.createElement(
-        "div",
-        {
-          key: a.id,
-          draggable: true,
-          onDragStart: (e) => onDragStart(e, a),
-          onClick: () => onClickAppointment(a),
-          role: "button",
-          tabIndex: 0,
-          onKeyDown: (e) => {
+      return (
+        <div
+          key={a.id}
+          draggable
+          onDragStart={(e) => onDragStart(e, a)}
+          onClick={() => onClickAppointment(a)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") onClickAppointment(a);
-          },
-          style: {
+          }}
+          title={
+            a.title +
+            "\n" +
+            timeLabel(a.start.getHours(), a.start.getMinutes()) +
+            " — " +
+            timeLabel(a.end.getHours(), a.end.getMinutes())
+          }
+          style={{
             position: "absolute",
             left: 8,
             right: 8,
@@ -734,216 +602,240 @@ export default function AppointmentPage() {
             padding: "8px 10px 6px",
             color: "#125",
             fontFamily: "Arial, sans-serif",
-          },
-          title:
-            a.title +
-            "\n" +
-            timeLabel(a.start.getHours(), a.start.getMinutes()) +
-            " — " +
-            timeLabel(a.end.getHours(), a.end.getMinutes()),
-        },
-        // Resize handles top and bottom bars
-        React.createElement("div", {
-          style: {
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: -2,
-            height: 8,
-            cursor: "ns-resize",
-            zIndex: 21,
-          },
-          onMouseDown: (e) => startResize(e, a.id, "top"),
-        }),
-        React.createElement("div", {
-          style: {
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: -2,
-            height: 8,
-            cursor: "ns-resize",
-            zIndex: 21,
-          },
-          onMouseDown: (e) => startResize(e, a.id, "bottom"),
-        }),
-        React.createElement(
-          "div",
-          {
-            style: {
+          }}
+        >
+          {/* top resize handle */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: -2,
+              height: 8,
+              cursor: "ns-resize",
+              zIndex: 21,
+            }}
+            onMouseDown={(e) => startResize(e, a.id, "top")}
+          />
+          {/* bottom resize handle */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: -2,
+              height: 8,
+              cursor: "ns-resize",
+              zIndex: 21,
+            }}
+            onMouseDown={(e) => startResize(e, a.id, "bottom")}
+          />
+          <div
+            style={{
               fontWeight: "bold",
               fontSize: 13,
               marginBottom: 2,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-            },
-          },
-          a.title
-        ),
-        React.createElement(
-          "div",
-          { style: { fontSize: 12, color: "#345" } },
-          timeLabel(a.start.getHours(), a.start.getMinutes()),
-          " — ",
-          timeLabel(a.end.getHours(), a.end.getMinutes())
-        ),
-        a.client
-          ? React.createElement(
-              "div",
-              {
-                style: {
-                  fontSize: 12,
-                  color: "#567",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                },
-              },
-              "Client: ",
-              a.client
-            )
-          : null
+            }}
+          >
+            {a.title}
+          </div>
+          <div style={{ fontSize: 12, color: "#345" }}>
+            {timeLabel(a.start.getHours(), a.start.getMinutes())} —{" "}
+            {timeLabel(a.end.getHours(), a.end.getMinutes())}
+          </div>
+          {a.client ? (
+            <div
+              style={{
+                fontSize: 12,
+                color: "#567",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              Client: {a.client}
+            </div>
+          ) : null}
+        </div>
       );
     });
   }
 
   function renderResourceColumns() {
-    return React.createElement(
-      "div",
-      {
-        style: {
+    return (
+      <div
+        style={{
           display: "grid",
           position: "relative",
-          gridTemplateColumns: `repeat(${resources.length}, minmax(0,1fr))`,
+          gridTemplateColumns: `repeat(${Employees.length}, minmax(0,1fr))`,
           minHeight: slotCount * SLOT_HEIGHT,
           background: "#f9fafb",
           height: "100%",
           userSelect: "none",
-        },
-      },
-      resources.length
-        ? resources.map((r) =>
-            React.createElement(
-              "div",
-              {
-                key: r.id,
-                ref: (el) => (colRefs.current[r.id] = el),
-                style: {
-                  position: "relative",
-                  borderRight: "1px solid #e0e7ef",
-                  background: "#fff",
-                },
-                onDragOver: onDragOverCol,
-                onDrop: (e) => onDropOnCol(e, r.id),
-                onDoubleClick: (e) => onDoubleClickCol(e, r.id),
-                title: "Double-click empty space to add appointment",
-              },
-              // Empty slots
-              Array.from({ length: slotCount }).map((_, i) =>
-                React.createElement("div", {
-                  key: i,
-                  style: {
+        }}
+      >
+        {Employees.length ? (
+          Employees.map((r) => (
+            <div
+              key={r.id}
+              ref={(el) => (colRefs.current[r.id] = el)}
+              style={{
+                position: "relative",
+                borderRight: "1px solid #e0e7ef",
+                background: "#fff",
+              }}
+              onDragOver={onDragOverCol}
+              onDrop={(e) => onDropOnCol(e, r.id)}
+              onDoubleClick={(e) => onDoubleClickCol(e, r.id)}
+              title="Double-click empty space to add appointment"
+            >
+              {/* empty slot lines */}
+              {Array.from({ length: slotCount }).map((_, i) => (
+                <div
+                  key={i}
+                  style={{
                     height: SLOT_HEIGHT,
                     borderBottom: "1px solid #f6f8fa",
-                  },
-                })
-              ),
-              // Render appointments
-              renderAppointmentsForResource(r)
-            )
-          )
-        : React.createElement(
-            "div",
-            { style: { padding: 20 } },
-            "Loading resources..."
-          )
+                  }}
+                />
+              ))}
+              {/* render appointments absolutely positioned */}
+              {renderAppointmentsForResource(r)}
+            </div>
+          ))
+        ) : (
+          <div style={{ padding: 20 }}>Loading resources...</div>
+        )}
+      </div>
     );
   }
 
   function renderStickyHeader() {
-    return React.createElement(
-      "div",
-      {
-        style: {
+    return (
+      <div
+        style={{
           display: "grid",
           position: "sticky",
           top: 0,
           zIndex: 10,
           background: "#fff",
           borderBottom: "1px solid #e0e7ef",
-          gridTemplateColumns: `repeat(${
-            resources.length || 1
-          }, minmax(0,1fr))`,
+          gridTemplateColumns: `repeat(${Employees.length || 1}, minmax(0,1fr))`,
           height: HEADER_H,
           userSelect: "none",
-        },
-      },
-      (resources.length
-        ? resources
-        : [{ id: "loading", name: "Loading..." }]
-      ).map((r, i) =>
-        React.createElement(
-          "div",
-          {
-            key: r.id + "_" + i,
-            style: {
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 600,
-              color: "#345",
-              borderRight:
-                i === resources.length - 1 ? "none" : "1px solid #e0e7ef",
-              height: "100%",
-              userSelect: "none",
-            },
-          },
-          React.createElement(
-            "span",
-            {
-              style: {
-                display: "inline-flex",
+        }}
+      >
+        {(Employees.length ? Employees : [{ id: "loading", name: "Loading..." }]).map(
+          (r, i) => (
+            <div
+              key={r.id + "_" + i}
+              style={{
+                display: "flex",
                 alignItems: "center",
-                gap: 8,
-              },
-            },
-            React.createElement("span", {
-              style: {
-                height: 14,
-                width: 14,
-                borderRadius: 7,
-                display: "inline-block",
-                background: r.dot || "#789",
-              },
-            }),
-            r.name
+                justifyContent: "center",
+                fontWeight: 600,
+                color: "#345",
+                borderRight: i === Employees.length - 1 ? "none" : "1px solid #e0e7ef",
+                height: "100%",
+                userSelect: "none",
+              }}
+            >
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <span
+                  style={{
+                    height: 14,
+                    width: 14,
+                    borderRadius: 7,
+                    display: "inline-block",
+                    background: r.dot || "#789",
+                  }}
+                />
+                {r.name}
+              </span>
+            </div>
           )
-        )
-      )
+        )}
+      </div>
     );
   }
 
-  return React.createElement(
-    React.Fragment,
-    null,
-    showNewApptModal &&
-      React.createElement(
-        Modal,
-        { onClose: closeNewApptModal },
-        React.createElement(NewAppointmentForm, null)
-      ),
-    showDetailModal &&
-      detailAppt &&
-      React.createElement(
-        Modal,
-        { onClose: closeDetailModal },
-        React.createElement(AppointmentDetail, { appt: detailAppt })
-      ),
-    React.createElement(
-      "div",
-      {
-        style: {
+  return (
+    <>
+      {/* New Appointment Modal - Antd */}
+      <Modal
+        title="New Appointment"
+        open={showNewApptModal}
+        onOk={() => {
+          form
+            .validateFields()
+            .then((vals) => {
+              saveNewAppointment(vals);
+            })
+            .catch(() => {});
+        }}
+        onCancel={closeNewApptModal}
+        okText="Save"
+      >
+        <Form form={form} layout="vertical" initialValues={{ date: dayjs(currentDate) }}>
+          <Form.Item name="title" label="Title" rules={[{ required: true }]}>
+            <Input placeholder="Appointment title" />
+          </Form.Item>
+          <Form.Item name="client" label="Client" rules={[{ required: true }]}>
+            <Input placeholder="Client name" />
+          </Form.Item>
+          <Form.Item name="employeeId" label="Employee" rules={[{ required: false }]}>
+            <Select placeholder="Select employee (optional)">
+              {Employees.map((emp) => (
+                <Option key={emp.id} value={emp.id}>
+                  {emp.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item name="date" label="Date">
+            <DatePicker value={dayjs(currentDate)} disabled />
+          </Form.Item>
+          <Form.Item name="notes" label="Notes">
+            <Input.TextArea rows={3} />
+          </Form.Item>
+          <div style={{ fontSize: 12, color: "#555" }}>
+            Slot:{" "}
+            {newApptInfo
+              ? `${timeLabel(newApptInfo.start.getHours(), newApptInfo.start.getMinutes())} — ${timeLabel(
+                  newApptInfo.end.getHours(),
+                  newApptInfo.end.getMinutes()
+                )}`
+              : "not selected"}
+          </div>
+        </Form>
+      </Modal>
+
+      {/* Appointment Detail Modal (Antd) */}
+      <Modal title="Appointment" open={showDetailModal} onOk={closeDetailModal} onCancel={closeDetailModal} okText="Close" cancelButtonProps={{ style: { display: "none" } }}>
+        {detailAppt && (
+          <div>
+            <h3 style={{ marginTop: 0 }}>{detailAppt.title}</h3>
+            <div>
+              <b>Client:</b> {detailAppt.client || "N/A"}
+            </div>
+            <div>
+              <b>Time:</b>{" "}
+              {timeLabel(detailAppt.start.getHours(), detailAppt.start.getMinutes())} —{" "}
+              {timeLabel(detailAppt.end.getHours(), detailAppt.end.getMinutes())}
+            </div>
+            <div>
+              <b>Resource:</b> {(Employees.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Main page */}
+      <div
+        style={{
           minHeight: "100vh",
           background: "#f8fafc",
           padding: 18,
@@ -951,12 +843,10 @@ export default function AppointmentPage() {
           userSelect: "none",
           WebkitFontSmoothing: "antialiased",
           MozOsxFontSmoothing: "grayscale",
-        },
-      },
-      React.createElement(
-        "div",
-        {
-          style: {
+        }}
+      >
+        <div
+          style={{
             height: "100%",
             maxWidth: 1200,
             margin: "0 auto",
@@ -967,36 +857,33 @@ export default function AppointmentPage() {
             overflow: "hidden",
             display: "flex",
             flexDirection: "column",
-          },
-        },
-        renderToolbar(),
-        React.createElement(
-          "div",
-          {
-            style: {
+          }}
+        >
+          {renderToolbar()}
+          <div
+            style={{
               display: "grid",
               gridTemplateColumns: "100px 1fr",
               height: "calc(100vh - 80px)",
-            },
-          },
-          renderTimeRuler(),
-          React.createElement(
-            "div",
-            {
-              ref: mainColumnsRef,
-              style: {
+            }}
+          >
+            {renderTimeRuler()}
+            <div
+              ref={mainColumnsRef}
+              style={{
                 overflowY: "scroll",
                 position: "relative",
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
                 userSelect: "none",
-              },
-            },
-            renderStickyHeader(),
-            renderResourceColumns()
-          )
-        )
-      )
-    )
+              }}
+            >
+              {renderStickyHeader()}
+              {renderResourceColumns()}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
