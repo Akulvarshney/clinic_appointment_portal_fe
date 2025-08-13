@@ -3,7 +3,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { Modal, Form, Input, Select, DatePicker, message } from "antd";
 import axios from "axios";
+import { AutoComplete } from "antd";
 import dayjs from "dayjs";
+import debounce from "lodash/debounce";
 import { BACKEND_URL } from "../assets/constants";
 
 const { Option } = Select;
@@ -85,14 +87,18 @@ const PortalModal = ({ children, onClose }) =>
   );
 
 export default function AppointmentPage() {
-  // date is a Date object for calculations; we also keep dayjs for display convenience
+  
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   });
 
   const [Employees, setEmployees] = useState([]); // resources / columns
+  const [Resources, setResources] = useState([]);
   const [appointments, setAppointments] = useState([]);
+
+  const [clientOptions, setClientOptions] = useState([]);
+
   const colRefs = useRef({});
   const timeRulerRef = useRef(null);
   const mainColumnsRef = useRef(null);
@@ -131,9 +137,37 @@ export default function AppointmentPage() {
     return out;
   }, []);
 
-  // Fetch employees/resources (keeps your integration)
-  useEffect(() => {
+   useEffect(() => {
     async function fetchEmployees() {
+      try {
+        const response = await axios.get(
+          `${BACKEND_URL}/clientAdmin/userMgmt/getEmployees?orgId=${orgId}&status=ENABLED`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const employees = response.data.response || [];
+        console.log("Employeeesss "   , employees)
+        const formatted = employees.map((emp) => ({
+          id: emp.id,
+          name: emp.first_name,
+          color: "#e3f2fd",
+          dot: emp.color || "#789",
+        }));
+        setEmployees(formatted);
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchEmployees();
+    
+  }, [orgId, token ]);
+
+  // Fetch resources for columns
+  useEffect(() => {
+    async function fetchResources() {
       try {
         const response = await axios.get(
           `${BACKEND_URL}/clientAdmin/resourceManagement/getResources?orgId=${orgId}&status=ENABLED`,
@@ -149,7 +183,7 @@ export default function AppointmentPage() {
           color: "#e3f2fd",
           dot: emp.color || "#789",
         }));
-        setEmployees(formatted);
+        setResources(formatted);
 
         // create dummy appointments AFTER we have resources (if appointments are empty)
         setTimeout(() => {
@@ -188,9 +222,9 @@ export default function AppointmentPage() {
         console.error(err);
       }
     }
-    fetchEmployees();
-    // re-fetch when date changes? keep resources fetch independent of date
-  }, [orgId, token /* not depending on currentDate so resources persist */]);
+    fetchResources();
+    
+  }, [orgId, token ]);
 
   // synchronize vertical scrolling between time ruler and main columns
   useEffect(() => {
@@ -230,6 +264,41 @@ export default function AppointmentPage() {
 
     return { startH, startM };
   };
+
+// Debounced search function
+const searchClients = debounce(async (value) => {
+  if (!value) {
+    setClientOptions([]);
+    return;
+  }
+
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}/patient/clients/clientSearch`,
+      {
+        params: {
+          search: value, 
+          limit: 5,      
+          orgId,
+        },
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const data = response.data.data || [];
+    console.log("data" ,data)
+
+    setClientOptions(
+      data.map((c) => ({
+        value: c.id,
+        label: `${c.first_name} (${c.phone || "No phone"})`,
+      }))
+    );
+  } catch (err) {
+    console.error("Error fetching clients:", err);
+    message.error("Failed to fetch clients");
+  }
+}, 300);
 
   const onDropOnCol = (e, resourceId) => {
     e.preventDefault();
@@ -369,7 +438,7 @@ export default function AppointmentPage() {
 
 
   const onDoubleClickCol = (e, resourceId) => {
-    //alert(resourceId)
+   // alert(resourceId)
     const col = colRefs.current[resourceId];
 
     if (!col) return;
@@ -403,34 +472,73 @@ export default function AppointmentPage() {
     setShowDetailModal(true);
   };
 
-  const saveNewAppointment = (valuesFromForm) => {
-    // values come from Antd Form; we'll also accept direct call
+  const saveNewAppointment = async (valuesFromForm) => {
+    // things to be update later : service dropdown , doctor , note
+  try {
+    console.log(valuesFromForm)
+    const today = dayjs().startOf("day");
+        const date = valuesFromForm.date || ""
+    if (date.isBefore(today, "day")) {
+      //message.error("Cannot pick a past date. Please select today or a future date.");
+      console.log("Cannot pick a past date. Please select today or a future date.")
+      return;
+    }
     const values = valuesFromForm || form.getFieldsValue();
+
     const title = values.title || "Appointment";
+     const remarks = values.notes || "";
     const client = values.client || "";
     const resourceId = newApptInfo?.resourceId;
     const start = newApptInfo?.start;
     const end = newApptInfo?.end;
+    console.log(start)
+    console.log(end)
     if (!resourceId || !start || !end) {
       message.error("Slot not selected properly");
       return;
     }
+
+    // This object is sent to the backend (no mkId, backend generates it)
     const newAppt = {
-      id: mkId(),
       title,
-      client,
+      clientId: client, // assuming client is the ID
       resourceId,
+      date,
       start,
       end,
+      orgId,
+      remarks
     };
+    console.log(newAppt);
+
+    // Optional: local overlap check before calling backend
     if (isOverlapping(newAppt, appointments)) {
       message.error("Cannot create: overlaps existing appointment");
       return;
     }
-    setAppointments((prev) => [...prev, newAppt]);
+
+    // Make API call
+    const response = await axios.post(
+      `${BACKEND_URL}/appointments/appt/bookappointment`,
+      newAppt,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    // Update UI with the appointment returned from backend
+    setAppointments((prev) => [...prev, response.data]);
+
+    // Reset modal and selection
     setShowNewApptModal(false);
     setNewApptInfo(null);
-  };
+    message.success("Appointment saved successfully");
+  } catch (err) {
+    console.error("Error saving appointment:", err);
+    message.error("Failed to save appointment");
+  }
+};
+
 
   const closeNewApptModal = () => {
     setShowNewApptModal(false);
@@ -670,15 +778,15 @@ export default function AppointmentPage() {
         style={{
           display: "grid",
           position: "relative",
-          gridTemplateColumns: `repeat(${Employees.length}, minmax(0,1fr))`,
+          gridTemplateColumns: `repeat(${Resources.length}, minmax(0,1fr))`,
           minHeight: slotCount * SLOT_HEIGHT,
           background: "#f9fafb",
           height: "100%",
           userSelect: "none",
         }}
       >
-        {Employees.length ? (
-          Employees.map((r) => (
+        {Resources.length ? (
+          Resources.map((r) => (
             <div
               key={r.id}
               ref={(el) => (colRefs.current[r.id] = el)}
@@ -723,12 +831,12 @@ export default function AppointmentPage() {
           zIndex: 10,
           background: "#fff",
           borderBottom: "1px solid #e0e7ef",
-          gridTemplateColumns: `repeat(${Employees.length || 1}, minmax(0,1fr))`,
+          gridTemplateColumns: `repeat(${Resources.length || 1}, minmax(0,1fr))`,
           height: HEADER_H,
           userSelect: "none",
         }}
       >
-        {(Employees.length ? Employees : [{ id: "loading", name: "Loading..." }]).map(
+        {(Resources.length ? Resources : [{ id: "loading", name: "Loading..." }]).map(
           (r, i) => (
             <div
               key={r.id + "_" + i}
@@ -738,7 +846,7 @@ export default function AppointmentPage() {
                 justifyContent: "center",
                 fontWeight: 600,
                 color: "#345",
-                borderRight: i === Employees.length - 1 ? "none" : "1px solid #e0e7ef",
+                borderRight: i === Resources.length - 1 ? "none" : "1px solid #e0e7ef",
                 height: "100%",
                 userSelect: "none",
               }}
@@ -783,14 +891,24 @@ export default function AppointmentPage() {
           <Form.Item name="title" label="Title" rules={[{ required: true }]}>
             <Input placeholder="Appointment title" />
           </Form.Item>
-          <Form.Item name="client" label="Client" rules={[{ required: true }]}>
+          {/* <Form.Item name="client" label="Client" rules={[{ required: false }]}>
             <Input placeholder="Client name" />
-          </Form.Item>
+          </Form.Item> */}
+             <Form.Item name="client" label="Client" rules={[{ required: false }]}>
+              <AutoComplete
+                options={clientOptions}
+                onSearch={searchClients}
+                placeholder="Search client name"
+                allowClear
+                filterOption={false} 
+              />
+            </Form.Item> 
+
           <Form.Item name="employeeId" label="Employee" rules={[{ required: false }]}>
             <Select placeholder="Select employee (optional)">
-              {Employees.map((emp) => (
-                <Option key={emp.id} value={emp.id}>
-                  {emp.name}
+              {Employees.map((Employee) => (
+                <Option key={Employee.name} value={Employee.id}>
+                  {Employee.name}
                 </Option>
               ))}
             </Select>
@@ -827,7 +945,7 @@ export default function AppointmentPage() {
               {timeLabel(detailAppt.end.getHours(), detailAppt.end.getMinutes())}
             </div>
             <div>
-              <b>Resource:</b> {(Employees.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
+              <b>Resource:</b> {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
             </div>
           </div>
         )}

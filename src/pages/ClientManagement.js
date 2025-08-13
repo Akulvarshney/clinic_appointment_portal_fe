@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Box } from "@mui/material";
+import debounce from "lodash/debounce";
 import {
   Table,
   Button,
@@ -214,10 +215,14 @@ const ClientManagement = () => {
     }
   };
 
-  const handleSearch = (value) => {
-    setSearch(value);
-    setPagination((prev) => ({ ...prev, current: 1 }));
-  };
+  // const handleSearch = (value) => {
+  //   setSearch(value);
+  //   setPagination((prev) => ({ ...prev, current: 1 }));
+  // };
+  const handleSearch = debounce((value) => {
+  setSearch(value);
+  setPagination((prev) => ({ ...prev, current: 1 }));
+}, 500); 
 
   const handleTableChange = (paginationInfo) => {
     setPagination(paginationInfo);
@@ -338,6 +343,9 @@ const ClientManagement = () => {
             onChange={(e) => {
               if (!e.target.value) {
                 handleSearch("");
+              }
+              if (e.target.value) {
+                handleSearch(e.target.value);
               }
             }}
             style={{ maxWidth: 400 }}
