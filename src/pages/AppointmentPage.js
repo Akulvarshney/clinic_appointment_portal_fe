@@ -12,9 +12,9 @@ const { Option } = Select;
 
 const START_HOUR = 8;
 const END_HOUR = 21;
-const SLOT_MINUTES = 15;
-const SLOT_HEIGHT = 18;
-const HEADER_H = 52;
+const SLOT_MINUTES = 30;
+const SLOT_HEIGHT = 45;
+const HEADER_H = 40;
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
@@ -96,6 +96,8 @@ export default function AppointmentPage() {
   const [Employees, setEmployees] = useState([]); // resources / columns
   const [Resources, setResources] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [refreshAppointments, setRefreshAppointments] = useState(false);
+
 
   const [clientOptions, setClientOptions] = useState([]);
 
@@ -184,40 +186,7 @@ export default function AppointmentPage() {
           dot: emp.color || "#789",
         }));
         setResources(formatted);
-
-        // create dummy appointments AFTER we have resources (if appointments are empty)
-        setTimeout(() => {
-          setAppointments((prev) => {
-            if (prev.length > 0) return prev; // don't overwrite existing
-            if (formatted.length === 0) return [];
-            // make two dummy appointments for first two columns (if available)
-            const d = new Date(currentDate);
-            const at = (h, m) =>
-              new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m);
-            const sample = [];
-            if (formatted[0]) {
-              sample.push({
-                id: mkId(),
-                title: "Demo: Initial Consult",
-                start: at(9, 0),
-                end: at(9, 45),
-                resourceId: formatted[0].id,
-                client: "John Doe",
-              });
-            }
-            if (formatted[1]) {
-              sample.push({
-                id: mkId(),
-                title: "Demo: Follow-up",
-                start: at(10, 30),
-                end: at(11, 15),
-                resourceId: formatted[1].id,
-                client: "Jane Smith",
-              });
-            }
-            return sample;
-          });
-        }, 30);
+        
       } catch (err) {
         console.error(err);
       }
@@ -226,7 +195,44 @@ export default function AppointmentPage() {
     
   }, [orgId, token ]);
 
-  // synchronize vertical scrolling between time ruler and main columns
+
+useEffect(() => {
+  async function fetchAppointments() {
+    try {
+     const date = dayjs(currentDate).startOf('day').toISOString();
+
+      const response = await axios.get(
+        `${BACKEND_URL}/appointments/appt/getActiveAppointments?orgId=${orgId}&date=${date}`,
+        {
+          
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const apptsFromAPI = response.data.response || [];
+
+
+      const formattedAppts = apptsFromAPI.map(appt => ({
+        id: appt.id,
+        title: appt.title || "Appointment",
+        start: new Date(appt.start_time), 
+        end: new Date(appt.end_time),     
+        resourceId: appt.resource_id,     
+        client: appt.clientName || "",   
+      }));
+
+      setAppointments(formattedAppts);
+    } catch (err) {
+      console.error("Error fetching appointments:", err);
+      message.error("Failed to fetch appointments");
+    }
+  }
+
+  if (orgId && token) {
+    fetchAppointments();
+  }
+}, [orgId, token, Resources,currentDate,refreshAppointments]); 
+
   useEffect(() => {
     const timeElem = timeRulerRef.current;
     const mainElem = mainColumnsRef.current;
@@ -525,13 +531,12 @@ const searchClients = debounce(async (value) => {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
-
-    // Update UI with the appointment returned from backend
     setAppointments((prev) => [...prev, response.data]);
 
     // Reset modal and selection
     setShowNewApptModal(false);
     setNewApptInfo(null);
+    setRefreshAppointments(prev => !prev); 
     message.success("Appointment saved successfully");
   } catch (err) {
     console.error("Error saving appointment:", err);
