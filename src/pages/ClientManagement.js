@@ -430,7 +430,13 @@ const ClientManagement = () => {
                   <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
 
-                <Form.Item label="Email" name="email">
+                <Form.Item label="Email" name="email"   rules={[
+                  { required: true, message: "Please enter your email!" },
+                  {
+                    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Please enter a valid email address!",
+                  },
+                ]}>
                   <Input placeholder="Enter email" type="email" />
                 </Form.Item>
 

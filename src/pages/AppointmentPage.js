@@ -3,17 +3,18 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { Modal, Form, Input, Select, DatePicker, message } from "antd";
 import axios from "axios";
-import { AutoComplete } from "antd";
+import { AutoComplete, Button } from "antd";
 import dayjs from "dayjs";
 import debounce from "lodash/debounce";
 import { BACKEND_URL } from "../assets/constants";
+import {     Divider, Descriptions, Tag } from "antd";
 
 const { Option } = Select;
 
 const START_HOUR = 8;
 const END_HOUR = 21;
-const SLOT_MINUTES = 30;
-const SLOT_HEIGHT = 45;
+const SLOT_MINUTES = 15;
+const SLOT_HEIGHT = 30;
 const HEADER_H = 40;
 
 function clamp(v, min, max) {
@@ -49,7 +50,6 @@ function isOverlapping(newAppt, appointmentsList) {
   });
 }
 
-// Simple Portal modal wrapper if you ever need custom modal (we use antd Modal below)
 const PortalModal = ({ children, onClose }) =>
   ReactDOM.createPortal(
     <div
@@ -95,8 +95,12 @@ export default function AppointmentPage() {
 
   const [Employees, setEmployees] = useState([]); // resources / columns
   const [Resources, setResources] = useState([]);
+   const [Doctor, setDoctor] = useState([]);
+    const [Services, setServices] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [refreshAppointments, setRefreshAppointments] = useState(false);
+  const [showCancelInput, setShowCancelInput] = useState(false);
+const [cancelRemarks, setCancelRemarks] = useState("");
 
 
   const [clientOptions, setClientOptions] = useState([]);
@@ -139,6 +143,8 @@ export default function AppointmentPage() {
     return out;
   }, []);
 
+  
+
    useEffect(() => {
     async function fetchEmployees() {
       try {
@@ -150,7 +156,7 @@ export default function AppointmentPage() {
         );
 
         const employees = response.data.response || [];
-        console.log("Employeeesss "   , employees)
+        //console.log("Employeeesss "   , employees)
         const formatted = employees.map((emp) => ({
           id: emp.id,
           name: emp.first_name,
@@ -165,6 +171,61 @@ export default function AppointmentPage() {
     }
     fetchEmployees();
     
+  }, [orgId, token ]);
+
+  useEffect(() => {
+    async function fetchDoctors() {
+      try {
+        const response = await axios.get(
+          `${BACKEND_URL}/clientAdmin/userMgmt/getDoctors?orgId=${orgId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const doctor = response.data.response || [];
+        //console.log("doctor "   , doctor)
+        const formatted = doctor.map((doc) => ({
+          id: doc.id,
+          name: doc.first_name,
+          color: "#e3f2fd",
+          dot: doc.color || "#789",
+        }));
+        setDoctor(formatted);
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchDoctors();
+    
+  }, [orgId, token ]);
+
+  useEffect(() => {
+    async function fetchServices() {
+      try {
+        const response = await axios.get(
+          `${BACKEND_URL}/clientAdmin/serviceManagement/getActiveServices?orgId=${orgId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const services = response.data.data || [];
+        //console.log("services "   , services)
+        const formatted = services.map((service) => ({
+          id: service.id,
+          name: service.name,
+          color: "#e3f2fd",
+          dot: service.color || "#789",
+        }));
+        //console.log("formatted services>> ", formatted )
+        setServices(formatted);
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchServices();
   }, [orgId, token ]);
 
   // Fetch resources for columns
@@ -195,6 +256,60 @@ export default function AppointmentPage() {
     
   }, [orgId, token ]);
 
+const updateAppointmentStatus = async (appId, status) => {
+  try {
+    const res = await axios.patch
+    (`${BACKEND_URL}/appointments/appt/changeAppointmentStatus?id=${appId}&status=${status}`, 
+      {},
+       { headers: { Authorization: `Bearer ${token}` } }
+    );
+  
+    setAppointments(prevAppointments =>
+      prevAppointments.map(app =>
+        app.id === appId ? { ...app, status: status } : app
+      )
+    );
+     setTimeout(() => {
+      setShowDetailModal(false);
+    }, 1500);
+    return res.data; 
+  } catch (error) {
+    console.error("Error updating appointment status:", error);
+    throw error;
+  }
+};
+
+const handleCancelAppointment = async () => {
+  if (!cancelRemarks.trim()) {
+    alert("Please Enter the cancellation Remarks")
+    //message.error("Please enter cancellation remarks");
+    return;
+  }
+  try {
+    await axios.post(
+      `${BACKEND_URL}/appointments/appt/cancelAppointment?id=${detailAppt.id}`,
+      {
+        Cancel_remarks: cancelRemarks,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setDetailAppt((prev) => ({
+      ...prev,
+      status: "CANCELLED",
+      remarks: cancelRemarks,
+    }));
+
+    message.success("Appointment cancelled");
+    setShowCancelInput(false);
+    setShowDetailModal(false);
+    setCancelRemarks("");
+      setRefreshAppointments(prev => !prev); 
+  } catch (err) {
+    console.error("Error cancelling appointment:", err);
+    message.error("Failed to cancel appointment");
+  }
+};
 
 useEffect(() => {
   async function fetchAppointments() {
@@ -210,7 +325,7 @@ useEffect(() => {
       );
 
       const apptsFromAPI = response.data.response || [];
-
+      //console.log("apptsFromAPI " , apptsFromAPI)
 
       const formattedAppts = apptsFromAPI.map(appt => ({
         id: appt.id,
@@ -218,7 +333,10 @@ useEffect(() => {
         start: new Date(appt.start_time), 
         end: new Date(appt.end_time),     
         resourceId: appt.resource_id,     
-        client: appt.clientName || "",   
+        client: appt.clients.first_name || "",  
+        service:appt.services.name || "",
+        status:appt.status||"",
+        remarks:appt.remarks
       }));
 
       setAppointments(formattedAppts);
@@ -292,7 +410,7 @@ const searchClients = debounce(async (value) => {
     );
 
     const data = response.data.data || [];
-    console.log("data" ,data)
+    //console.log("data" ,data)
 
     setClientOptions(
       data.map((c) => ({
@@ -468,20 +586,24 @@ const searchClients = debounce(async (value) => {
       client: "",
       employeeId: "",
       notes: "",
+      doctorId:"",
+      service:"",
       date: dayjs(currentDate),
     });
     setShowNewApptModal(true);
   };
 
   const onClickAppointment = (appt) => {
+    //console.log("appt here>>> " , appt)
     setDetailAppt(appt);
+    setShowCancelInput(false);
     setShowDetailModal(true);
   };
 
   const saveNewAppointment = async (valuesFromForm) => {
     // things to be update later : service dropdown , doctor , note
   try {
-    console.log(valuesFromForm)
+    console.log("values formmmm ",valuesFromForm)
     const today = dayjs().startOf("day");
         const date = valuesFromForm.date || ""
     if (date.isBefore(today, "day")) {
@@ -497,6 +619,9 @@ const searchClients = debounce(async (value) => {
     const resourceId = newApptInfo?.resourceId;
     const start = newApptInfo?.start;
     const end = newApptInfo?.end;
+    const doctorId = values.doctorId;
+    const serviceId = values.service;
+
     console.log(start)
     console.log(end)
     if (!resourceId || !start || !end) {
@@ -513,7 +638,10 @@ const searchClients = debounce(async (value) => {
       start,
       end,
       orgId,
-      remarks
+      remarks,
+      doctorId,
+      serviceId,
+
     };
     console.log(newAppt);
 
@@ -522,7 +650,7 @@ const searchClients = debounce(async (value) => {
       message.error("Cannot create: overlaps existing appointment");
       return;
     }
-
+    
     // Make API call
     const response = await axios.post(
       `${BACKEND_URL}/appointments/appt/bookappointment`,
@@ -675,6 +803,7 @@ const searchClients = debounce(async (value) => {
 
   function renderAppointmentsForResource(r) {
     const appts = appointments.filter((a) => a.resourceId === r.id);
+    //console.log("renderAppointmentsForResource " , appts)
     return appts.map((a) => {
       const minsTop = clamp(minutesSinceStart(a.start), 0, totalMinutes);
       const topPx = (minsTop / SLOT_MINUTES) * SLOT_HEIGHT;
@@ -691,13 +820,7 @@ const searchClients = debounce(async (value) => {
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") onClickAppointment(a);
           }}
-          title={
-            a.title +
-            "\n" +
-            timeLabel(a.start.getHours(), a.start.getMinutes()) +
-            " — " +
-            timeLabel(a.end.getHours(), a.end.getMinutes())
-          }
+
           style={{
             position: "absolute",
             left: 8,
@@ -753,13 +876,13 @@ const searchClients = debounce(async (value) => {
               textOverflow: "ellipsis",
             }}
           >
-            {a.title}
+            {a.client} ( {a.service} )
           </div>
           <div style={{ fontSize: 12, color: "#345" }}>
             {timeLabel(a.start.getHours(), a.start.getMinutes())} —{" "}
             {timeLabel(a.end.getHours(), a.end.getMinutes())}
           </div>
-          {a.client ? (
+          {/* {a.client ? (
             <div
               style={{
                 fontSize: 12,
@@ -771,7 +894,7 @@ const searchClients = debounce(async (value) => {
             >
               Client: {a.client}
             </div>
-          ) : null}
+          ) : null} */}
         </div>
       );
     });
@@ -909,6 +1032,7 @@ const searchClients = debounce(async (value) => {
               />
             </Form.Item> 
 
+
           <Form.Item name="employeeId" label="Employee" rules={[{ required: false }]}>
             <Select placeholder="Select employee (optional)">
               {Employees.map((Employee) => (
@@ -918,6 +1042,28 @@ const searchClients = debounce(async (value) => {
               ))}
             </Select>
           </Form.Item>
+
+                    <Form.Item name="doctorId" label="Doctor" rules={[{ required: false }]}>
+            <Select placeholder="Select Doctor (optional)">
+              {Doctor.map((Doctor) => (
+                <Option key={Doctor.name} value={Doctor.id}>
+                  {Doctor.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+                    <Form.Item name="service" label="Service" rules={[{ required: false }]}>
+            <Select placeholder="Select Service (optional)">
+              {Services.map((Service) => (
+                <Option key={Service.name} value={Service.id}>
+                  {Service.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+
           <Form.Item name="date" label="Date">
             <DatePicker value={dayjs(currentDate)} disabled />
           </Form.Item>
@@ -937,7 +1083,7 @@ const searchClients = debounce(async (value) => {
       </Modal>
 
       {/* Appointment Detail Modal (Antd) */}
-      <Modal title="Appointment" open={showDetailModal} onOk={closeDetailModal} onCancel={closeDetailModal} okText="Close" cancelButtonProps={{ style: { display: "none" } }}>
+      {/* <Modal title="Appointment" open={showDetailModal} onOk={closeDetailModal} onCancel={closeDetailModal} okText="Close" cancelButtonProps={{ style: { display: "none" } }}>
         {detailAppt && (
           <div>
             <h3 style={{ marginTop: 0 }}>{detailAppt.title}</h3>
@@ -952,9 +1098,179 @@ const searchClients = debounce(async (value) => {
             <div>
               <b>Resource:</b> {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
             </div>
+            <div>
+              <b>EmployeeName:</b> {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
+            </div>
+            <div>
+              <b>Service Name:</b> {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
+            </div>
+
+            <div>
+              <b>Doctor :</b> {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
+            </div>
+            <div>
+              <b>Status :</b>{" "}
+              <Select
+                value={detailAppt.status} // auto-selects the current status
+                style={{ width: 160 }}
+                onChange={(value) => {
+                  // You can store the updated status in state or call API here
+                  console.log("value " , value)
+                  setDetailAppt((prev) => ({ ...prev, status: value }));
+
+                  
+                }}
+                options={[
+                  { label: "Booked", value: "BOOKED" },
+                  { label: "Confirmed", value: "CONFIRMED" },
+                  { label: "Visted", value: "VISITED" },
+                  // { label: "Cancel", value: "CANCELLED" },
+                  { label: "No Show", value: "NO_SHOW" },
+                ]}
+              />
+            </div>
+            <div>
+              <b>Remarks :</b> {detailAppt.remarks}
+            </div>
+                {!showCancelInput ? (
+            <Button
+              danger
+              type="primary"
+              style={{ marginTop: 12 }}
+              onClick={() => setShowCancelInput(true)}
+            >
+              Cancel Appointment
+            </Button>
+          ) : (
+            <div style={{ marginTop: 12 }}>
+              <Input.TextArea
+                placeholder="Enter cancellation remarks"
+                rows={3}
+                value={cancelRemarks}
+                onChange={(e) => setCancelRemarks(e.target.value)}
+              />
+              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                <Button danger type="primary" onClick={handleCancelAppointment}>
+                  Save Cancellation
+                </Button>
+                <Button onClick={() => setShowCancelInput(false)}>Close</Button>
+              </div>
+            </div>
+          )}
+
+          </div>
+        )}
+      </Modal> */}
+     <Modal
+        title={<span style={{ fontWeight: "bold", fontSize: 18 }}>🗓 Appointment Details</span>}
+        open={showDetailModal}
+        onOk={closeDetailModal}
+        onCancel={closeDetailModal}
+        okText="Close"
+        cancelButtonProps={{ style: { display: "none" } }}
+        width={900} // wider modal
+        bodyStyle={{
+          padding: "20px 32px",
+          maxHeight: "75vh", // limits height so footer is visible
+          overflowY: "auto", 
+        }}
+      >
+        {detailAppt && (
+          <div>
+            {/* Title */}
+            <h2 style={{ marginBottom: 16, color: "#1890ff" }}>{detailAppt.title}</h2>
+
+            {/* Appointment Info */}
+            <Descriptions
+              bordered
+              column={2} // show in 2 columns to reduce vertical scroll
+              size="middle"
+              labelStyle={{ fontWeight: "bold", width: 150 }}
+            >
+              <Descriptions.Item label="Client">
+                {detailAppt.client || "N/A"}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Time">
+                {timeLabel(detailAppt.start.getHours(), detailAppt.start.getMinutes())} —{" "}
+                {timeLabel(detailAppt.end.getHours(), detailAppt.end.getMinutes())}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Resource">
+                {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Employee Name">
+                {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Service Name">
+                {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Doctor">
+                {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Status">
+                <Select
+                  value={detailAppt.status}
+                  style={{ width: 180 }}
+                  onChange={async (value) => {
+                    try {
+                      await updateAppointmentStatus(detailAppt.id, value);
+                      setDetailAppt((prev) => ({ ...prev, status: value }));
+                    } catch (err) {
+                      message.error("Could not update status");
+                    }
+                  }}
+                  options={[
+                    { label: "Booked", value: "BOOKED" },
+                    { label: "Confirmed", value: "CONFIRMED" },
+                    { label: "Visited", value: "VISITED" },
+                    { label: "No Show", value: "NO_SHOW" },
+                  ]}
+                />
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Remarks">
+                {detailAppt.remarks || <em style={{ color: "#999" }}>No remarks</em>}
+              </Descriptions.Item>
+            </Descriptions>
+
+            <Divider />
+
+            {/* Cancellation Section */}
+            {!showCancelInput ? (
+              <Button
+                danger
+                type="primary"
+                block
+                style={{ marginTop: 12 }}
+                onClick={() => setShowCancelInput(true)}
+              >
+                Cancel Appointment
+              </Button>
+            ) : (
+              <div style={{ marginTop: 12 }}>
+                <Input.TextArea
+                  placeholder="Enter cancellation remarks"
+                  rows={3}
+                  value={cancelRemarks}
+                  onChange={(e) => setCancelRemarks(e.target.value)}
+                />
+                <div style={{ marginTop: 12, display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                  <Button danger type="primary" onClick={handleCancelAppointment}>
+                    Save Cancellation
+                  </Button>
+                  <Button onClick={() => setShowCancelInput(false)}>Close</Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </Modal>
+
 
       {/* Main page */}
       <div
