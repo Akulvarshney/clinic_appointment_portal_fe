@@ -17,6 +17,7 @@ import {
 const DashboardPage = () => {
   const orgId = localStorage.getItem("selectedOrgId");
   const [stats, setStats] = useState([]);
+   const [pieData, setPieData] = useState([]);
   const [loading, setLoading] = useState(true);
   const barData = [
     { name: "Mon", value: 240 },
@@ -26,11 +27,11 @@ const DashboardPage = () => {
     { name: "Fri", value: 340 },
   ];
 
-  const pieData = [
-    { name: "Group A", value: 400 },
-    { name: "Group B", value: 300 },
-    { name: "Group C", value: 300 },
-  ];
+  // const pieData = [
+  //   { name: "Group A", value: 400 },
+  //   { name: "Group B", value: 300 },
+  //   { name: "Group C", value: 300 },
+  // ];
 
   const COLORS = ["#007bff", "#00C49F", "#FFBB28"];
   useEffect(() => {
@@ -45,15 +46,8 @@ const DashboardPage = () => {
             },
           }
         );
-
         console.log(res.data)
-        // Assuming backend returns something like:
-        // [
-        //   { title: "Total clients", amount: "$350.40" },
-        //   { title: "Today Appointments", amount: "$642.39" },
-        //   { title: "Total Appointments", amount: "$574.34" },
-        //   { title: "Balance", amount: "$1,000" }
-        // ]
+
         setStats(res.data.response);
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
@@ -61,9 +55,36 @@ const DashboardPage = () => {
         setLoading(false);
       }
     };
-
     fetchStats();
   }, []);
+
+
+
+  useEffect(() => {
+    const fetchClientCategories = async () => {
+      try {
+        //const res = await axios.get(`${BACKEND_URL}/clientAdmin/getDashboardDetails/KPI?orgId=${orgId}`);
+        const res = await axios.get(
+          `${BACKEND_URL}/clientAdmin/getDashboardDetails/PieChart?orgId=${orgId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        console.log(res.data)
+
+        setPieData(res.data.response);
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchClientCategories();
+  }, []);
+
+
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-100 to-blue-50 font-sans text-gray-800">
@@ -141,7 +162,7 @@ const DashboardPage = () => {
                   cy="50%"
                   outerRadius={85}
                   fill="#8884d8"
-                  label
+                  label={({ name, value }) => `${name} (${value})`} 
                 >
                   {pieData.map((entry, index) => (
                     <Cell
