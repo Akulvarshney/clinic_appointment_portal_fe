@@ -129,7 +129,7 @@ const ClientManagement = () => {
       const res = await axios.get(
         `${BACKEND_URL}/clientadmin/userMgmt/category?organization_id=${localStorage.getItem(
           "selectedOrgId"
-        )}`,
+        )}&is_valid=true`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
