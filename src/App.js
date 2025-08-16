@@ -26,6 +26,7 @@ import "../src/App.css";
 import { message } from "antd";
 import Settings from "./pages/settings/Settings";
 import ClientManagement from "./pages/ClientManagement";
+import ClientDetailPage from "./pages/ClientDetailPage";
 
 function App() {
   const { isLoggedIn, role, isAuthReady } = useAuth();
@@ -48,8 +49,11 @@ function App() {
       ) : isLoggedIn ? (
         <Route element={<LoggedInLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          {/* <Route path="/registerClient" element={<ClientRegistration />} /> */}
-          <Route path="/clients" element={<ClientManagement />} />
+          <Route path="clients">
+            <Route index element={<ClientManagement />} />
+            <Route path="detail/:clientId" element={<ClientDetailPage />} />
+          </Route>
+
           <Route path="/roleManagement" element={<RoleManagement />} />
           <Route path="/employeeManagement" element={<UserMgmt />} />
           <Route path="/doctorManagement" element={<DoctorManagement />} />

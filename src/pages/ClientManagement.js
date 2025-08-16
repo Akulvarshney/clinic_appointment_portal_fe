@@ -16,11 +16,13 @@ import {
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import Sidebar from "../components/SideBar";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
+import { Link, useNavigate } from "react-router-dom";
 
 const { Option } = Select;
 const { Search } = Input;
 
 const ClientManagement = () => {
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [clients, setClients] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -63,7 +65,7 @@ const ClientManagement = () => {
       );
 
       const roles = response.data.response || [];
-      console.log("roles>>> " ,  roles )
+      console.log("roles>>> ", roles);
       const clientRole = roles.find(
         (role) =>
           role.name === "CLIENT" && role.description === "DEFAULT CLIENT"
@@ -220,9 +222,9 @@ const ClientManagement = () => {
   //   setPagination((prev) => ({ ...prev, current: 1 }));
   // };
   const handleSearch = debounce((value) => {
-  setSearch(value);
-  setPagination((prev) => ({ ...prev, current: 1 }));
-}, 500); 
+    setSearch(value);
+    setPagination((prev) => ({ ...prev, current: 1 }));
+  }, 500);
 
   const handleTableChange = (paginationInfo) => {
     setPagination(paginationInfo);
@@ -234,8 +236,18 @@ const ClientManagement = () => {
       dataIndex: "first_name",
       key: "first_name",
 
-      render: (firstName, record) =>
-        `${firstName || ""} ${record.last_name || ""}`.trim() || "-",
+      render: (firstName, record) => {
+        const fullName =
+          `${firstName || ""} ${record.last_name || ""}`.trim() || "-";
+        return (
+          <Link
+            to={`/clients/detail/${record.id}`}
+            style={{ cursor: "pointer" }}
+          >
+            {fullName}
+          </Link>
+        );
+      },
     },
     ...(isMobileView
       ? [
@@ -373,7 +385,7 @@ const ClientManagement = () => {
           onCancel={handleModalCancel}
           footer={null}
           width={800}
-          destroyOnClose
+          // destroyOnClose
         >
           <div className="modal_outDiv">
             <Form
@@ -430,13 +442,17 @@ const ClientManagement = () => {
                   <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
 
-                <Form.Item label="Email" name="email"   rules={[
-                  { required: true, message: "Please enter your email!" },
-                  {
-                    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Please enter a valid email address!",
-                  },
-                ]}>
+                <Form.Item
+                  label="Email"
+                  name="email"
+                  rules={[
+                    { required: true, message: "Please enter your email!" },
+                    {
+                      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Please enter a valid email address!",
+                    },
+                  ]}
+                >
                   <Input placeholder="Enter email" type="email" />
                 </Form.Item>
 
