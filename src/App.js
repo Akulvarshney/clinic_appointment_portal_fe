@@ -1,12 +1,9 @@
-import { useEffect, useState } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
-import ClientRegistration from "./pages/ClientRegistration";
 import DoctorManagement from "./pages/doctorManagement";
-import ClientTable from "./pages/ClientTable";
 import RoleManagement from "./pages/RoleCreation";
 import UserMgmt from "./pages/EmployeeManagement";
 
@@ -23,7 +20,6 @@ import AppointmentPage from "./pages/AppointmentPage";
 import ForgotPassword from "./pages/ForgotPassword";
 
 import "../src/App.css";
-import { message } from "antd";
 import Settings from "./pages/settings/Settings";
 import ClientManagement from "./pages/ClientManagement";
 import ClientDetailPage from "./pages/ClientDetailPage";
@@ -53,7 +49,6 @@ function App() {
             <Route index element={<ClientManagement />} />
             <Route path="detail/:clientId" element={<ClientDetailPage />} />
           </Route>
-
           <Route path="/roleManagement" element={<RoleManagement />} />
           <Route path="/employeeManagement" element={<UserMgmt />} />
           <Route path="/doctorManagement" element={<DoctorManagement />} />
