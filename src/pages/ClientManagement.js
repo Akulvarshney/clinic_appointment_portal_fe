@@ -68,7 +68,7 @@ const ClientManagement = () => {
       console.log("roles>>> ", roles);
       const clientRole = roles.find(
         (role) =>
-          role.name === "CLIENT" && role.description === "DEFAULT CLIENT"
+          role.name === "CLIENT" && role.description === "DEFAULT CLIENT" && role.is_deletable === false
       );
 
       if (clientRole) {

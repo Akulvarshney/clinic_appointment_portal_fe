@@ -22,6 +22,7 @@ const DoctorManagement = () => {
   const [form] = Form.useForm();
   const [doctors, setDoctors] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [roleId , setRoleId] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
@@ -32,9 +33,39 @@ const DoctorManagement = () => {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetchRoles();
+    //fetchRoles();
+    fetchRoleId();
     fetchDoctorDetails();
   }, []);
+  const fetchRoleId = async () => {
+    try {
+      const response = await axios.get(
+        `${BACKEND_URL}/clientAdmin/userMgmt/getRoles?orgId=${orgId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const roles = response.data.response || [];
+      
+      const docRole = roles.find(
+        (role) =>
+          role.name === "DOCTOR" && role.description === "DEFAULT DOCTOR" && role.is_deletable === false
+      );
+
+      if (docRole) {
+        setRoleId(docRole.id);
+      } else {
+        console.warn("Doctor / DEFAULT Doctor role not found");
+        message.warning(
+          "Default Dcotor role not found. Please contact administrator."
+        );
+      }
+    } catch (err) {
+      console.error("Error fetching roles:", err);
+      message.error("Failed to fetch client roles");
+    }
+  };
 
   const fetchRoles = async () => {
     try {
@@ -90,13 +121,19 @@ const DoctorManagement = () => {
   const handleSubmit = async (values) => {
     setErrorMsg("");
     setSuccessMsg("");
+    if (!roleId) {
+      setErrorMsg("Role not loaded yet. Please try again shortly.");
+      setIsSubmitting(false);
+      return;
+    }
     setIsSubmitting(true);
+
 
     try {
       const response = await axios.post(
         `${BACKEND_URL}/clientAdmin/userMgmt/createDoctor`,
         {
-          roleId: values.roleId,
+          roleId: roleId,
           emailId: values.email,
           firstName: values.first_name,
           lastName: values.last_name,
@@ -280,7 +317,7 @@ const DoctorManagement = () => {
                   <Input placeholder="Enter license number" />
                 </Form.Item>
 
-                <Form.Item
+                {/* <Form.Item
                   label="Role"
                   name="roleId"
                   rules={[{ required: true, message: "Please select a role!" }]}
@@ -292,7 +329,7 @@ const DoctorManagement = () => {
                       </Option>
                     ))}
                   </Select>
-                </Form.Item>
+                </Form.Item> */}
 
                 <Form.Item
                   label="Gender"

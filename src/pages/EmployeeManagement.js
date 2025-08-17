@@ -22,6 +22,7 @@ const UserManagement = () => {
   const [form] = Form.useForm();
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [filteredRoles, setFilteredRoles] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
@@ -52,7 +53,11 @@ const UserManagement = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      console.log("roles before filter", response.data.response);
+      const allRoles = response.data.response;
       setRoles(response.data.response);
+      setFilteredRoles(allRoles.filter((role) => role.is_deletable === true));
+      console.log("roles after filter", filteredRoles);
     } catch (error) {
       console.error("Failed to fetch roles:", error);
     }
@@ -214,7 +219,7 @@ const UserManagement = () => {
           loading={rowLoadingStates[record.portalid]}
           style={{ minWidth: 120 }}
         >
-          {roles.map((role) => (
+          {filteredRoles.map((role) => (
             <Option key={role.id} value={role.id}>
               {role.name}
             </Option>
@@ -315,7 +320,7 @@ const UserManagement = () => {
                   rules={[{ required: true, message: "Please select a role!" }]}
                 >
                   <Select placeholder="Select role">
-                    {roles.map((role) => (
+                    {filteredRoles.map((role) => (
                       <Option key={role.id} value={role.id}>
                         {role.name}
                       </Option>
