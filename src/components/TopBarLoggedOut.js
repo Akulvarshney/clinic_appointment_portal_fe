@@ -13,7 +13,7 @@ const TopBarLoggedOut = () => {
         justifyContent: "space-between",
       }}
     >
-      <div>Arogi</div>
+      <div>GloryWellnic</div>
       <div className="flex gap-4">
         <button onClick={() => navigate("/")}>Home</button>
 

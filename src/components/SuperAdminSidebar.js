@@ -9,7 +9,7 @@ const SuperAdminSidebar = () => {
   return (
     <aside className="w-full md:w-64 bg-white p-6 shadow-2xl border-r border-gray-200 animate-fadeInUp">
       <h2 className="text-3xl font-extrabold text-blue-600 mb-10 tracking-widest uppercase">
-        Arogi
+        GloryWellnic
       </h2>
       <ul className="space-y-6 text-lg">
         <li

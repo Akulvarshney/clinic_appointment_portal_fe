@@ -159,10 +159,10 @@ const HomePage = () => {
               color="primary.dark"
               gutterBottom
             >
-              Welcome to ClinicEase
+              Welcome to GloryWellnic
             </Typography>
             <Typography variant="h6" color="text.secondary" mb={5}>
-              Your gateway to simplified healthcare form submissions.
+              Simplifying Management, Amplifying Care.
             </Typography>
 
             <Stack spacing={3} direction="row" justifyContent="center">

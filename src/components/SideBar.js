@@ -62,7 +62,7 @@ const Sidebar = () => {
         <div className="flex items-center justify-between p-4 border-b border-blue-500">
           {!collapsed && (
             <h2 className="text-2xl font-extrabold tracking-widest uppercase">
-              Arogi
+              GloryWellnic
             </h2>
           )}
           <button
