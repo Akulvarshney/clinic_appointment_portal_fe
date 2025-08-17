@@ -46,7 +46,7 @@ const DashboardPage = () => {
             },
           }
         );
-        console.log(res.data)
+        //console.log(res.data)
 
         setStats(res.data.response);
       } catch (error) {

@@ -1,4 +1,4 @@
-// AppointmentPage.jsx
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Modal, Form, Input, Select, DatePicker, message } from "antd";
 import axios from "axios";
@@ -48,6 +48,26 @@ function isOverlapping(newAppt, appointmentsList) {
     );
   });
 }
+
+function getStatusColor(status) {
+  switch (status) {
+    case "BOOKED":
+      return "#e2eafc"; // light blue
+    case "CONFIRMED":
+      return "#c5f0dd"; // light mint green
+    case "VISITED":
+      return "#b2f5a6"; // pastel green
+    case "NO_SHOW":
+      return "#f2e59b"; // soft yellow
+    case "CANCELLED":
+      return "#f5a17a"; // light orange/red
+    case "CLOSED":
+      return "#97989c"; // grey
+    default:
+      return "#ffffff"; // fallback white
+  }
+}
+
 
 export default function AppointmentPage() {
   const [currentDate, setCurrentDate] = useState(() => {
@@ -301,7 +321,6 @@ export default function AppointmentPage() {
         );
 
         const apptsFromAPI = response.data.response || [];
-        //console.log("apptsFromAPI " , apptsFromAPI)
 
         const formattedAppts = apptsFromAPI.map((appt) => ({
           id: appt.id,
@@ -313,8 +332,8 @@ export default function AppointmentPage() {
           service: appt.services.name || "",
           status: appt.status || "",
           remarks: appt.remarks,
+          color:getStatusColor(appt.status) || "#e2eafc"
         }));
-
         setAppointments(formattedAppts);
       } catch (err) {
         console.error("Error fetching appointments:", err);
@@ -386,7 +405,9 @@ export default function AppointmentPage() {
       pos.startH,
       pos.startM
     );
+
     const newEnd = new Date(newStart.getTime() + duration * 60000);
+    
 
     const dayEnd = new Date(
       currentDate.getFullYear(),
@@ -395,15 +416,18 @@ export default function AppointmentPage() {
       END_HOUR,
       0
     );
+
     const finalEnd = newEnd > dayEnd ? dayEnd : newEnd;
     const finalStart = new Date(finalEnd.getTime() - duration * 60000);
 
     const proposed = { id, resourceId, start: finalStart, end: finalEnd };
+    //console.log("Proposed>>> " , proposed);
     if (isOverlapping(proposed, appointments)) {
       alert("Cannot move: appointment overlaps an existing appointment.");
       return;
     }
-
+    // call the reschedule api here.
+    rescheduleAppointment(proposed);
     setAppointments((prev) =>
       prev.map((a) =>
         a.id === id ? { ...a, resourceId, start: finalStart, end: finalEnd } : a
@@ -411,7 +435,18 @@ export default function AppointmentPage() {
     );
   };
 
-  // Resize handlers
+  const rescheduleAppointment = async(proposed)=>{
+    const response = await axios.post(
+        `${BACKEND_URL}/appointments/appt/rescheduleAppointments`,
+        proposed,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log(response);
+
+  }
+  
   const startResize = (e, id, direction) => {
     e.preventDefault();
     e.stopPropagation();
@@ -420,6 +455,10 @@ export default function AppointmentPage() {
     if (!appt) return;
     const initStart = new Date(appt.start),
       initEnd = new Date(appt.end);
+
+
+    let newStartNew = initStart;
+    let newEndNew = initEnd;
 
     const onMove = (ev) => {
       const deltaPx = ev.clientY - startY;
@@ -477,9 +516,12 @@ export default function AppointmentPage() {
       };
 
       if (isOverlapping(proposed, appointments)) {
+         alert("Cannot move: appointment overlaps an existing appointment.");
         return;
       }
 
+      newEndNew=newEnd;
+      newStartNew=newStart;
       setAppointments((prev) =>
         prev.map((a) =>
           a.id === id
@@ -493,10 +535,13 @@ export default function AppointmentPage() {
       );
     };
 
-    const onUp = () => {
+    const onUp = async () => {
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
+      const proposed = { id, resourceId:appt.resourceId, start: newStartNew, end: newEndNew };
+      rescheduleAppointment(proposed)
     };
+    
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
   };
@@ -769,7 +814,7 @@ export default function AppointmentPage() {
             height: heightPx,
             borderRadius: 7,
             border: "1px solid #bcd",
-            background: r.color || "#e2eafc",
+            background:getStatusColor(a.status),
             boxShadow: "0 2px 10px #b9eafb77",
             cursor: "grab",
             userSelect: "none",
@@ -1223,6 +1268,11 @@ export default function AppointmentPage() {
                     try {
                       await updateAppointmentStatus(detailAppt.id, value);
                       setDetailAppt((prev) => ({ ...prev, status: value }));
+                            setAppointments((prev) =>
+                        prev.map((appt) =>
+                          appt.id === detailAppt.id ? { ...appt, status: value } : appt
+                        )
+                      );
                     } catch (err) {
                       message.error("Could not update status");
                     }
