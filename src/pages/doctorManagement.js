@@ -332,7 +332,7 @@ const DoctorManagement = () => {
                   <Input placeholder="Enter phone number" maxLength={10} />
                 </Form.Item>
 
-                <Form.Item
+                {/* <Form.Item
                   label="Login ID"
                   name="login_id"
                   rules={[
@@ -340,9 +340,9 @@ const DoctorManagement = () => {
                   ]}
                 >
                   <Input placeholder="Enter login ID" />
-                </Form.Item>
+                </Form.Item> */}
 
-                <Form.Item
+                {/* <Form.Item
                   label="Password"
                   name="password"
                   rules={[
@@ -354,7 +354,7 @@ const DoctorManagement = () => {
                   ]}
                 >
                   <Input.Password placeholder="Enter password" />
-                </Form.Item>
+                </Form.Item> */}
 
                 <Form.Item label="Address" name="address">
                   <Input placeholder="Enter address" />

@@ -110,9 +110,9 @@ const UserManagement = () => {
           gender: values.gender,
           address: values.address,
           emergencyContact: values.emergency_contact,
-          password: values.password,
+          //password: values.password,
           phone: values.phone,
-          login_id: values.login_id,
+          //login_id: values.login_id,
           orgId: orgId,
         },
         {
@@ -361,7 +361,7 @@ const UserManagement = () => {
                   <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
 
-                <Form.Item
+                {/* <Form.Item
                   label="Login ID"
                   name="login_id"
                   rules={[
@@ -369,9 +369,9 @@ const UserManagement = () => {
                   ]}
                 >
                   <Input placeholder="Enter login ID" />
-                </Form.Item>
+                </Form.Item> */}
 
-                <Form.Item
+                {/* <Form.Item
                   label="Password"
                   name="password"
                   rules={[
@@ -383,7 +383,7 @@ const UserManagement = () => {
                   ]}
                 >
                   <Input.Password placeholder="Enter password" />
-                </Form.Item>
+                </Form.Item> */}
 
                 <Form.Item label="Address" name="address">
                   <Input placeholder="Enter address" />
