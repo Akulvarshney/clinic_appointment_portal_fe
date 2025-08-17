@@ -91,6 +91,7 @@ export default function AppointmentPage() {
   const [Doctor, setDoctor] = useState([]);
   const [Services, setServices] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [appointmentsLoading, setAppointmentsLoading] = useState(false);
   const [refreshAppointments, setRefreshAppointments] = useState(false);
   const [showCancelInput, setShowCancelInput] = useState(false);
   const [cancelRemarks, setCancelRemarks] = useState("");
@@ -112,15 +113,18 @@ export default function AppointmentPage() {
   const token = localStorage.getItem("token");
 
   const moveDay = (delta) => {
-    setCurrentDate((prev) => {
-      const d = new Date(prev);
-      d.setDate(d.getDate() + delta);
-      return d;
-    });
+    console.log("Moving day by:", delta);
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + delta);
+    console.log("New date will be:", newDate);
+    setCurrentDate(newDate);
   };
+  
   const goToday = () => {
-    const d = new Date();
-    setCurrentDate(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+    const today = new Date();
+    const newDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    console.log("Going to today:", newDate);
+    setCurrentDate(newDate);
   };
 
   const totalMinutes = (END_HOUR - START_HOUR) * 60;
@@ -145,8 +149,8 @@ export default function AppointmentPage() {
           }
         );
 
-        const employees = response.data.response || [];
-        //console.log("Employeeesss "   , employees)
+        const employees = response.data.response.data|| [];
+        console.log("Employeeesss "   , employees)
         const formatted = employees.map((emp) => ({
           id: emp.id,
           name: emp.first_name,
@@ -319,10 +323,23 @@ export default function AppointmentPage() {
     }
   };
 
+  // FIXED: Fetch appointments with proper dependencies and loading state
   useEffect(() => {
     async function fetchAppointments() {
+      // Only fetch if we have the required data
+      if (!orgId || !token) {
+        console.log("Missing orgId or token, skipping fetch");
+        return;
+      }
+
       try {
+        setAppointmentsLoading(true);
+        // Clear existing appointments immediately when date changes
+        setAppointments([]);
+        
         const date = dayjs(currentDate).startOf("day").toISOString();
+        console.log("Fetching appointments for date:", date);
+        console.log("Current date object:", currentDate);
 
         const response = await axios.get(
           `${BACKEND_URL}/appointments/appt/getActiveAppointments?orgId=${orgId}&date=${date}`,
@@ -332,6 +349,7 @@ export default function AppointmentPage() {
         );
 
         const apptsFromAPI = response.data.response || [];
+        console.log("Raw appointments from API:", apptsFromAPI);
 
         const formattedAppts = apptsFromAPI.map((appt) => ({
           id: appt.id,
@@ -339,23 +357,30 @@ export default function AppointmentPage() {
           start: new Date(appt.start_time),
           end: new Date(appt.end_time),
           resourceId: appt.resource_id,
-          client: appt.clients.first_name || "",
-          service: appt.services.name || "",
+          client: appt.clients?.first_name || "",
+          service: appt.services?.name || "",
           status: appt.status || "",
           remarks: appt.remarks,
           color: getStatusColor(appt.status) || "#e2eafc",
         }));
+        
+        console.log("Formatted appointments:", formattedAppts);
+        console.log("Setting appointments state with:", formattedAppts.length, "appointments");
         setAppointments(formattedAppts);
+        setAppointmentsLoading(false);
       } catch (err) {
         console.error("Error fetching appointments:", err);
         message.error("Failed to fetch appointments");
+        // Clear appointments on error to prevent showing stale data
+        setAppointments([]);
+        setAppointmentsLoading(false);
       }
     }
 
-    if (orgId && token) {
-      fetchAppointments();
-    }
-  }, [orgId, token, Resources, currentDate, refreshAppointments]);
+    // Add a small delay to ensure state updates are processed
+    const timeoutId = setTimeout(fetchAppointments, 50);
+    return () => clearTimeout(timeoutId);
+  }, [orgId, token, currentDate, refreshAppointments]); // FIXED: Removed Resources dependency
 
   useEffect(() => {
     const timeElem = timeRulerRef.current;
@@ -753,8 +778,11 @@ export default function AppointmentPage() {
         </div>
 
         <div style={{ fontSize: 13, fontWeight: 500, color: "#555" }}>
-          Drag to move • Drag edges to resize • Double-click to add • Click
-          appointment
+          Drag to move • Drag edges to resize • Double-click to add • Click appointment
+          {appointmentsLoading && " • Loading..."}
+          <div style={{ fontSize: 11, marginTop: 4 }}>
+            Showing {appointments.length} appointments for {currentDate.toDateString()}
+          </div>
         </div>
       </div>
     );
@@ -803,12 +831,20 @@ export default function AppointmentPage() {
 
   function renderAppointmentsForResource(r) {
     const appts = appointments.filter((a) => a.resourceId === r.id);
-    //console.log("renderAppointmentsForResource " , appts)
+    console.log(`Rendering ${appts.length} appointments for resource ${r.id} (${r.name}):`, appts);
+    
+    if (appts.length === 0) {
+      console.log(`No appointments found for resource ${r.id}`);
+    }
+    
     return appts.map((a) => {
       const minsTop = clamp(minutesSinceStart(a.start), 0, totalMinutes);
       const topPx = (minsTop / SLOT_MINUTES) * SLOT_HEIGHT;
       const durMins = Math.max(15, (a.end - a.start) / 60000);
       const heightPx = Math.max(16, (durMins / SLOT_MINUTES) * SLOT_HEIGHT);
+      
+      console.log(`Appointment ${a.id}: top=${topPx}px, height=${heightPx}px`);
+      
       return (
         <div
           key={a.id}
@@ -881,25 +917,15 @@ export default function AppointmentPage() {
             {timeLabel(a.start.getHours(), a.start.getMinutes())} —{" "}
             {timeLabel(a.end.getHours(), a.end.getMinutes())}
           </div>
-          {/* {a.client ? (
-            <div
-              style={{
-                fontSize: 12,
-                color: "#567",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              Client: {a.client}
-            </div>
-          ) : null} */}
         </div>
       );
     });
   }
 
   function renderResourceColumns() {
+    console.log("Rendering resource columns. Total appointments:", appointments.length);
+    console.log("Current appointments:", appointments);
+    
     return (
       <div
         style={{
@@ -1036,21 +1062,8 @@ export default function AppointmentPage() {
           <Form.Item name="title" label="Title" rules={[{ required: true }]}>
             <Input placeholder="Appointment title" />
           </Form.Item>
-          {/* <Form.Item name="client" label="Client" rules={[{ required: false }]}>
-            <Input placeholder="Client name" />
-          </Form.Item> */}
+          
           <Form.Item name="clientId" label="Client">
-            {/* <AutoComplete
-              options={clientOptions}
-              onSearch={searchClients}
-              onSelect={(value, option) => {
-                form.setFieldsValue({ clientId: option.value }); // UUID in hidden field
-              }}
-              placeholder="Search client name"
-              allowClear
-              filterOption={false}
-            /> */}
-
             <Select
               showSearch
               placeholder="Select client"
@@ -1136,84 +1149,6 @@ export default function AppointmentPage() {
       </Modal>
 
       {/* Appointment Detail Modal (Antd) */}
-      {/* <Modal title="Appointment" open={showDetailModal} onOk={closeDetailModal} onCancel={closeDetailModal} okText="Close" cancelButtonProps={{ style: { display: "none" } }}>
-        {detailAppt && (
-          <div>
-            <h3 style={{ marginTop: 0 }}>{detailAppt.title}</h3>
-            <div>
-              <b>Client:</b> {detailAppt.client || "N/A"}
-            </div>
-            <div>
-              <b>Time:</b>{" "}
-              {timeLabel(detailAppt.start.getHours(), detailAppt.start.getMinutes())} —{" "}
-              {timeLabel(detailAppt.end.getHours(), detailAppt.end.getMinutes())}
-            </div>
-            <div>
-              <b>Resource:</b> {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
-            </div>
-            <div>
-              <b>EmployeeName:</b> {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
-            </div>
-            <div>
-              <b>Service Name:</b> {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
-            </div>
-
-            <div>
-              <b>Doctor :</b> {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
-            </div>
-            <div>
-              <b>Status :</b>{" "}
-              <Select
-                value={detailAppt.status} // auto-selects the current status
-                style={{ width: 160 }}
-                onChange={(value) => {
-                  // You can store the updated status in state or call API here
-                  console.log("value " , value)
-                  setDetailAppt((prev) => ({ ...prev, status: value }));
-
-                  
-                }}
-                options={[
-                  { label: "Booked", value: "BOOKED" },
-                  { label: "Confirmed", value: "CONFIRMED" },
-                  { label: "Visted", value: "VISITED" },
-                  // { label: "Cancel", value: "CANCELLED" },
-                  { label: "No Show", value: "NO_SHOW" },
-                ]}
-              />
-            </div>
-            <div>
-              <b>Remarks :</b> {detailAppt.remarks}
-            </div>
-                {!showCancelInput ? (
-            <Button
-              danger
-              type="primary"
-              style={{ marginTop: 12 }}
-              onClick={() => setShowCancelInput(true)}
-            >
-              Cancel Appointment
-            </Button>
-          ) : (
-            <div style={{ marginTop: 12 }}>
-              <Input.TextArea
-                placeholder="Enter cancellation remarks"
-                rows={3}
-                value={cancelRemarks}
-                onChange={(e) => setCancelRemarks(e.target.value)}
-              />
-              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-                <Button danger type="primary" onClick={handleCancelAppointment}>
-                  Save Cancellation
-                </Button>
-                <Button onClick={() => setShowCancelInput(false)}>Close</Button>
-              </div>
-            </div>
-          )}
-
-          </div>
-        )}
-      </Modal> */}
       <Modal
         title={
           <span style={{ fontWeight: "bold", fontSize: 18 }}>
@@ -1273,13 +1208,12 @@ export default function AppointmentPage() {
               </Descriptions.Item>
 
               <Descriptions.Item label="Service Name">
-                {(Resources.find((r) => r.id === detailAppt.resourceId) || {})
-                  .name || detailAppt.resourceId}
+                {detailAppt.service || "N/A"}
               </Descriptions.Item>
 
               <Descriptions.Item label="Doctor">
-                {(Resources.find((r) => r.id === detailAppt.resourceId) || {})
-                  .name || detailAppt.resourceId}
+                {(Doctor.find((d) => d.id === detailAppt.doctorId) || {})
+                  .name || "N/A"}
               </Descriptions.Item>
 
               <Descriptions.Item label="Status">

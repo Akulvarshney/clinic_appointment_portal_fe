@@ -91,13 +91,14 @@ const DoctorManagement = () => {
   const fetchDoctorDetails = async () => {
     setTableLoading(true);
     try {
-      console.log("orgId123 ", orgId);
+      //onsole.log("orgId123 ", orgId);
       const response = await axios.get(
         `${BACKEND_URL}/clientAdmin/userMgmt/getDoctors?orgId=${orgId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      console.log("doctor>>> " , response.data.response)
       if (response.status === 200) {
         setDoctors(response.data.response || []);
       } else {
@@ -218,14 +219,14 @@ const DoctorManagement = () => {
       width: 150,
       render: (_, record) => record.users?.login_id || "-",
     },
-    {
-      title: "Role",
-      key: "role",
-      width: 120,
-      render: (_, record) =>
-        record.users?.user_organizations?.[0]?.user_roles?.[0]?.roles?.name ||
-        "-",
-    },
+    // {
+    //   title: "Role",
+    //   key: "role",
+    //   width: 120,
+    //   render: (_, record) =>
+    //     record.users?.user_organizations?.[0]?.user_roles?.[0]?.roles?.name ||
+    //     "-",
+    // },
   ];
 
   return (
