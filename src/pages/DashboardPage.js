@@ -72,8 +72,7 @@ const DashboardPage = () => {
             },
           }
         );
-        console.log(res.data)
-
+        console.log("pieDAta. " , res.data)
         setPieData(res.data.response);
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
@@ -167,7 +166,7 @@ const DashboardPage = () => {
                   {pieData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
+                      fill={entry.color}
                     />
                   ))}
                 </Pie>
