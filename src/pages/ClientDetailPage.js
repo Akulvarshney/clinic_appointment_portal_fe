@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { BACKEND_URL } from "../assets/constants";
+import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 import {
   Card,
   Avatar,
@@ -55,6 +55,16 @@ const ClientDetailPage = () => {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState(null);
+
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  useEffect(() => {
+    const response1 = isFeatureValid("CLIENT_LISTING", "VIEW_MOBILE");
+
+    setIsMobileView(response1);
+
+    console.log("isFeatureValid response:", response1);
+  }, []);
 
   const commingSoon = () => {
     messageApi.info("This feature is coming soon!");
@@ -321,7 +331,9 @@ const ClientDetailPage = () => {
                   <PhoneOutlined className="text-gray-500" />
                   <div>
                     <Text className="text-gray-500 text-sm block">Phone</Text>
-                    <Text>{clientData?.phone}</Text>
+                    <Text>
+                      {isMobileView ? clientData?.phone : "**********"}
+                    </Text>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

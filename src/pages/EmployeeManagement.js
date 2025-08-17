@@ -29,6 +29,11 @@ const UserManagement = () => {
   const [rowLoadingStates, setRowLoadingStates] = useState({});
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [pagination, setPagination] = useState({
+    current: 1,
+    total: 0,
+  });
+  const [searchText, setSearchText] = useState("");
 
   const orgId = localStorage.getItem("selectedOrgId");
   const token = localStorage.getItem("token");
@@ -41,8 +46,17 @@ const UserManagement = () => {
       isFeatureValid("EMPLOYEE_MANAGEMENT", "ADD_EMPLOYEE")
     );
     fetchRoles();
-    fetchEmployeeDetails();
+    fetchEmployeeDetails(pagination.current, searchText);
   }, []);
+
+  // Separate effect for search changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchEmployeeDetails(1, searchText); // Reset to first page when searching
+    }, 500); // Debounce search
+
+    return () => clearTimeout(timeoutId);
+  }, [searchText]);
 
   const fetchRoles = async () => {
     try {
@@ -63,17 +77,30 @@ const UserManagement = () => {
     }
   };
 
-  const fetchEmployeeDetails = async () => {
+  const fetchEmployeeDetails = async (page = 1, search = "") => {
     setTableLoading(true);
     try {
+      const params = {
+        orgId: orgId,
+        page: page,
+        search: search,
+      };
+
       const response = await axios.get(
-        `${BACKEND_URL}/clientAdmin/userMgmt/getEmployees?orgId=${orgId}`,
+        `${BACKEND_URL}/clientAdmin/userMgmt/getEmployees`,
         {
+          params: params,
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       if (response.status === 200) {
-        setUsers(response.data.response || []);
+        const { data, total, page: currentPage } = response.data.response;
+        setUsers(data || []);
+        setPagination({
+          current: currentPage,
+          total: total,
+        });
       } else {
         message.error("Failed to fetch employees.");
       }
@@ -115,9 +142,7 @@ const UserManagement = () => {
           gender: values.gender,
           address: values.address,
           emergencyContact: values.emergency_contact,
-          //password: values.password,
           phone: values.phone,
-          //login_id: values.login_id,
           orgId: orgId,
         },
         {
@@ -130,7 +155,7 @@ const UserManagement = () => {
         setIsModalVisible(false);
         setSuccessMsg("Employee created successfully.");
         message.success("Employee added successfully.");
-        fetchEmployeeDetails(); // Refresh the table
+        fetchEmployeeDetails(pagination.current, searchText); // Refresh the table
       } else {
         message.error("Failed to add employee.");
       }
@@ -163,7 +188,7 @@ const UserManagement = () => {
         }
       );
 
-      await fetchEmployeeDetails();
+      await fetchEmployeeDetails(pagination.current, searchText);
       message.success("Role updated successfully.");
     } catch (error) {
       console.error("Role update failed:", error);
@@ -171,6 +196,17 @@ const UserManagement = () => {
     } finally {
       setRowLoadingStates((prev) => ({ ...prev, [userId]: false }));
     }
+  };
+
+  // Handle table pagination changes
+  const handleTableChange = (paginationInfo) => {
+    const { current } = paginationInfo;
+    fetchEmployeeDetails(current, searchText);
+  };
+
+  // Handle search
+  const handleSearch = (value) => {
+    setSearchText(value);
   };
 
   const columns = [
@@ -182,9 +218,14 @@ const UserManagement = () => {
     },
     {
       title: "Name",
-      dataIndex: "first_name",
-      key: "first_name",
+      key: "name",
       width: 150,
+      render: (_, record) => {
+        // Fixed: Combine first_name and last_name properly
+        const firstName = record.first_name || "";
+        const lastName = record.last_name || "";
+        return `${firstName} ${lastName}`.trim() || "-";
+      },
     },
     {
       title: "Email",
@@ -202,87 +243,112 @@ const UserManagement = () => {
       title: "Login ID",
       key: "login_id",
       width: 150,
-      render: (_, record) => record.users?.login_id || "-",
+      render: (_, record) => {
+        // Fixed: Access login_id from the correct path
+        return record?.users?.login_id || "-";
+      },
     },
     {
       title: "Change Role",
       key: "role",
       width: 180,
-      render: (_, record) => (
-        <Select
-          size="small"
-          value={
-            record.users?.user_organizations?.[0]?.user_roles?.[0]?.roles?.id ||
-            ""
-          }
-          onChange={(value) => handleRoleChange(record.userid, value)}
-          loading={rowLoadingStates[record.portalid]}
-          style={{ minWidth: 120 }}
-        >
-          {filteredRoles.map((role) => (
-            <Option key={role.id} value={role.id}>
-              {role.name}
-            </Option>
-          ))}
-        </Select>
-      ),
+      render: (_, record) => {
+        return (
+          <Select
+            size="small"
+            value={
+              // Fixed: Access role ID from the correct path
+              record?.users?.user_organizations?.[0]?.user_roles?.[0]?.roles
+                ?.id || ""
+            }
+            onChange={(value) => handleRoleChange(record.userid, value)}
+            loading={rowLoadingStates[record.userid]}
+            style={{ minWidth: 120 }}
+          >
+            {filteredRoles.map((role) => (
+              <Option key={role.id} value={role.id}>
+                {role.name}
+              </Option>
+            ))}
+          </Select>
+        );
+      },
     },
   ];
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", background: "#f4f9ff" }}>
       <div className="flex-1 p-6 sm:p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
-            Employee Management
-          </h1>
-          {isAllowedToAddEmployee ? (
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAddEmployee}
-              size="large"
-            >
-              Add Employee
-            </Button>
-          ) : null}
-        </div>
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
+              Employee Management
+            </h1>
+            <div className="flex gap-3 items-center">
+              <Input.Search
+                placeholder="Search employees..."
+                allowClear
+                onSearch={handleSearch}
+                onChange={(e) => {
+                  if (e.target.value === "") {
+                    setSearchText("");
+                  }
+                }}
+                style={{ width: 300 }}
+                size="large"
+              />
+              {isAllowedToAddEmployee ? (
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleAddEmployee}
+                  size="large"
+                >
+                  Add Employee
+                </Button>
+              ) : null}
+            </div>
+          </div>
 
-        {successMsg && (
-          <Alert
-            message={successMsg}
-            type="success"
-            showIcon
-            closable
-            className="mb-4"
-            onClose={() => setSuccessMsg("")}
-          />
-        )}
+          {successMsg && (
+            <Alert
+              message={successMsg}
+              type="success"
+              showIcon
+              closable
+              className="mb-4"
+              onClose={() => setSuccessMsg("")}
+            />
+          )}
 
-        {errorMsg && (
-          <Alert
-            message={errorMsg}
-            type="error"
-            showIcon
-            closable
-            className="mb-4"
-            onClose={() => setErrorMsg("")}
-          />
-        )}
+          {errorMsg && (
+            <Alert
+              message={errorMsg}
+              type="error"
+              showIcon
+              closable
+              className="mb-4"
+              onClose={() => setErrorMsg("")}
+            />
+          )}
 
-        <div className="bg-white rounded-lg shadow">
-          <Table
-            columns={columns}
-            dataSource={users}
-            loading={tableLoading}
-            rowKey="portalid"
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: false,
-              showQuickJumper: true,
-            }}
-            scroll={{ x: 800 }}
-          />
+          <div className="bg-white rounded-lg shadow">
+            <Table
+              columns={columns}
+              dataSource={users}
+              loading={tableLoading}
+              rowKey="id" // Fixed: Use 'id' as rowKey since it's unique
+              pagination={{
+                current: pagination.current,
+                total: pagination.total,
+                pageSize: 10,
+                showQuickJumper: false,
+                showTotal: (total, range) => `Total ${total} employees`,
+              }}
+              onChange={handleTableChange}
+              scroll={{ x: 800 }}
+            />
+          </div>
         </div>
 
         <Modal
@@ -365,30 +431,6 @@ const UserManagement = () => {
                 <Form.Item label="Date of Birth" name="dob">
                   <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
-
-                {/* <Form.Item
-                  label="Login ID"
-                  name="login_id"
-                  rules={[
-                    { required: true, message: "Please enter login ID!" },
-                  ]}
-                >
-                  <Input placeholder="Enter login ID" />
-                </Form.Item> */}
-
-                {/* <Form.Item
-                  label="Password"
-                  name="password"
-                  rules={[
-                    { required: true, message: "Please enter password!" },
-                    {
-                      min: 6,
-                      message: "Password must be at least 6 characters!",
-                    },
-                  ]}
-                >
-                  <Input.Password placeholder="Enter password" />
-                </Form.Item> */}
 
                 <Form.Item label="Address" name="address">
                   <Input placeholder="Enter address" />

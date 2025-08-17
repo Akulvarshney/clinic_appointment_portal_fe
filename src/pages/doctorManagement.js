@@ -14,7 +14,7 @@ import {
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import Sidebar from "../components/SideBar";
-import { BACKEND_URL } from "../assets/constants";
+import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 
 const { Option } = Select;
 
@@ -22,12 +22,14 @@ const DoctorManagement = () => {
   const [form] = Form.useForm();
   const [doctors, setDoctors] = useState([]);
   const [roles, setRoles] = useState([]);
-  const [roleId , setRoleId] = useState(false);
+  const [roleId, setRoleId] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+
+  const [isNewDoctor, setIsNewDoctor] = useState(false);
 
   const orgId = localStorage.getItem("selectedOrgId");
   const token = localStorage.getItem("token");
@@ -36,6 +38,8 @@ const DoctorManagement = () => {
     //fetchRoles();
     fetchRoleId();
     fetchDoctorDetails();
+
+    setIsNewDoctor(isFeatureValid("DOCTOR_MANAGEMENT", "ADD_DOCTOR"));
   }, []);
   const fetchRoleId = async () => {
     try {
@@ -47,10 +51,12 @@ const DoctorManagement = () => {
       );
 
       const roles = response.data.response || [];
-      
+
       const docRole = roles.find(
         (role) =>
-          role.name === "DOCTOR" && role.description === "DEFAULT DOCTOR" && role.is_deletable === false
+          role.name === "DOCTOR" &&
+          role.description === "DEFAULT DOCTOR" &&
+          role.is_deletable === false
       );
 
       if (docRole) {
@@ -85,7 +91,7 @@ const DoctorManagement = () => {
   const fetchDoctorDetails = async () => {
     setTableLoading(true);
     try {
-      console.log("orgId123 " , orgId)
+      console.log("orgId123 ", orgId);
       const response = await axios.get(
         `${BACKEND_URL}/clientAdmin/userMgmt/getDoctors?orgId=${orgId}`,
         {
@@ -127,7 +133,6 @@ const DoctorManagement = () => {
       return;
     }
     setIsSubmitting(true);
-
 
     try {
       const response = await axios.post(
@@ -230,14 +235,16 @@ const DoctorManagement = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
             Doctor Management
           </h1>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddDoctor}
-            size="large"
-          >
-            Add Doctor
-          </Button>
+          {isNewDoctor && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAddDoctor}
+              size="large"
+            >
+              Add Doctor
+            </Button>
+          )}
         </div>
 
         {successMsg && (

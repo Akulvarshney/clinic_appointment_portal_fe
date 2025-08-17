@@ -1,11 +1,10 @@
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Modal, Form, Input, Select, DatePicker, message } from "antd";
 import axios from "axios";
 import { AutoComplete, Button } from "antd";
 import dayjs from "dayjs";
 import debounce from "lodash/debounce";
-import { BACKEND_URL } from "../assets/constants";
+import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 import { Divider, Descriptions, Tag } from "antd";
 
 const { Option } = Select;
@@ -68,12 +67,24 @@ function getStatusColor(status) {
   }
 }
 
-
 export default function AppointmentPage() {
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   });
+
+  const [isAllowedToAddAppointment, setIsAllowedToAddAppointment] =
+    useState(false);
+
+  const [messageApi, contextHolder] = message.useMessage();
+
+  useEffect(() => {
+    const response1 = isFeatureValid("APPOINTMENT", "ADD_APPOINTMENT");
+
+    setIsAllowedToAddAppointment(response1);
+
+    console.log("isFeatureValid response:", response1);
+  }, []);
 
   const [Employees, setEmployees] = useState([]); // resources / columns
   const [Resources, setResources] = useState([]);
@@ -332,7 +343,7 @@ export default function AppointmentPage() {
           service: appt.services.name || "",
           status: appt.status || "",
           remarks: appt.remarks,
-          color:getStatusColor(appt.status) || "#e2eafc"
+          color: getStatusColor(appt.status) || "#e2eafc",
         }));
         setAppointments(formattedAppts);
       } catch (err) {
@@ -407,7 +418,6 @@ export default function AppointmentPage() {
     );
 
     const newEnd = new Date(newStart.getTime() + duration * 60000);
-    
 
     const dayEnd = new Date(
       currentDate.getFullYear(),
@@ -435,18 +445,17 @@ export default function AppointmentPage() {
     );
   };
 
-  const rescheduleAppointment = async(proposed)=>{
+  const rescheduleAppointment = async (proposed) => {
     const response = await axios.post(
-        `${BACKEND_URL}/appointments/appt/rescheduleAppointments`,
-        proposed,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      console.log(response);
+      `${BACKEND_URL}/appointments/appt/rescheduleAppointments`,
+      proposed,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    console.log(response);
+  };
 
-  }
-  
   const startResize = (e, id, direction) => {
     e.preventDefault();
     e.stopPropagation();
@@ -455,7 +464,6 @@ export default function AppointmentPage() {
     if (!appt) return;
     const initStart = new Date(appt.start),
       initEnd = new Date(appt.end);
-
 
     let newStartNew = initStart;
     let newEndNew = initEnd;
@@ -516,12 +524,12 @@ export default function AppointmentPage() {
       };
 
       if (isOverlapping(proposed, appointments)) {
-         alert("Cannot move: appointment overlaps an existing appointment.");
+        alert("Cannot move: appointment overlaps an existing appointment.");
         return;
       }
 
-      newEndNew=newEnd;
-      newStartNew=newStart;
+      newEndNew = newEnd;
+      newStartNew = newStart;
       setAppointments((prev) =>
         prev.map((a) =>
           a.id === id
@@ -538,10 +546,15 @@ export default function AppointmentPage() {
     const onUp = async () => {
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
-      const proposed = { id, resourceId:appt.resourceId, start: newStartNew, end: newEndNew };
-      rescheduleAppointment(proposed)
+      const proposed = {
+        id,
+        resourceId: appt.resourceId,
+        start: newStartNew,
+        end: newEndNew,
+      };
+      rescheduleAppointment(proposed);
     };
-    
+
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
   };
@@ -684,6 +697,7 @@ export default function AppointmentPage() {
           userSelect: "none",
         }}
       >
+        {contextHolder}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button
             type="button"
@@ -814,7 +828,7 @@ export default function AppointmentPage() {
             height: heightPx,
             borderRadius: 7,
             border: "1px solid #bcd",
-            background:getStatusColor(a.status),
+            background: getStatusColor(a.status),
             boxShadow: "0 2px 10px #b9eafb77",
             cursor: "grab",
             userSelect: "none",
@@ -910,7 +924,15 @@ export default function AppointmentPage() {
               }}
               onDragOver={onDragOverCol}
               onDrop={(e) => onDropOnCol(e, r.id)}
-              onDoubleClick={(e) => onDoubleClickCol(e, r.id)}
+              onDoubleClick={(e) => {
+                if (isAllowedToAddAppointment) {
+                  onDoubleClickCol(e, r.id);
+                } else {
+                  messageApi.error(
+                    "You are not allowed to add an appointment."
+                  );
+                }
+              }}
               title="Double-click empty space to add appointment"
             >
               {/* empty slot lines */}
@@ -1268,9 +1290,11 @@ export default function AppointmentPage() {
                     try {
                       await updateAppointmentStatus(detailAppt.id, value);
                       setDetailAppt((prev) => ({ ...prev, status: value }));
-                            setAppointments((prev) =>
+                      setAppointments((prev) =>
                         prev.map((appt) =>
-                          appt.id === detailAppt.id ? { ...appt, status: value } : appt
+                          appt.id === detailAppt.id
+                            ? { ...appt, status: value }
+                            : appt
                         )
                       );
                     } catch (err) {

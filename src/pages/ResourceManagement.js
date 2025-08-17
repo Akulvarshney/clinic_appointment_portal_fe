@@ -14,7 +14,7 @@ import {
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { Box } from "@mui/material";
-import { BACKEND_URL } from "../assets/constants";
+import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 
 const ResourceManagement = () => {
   const [form] = Form.useForm();
@@ -26,6 +26,8 @@ const ResourceManagement = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [editingResource, setEditingResource] = useState(null);
+
+  const [isNewService, setIsNewService] = useState(false);
 
   const token = localStorage.getItem("token");
   const orgId = localStorage.getItem("selectedOrgId");
@@ -52,6 +54,8 @@ const ResourceManagement = () => {
 
   useEffect(() => {
     fetchResources();
+
+    setIsNewService(isFeatureValid("RESOURCE_MANAGEMENT", "ADD_RESOURCE"));
   }, []);
 
   const handleAddResource = () => {
@@ -277,14 +281,16 @@ const ResourceManagement = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
             Resource Management
           </h1>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddResource}
-            size="large"
-          >
-            Add Resource
-          </Button>
+          {isNewService && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAddResource}
+              size="large"
+            >
+              Add Resource
+            </Button>
+          )}
         </div>
 
         {successMsg && (

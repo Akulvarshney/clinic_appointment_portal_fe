@@ -14,7 +14,7 @@ import {
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { Box, Typography } from "@mui/material";
-import { BACKEND_URL } from "../assets/constants";
+import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 
 const { TextArea } = Input;
 
@@ -28,6 +28,8 @@ const Services = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [editingService, setEditingService] = useState(null);
+
+  const [isNewService, setIsNewService] = useState(false);
 
   const token = localStorage.getItem("token");
   const orgId = localStorage.getItem("selectedOrgId");
@@ -54,6 +56,8 @@ const Services = () => {
 
   useEffect(() => {
     fetchServices();
+
+    setIsNewService(isFeatureValid("SERVICE_MANAGEMENT", "ADD_SERVICE"));
   }, []);
 
   const handleAddService = () => {
@@ -221,27 +225,32 @@ const Services = () => {
       ellipsis: true,
     },
     {
-  title: "Status",
-  dataIndex: "status",
-  key: "status",
-  render: (status, record) => {
-    const isEnabled = status === "ENABLED";
-    return (
-      <Popconfirm
-        title={`Are you sure you want to ${isEnabled ? "disable" : "enable"} this service?`}
-        onConfirm={() =>
-          handleStatusChange(record.id, isEnabled ? "DISABLED" : "ENABLED")
-        }
-        okText="Yes"
-        cancelText="No"
-      >
-        <Tag color={isEnabled ? "green" : "red"} style={{ cursor: "pointer" }}>
-          {status}
-        </Tag>
-      </Popconfirm>
-    );
-  },
-},
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status, record) => {
+        const isEnabled = status === "ENABLED";
+        return (
+          <Popconfirm
+            title={`Are you sure you want to ${
+              isEnabled ? "disable" : "enable"
+            } this service?`}
+            onConfirm={() =>
+              handleStatusChange(record.id, isEnabled ? "DISABLED" : "ENABLED")
+            }
+            okText="Yes"
+            cancelText="No"
+          >
+            <Tag
+              color={isEnabled ? "green" : "red"}
+              style={{ cursor: "pointer" }}
+            >
+              {status}
+            </Tag>
+          </Popconfirm>
+        );
+      },
+    },
 
     {
       title: "Actions",

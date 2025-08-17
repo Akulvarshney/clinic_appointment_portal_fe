@@ -40,6 +40,7 @@ const ClientManagement = () => {
     total: 0,
   });
   const [isMobileView, setIsMobileView] = useState(false);
+  const [isAddClientFeatureValid, setIsAddClientFeatureValid] = useState(false);
 
   const orgId = localStorage.getItem("selectedOrgId");
   const token = localStorage.getItem("token");
@@ -49,6 +50,7 @@ const ClientManagement = () => {
     checkMobileView();
     fetchClients();
     fetchCategories();
+    checkAddClientFeatureValid();
   }, []);
 
   useEffect(() => {
@@ -68,7 +70,9 @@ const ClientManagement = () => {
       console.log("roles>>> ", roles);
       const clientRole = roles.find(
         (role) =>
-          role.name === "CLIENT" && role.description === "DEFAULT CLIENT" && role.is_deletable === false
+          role.name === "CLIENT" &&
+          role.description === "DEFAULT CLIENT" &&
+          role.is_deletable === false
       );
 
       if (clientRole) {
@@ -92,6 +96,12 @@ const ClientManagement = () => {
     } catch (err) {
       console.error("Error checking mobile view permission:", err);
     }
+  };
+
+  const checkAddClientFeatureValid = () => {
+    const response = isFeatureValid("CLIENT_LISTING", "ADD_CLIENT");
+    setIsAddClientFeatureValid(response);
+    return response;
   };
 
   const fetchClients = async () => {
@@ -313,14 +323,35 @@ const ClientManagement = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
             Client Management
           </h1>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddClient}
-            size="large"
-          >
-            Register Client
-          </Button>
+          <div className="flex gap-3 items-center">
+            <Search
+              placeholder="Search by name, mobile..."
+              allowClear
+              enterButton={<SearchOutlined />}
+              size="large"
+              onSearch={handleSearch}
+              onChange={(e) => {
+                if (!e.target.value) {
+                  handleSearch("");
+                }
+                if (e.target.value) {
+                  handleSearch(e.target.value);
+                }
+              }}
+              style={{ maxWidth: 400 }}
+            />
+
+            {isAddClientFeatureValid ? (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAddClient}
+                size="large"
+              >
+                Register Client
+              </Button>
+            ) : null}
+          </div>
         </div>
 
         {successMsg && (
@@ -344,25 +375,6 @@ const ClientManagement = () => {
             onClose={() => setErrorMsg("")}
           />
         )}
-
-        <div className="mb-4">
-          <Search
-            placeholder="Search by name, mobile..."
-            allowClear
-            enterButton={<SearchOutlined />}
-            size="large"
-            onSearch={handleSearch}
-            onChange={(e) => {
-              if (!e.target.value) {
-                handleSearch("");
-              }
-              if (e.target.value) {
-                handleSearch(e.target.value);
-              }
-            }}
-            style={{ maxWidth: 400 }}
-          />
-        </div>
 
         <div className="bg-white rounded-lg shadow">
           <Table
