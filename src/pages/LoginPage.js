@@ -59,8 +59,8 @@ const LoginPage = () => {
   return (
     <div className="min-h-[90vh] justify-center items-center flex flex-col  bg-gray-50">
       <Card
+        className="w-full max-w-md p-6"
         style={{
-          width: 400,
           borderRadius: "12px",
           boxShadow: "0 12px 28px rgba(59, 130, 246, 0.12)",
         }}
@@ -125,7 +125,11 @@ const LoginPage = () => {
             marginTop: "10px",
           }}
         >
-          <Button type="link" size="small">
+          <Button
+            type="link"
+            size="small"
+            onClick={() => navigate("/forgetpassword")}
+          >
             Forgot your password?
           </Button>
           <Button

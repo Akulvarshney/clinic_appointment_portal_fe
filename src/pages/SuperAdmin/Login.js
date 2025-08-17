@@ -57,7 +57,7 @@ const Login = () => {
 
   const handleForgotPassword = () => {
     // Add forgot password logic here
-    console.log("Forgot password clicked");
+    navigate("/forgetpassword");
   };
 
   const handleClientLogin = () => {
@@ -65,7 +65,7 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
+    <div className="login-container bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="login-wrapper">
         <Card className="login-card">
           <div className="login-content">
