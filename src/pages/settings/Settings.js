@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import RoleManagement from "../RoleCreation";
 import ClientCategories from "../ClientCategories";
 import Profile from "../Profile";
+import NotificationCenter from "../NotificationCenter";
 
 const { Table, Tabs } = require("antd");
 const { TabPane } = Tabs;
@@ -82,6 +83,8 @@ const Settings = () => {
         return <RoleManagement />;
       case "CLIENT_CATEGORIES":
         return <ClientCategories />;
+      case "NOTIFICATION_CENTER":
+        return <NotificationCenter />;
       default:
         return <div>Not Found</div>;
     }

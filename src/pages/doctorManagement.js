@@ -12,11 +12,12 @@ import {
   message,
   Alert,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import Sidebar from "../components/SideBar";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 
 const { Option } = Select;
+const { Search } = Input;
 
 const DoctorManagement = () => {
   const [form] = Form.useForm();
@@ -28,6 +29,10 @@ const DoctorManagement = () => {
   const [tableLoading, setTableLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
 
   const [isNewDoctor, setIsNewDoctor] = useState(false);
 
@@ -35,12 +40,15 @@ const DoctorManagement = () => {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    //fetchRoles();
     fetchRoleId();
     fetchDoctorDetails();
-
     setIsNewDoctor(isFeatureValid("DOCTOR_MANAGEMENT", "ADD_DOCTOR"));
   }, []);
+
+  useEffect(() => {
+    fetchDoctorDetails();
+  }, [currentPage, pageSize, searchTerm]);
+
   const fetchRoleId = async () => {
     try {
       const response = await axios.get(
@@ -64,7 +72,7 @@ const DoctorManagement = () => {
       } else {
         console.warn("Doctor / DEFAULT Doctor role not found");
         message.warning(
-          "Default Dcotor role not found. Please contact administrator."
+          "Default Doctor role not found. Please contact administrator."
         );
       }
     } catch (err) {
@@ -73,34 +81,41 @@ const DoctorManagement = () => {
     }
   };
 
-  const fetchRoles = async () => {
-    try {
-      const response = await axios.get(
-        `${BACKEND_URL}/clientAdmin/userMgmt/getRoles`,
-        {
-          params: { orgId: orgId },
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setRoles(response.data.response);
-    } catch (error) {
-      console.error("Failed to fetch roles:", error);
-    }
-  };
-
   const fetchDoctorDetails = async () => {
     setTableLoading(true);
     try {
-      //onsole.log("orgId123 ", orgId);
+      const params = new URLSearchParams({
+        orgId: orgId,
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+      });
+
+      if (searchTerm.trim()) {
+        params.append("search", searchTerm.trim());
+      }
+
       const response = await axios.get(
-        `${BACKEND_URL}/clientAdmin/userMgmt/getDoctors?orgId=${orgId}`,
+        `${BACKEND_URL}/clientAdmin/userMgmt/getDoctors?${params.toString()}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("doctor>>> " , response.data.response)
+
+      console.log("doctor>>> ", response.data);
+
       if (response.status === 200) {
-        setDoctors(response.data.response || []);
+        const data = response.data.data.records || {};
+
+        // Handle both paginated and non-paginated responses
+        if (Array.isArray(data)) {
+          // Non-paginated response (backward compatibility)
+          setDoctors(data);
+          setTotalRecords(data.length);
+        } else {
+          // Paginated response
+          setDoctors(data.doctors || data.data || []);
+          setTotalRecords(data.total || data.totalRecords || 0);
+        }
       } else {
         message.error("Failed to fetch doctors.");
       }
@@ -110,6 +125,24 @@ const DoctorManagement = () => {
     } finally {
       setTableLoading(false);
     }
+  };
+
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    if (value === "") {
+      setSearchTerm("");
+      setCurrentPage(1);
+    }
+  };
+
+  const handleTableChange = (pagination) => {
+    setCurrentPage(pagination.current);
+    setPageSize(pagination.pageSize);
   };
 
   const handleAddDoctor = () => {
@@ -141,7 +174,7 @@ const DoctorManagement = () => {
         {
           roleId: roleId,
           emailId: values.email,
-          firstName: values.first_name,
+          firstName: "Dr. " + values.first_name,
           lastName: values.last_name,
           ...(values.dob && { DOB: values.dob.toISOString() }),
           gender: values.gender,
@@ -163,7 +196,7 @@ const DoctorManagement = () => {
         setIsModalVisible(false);
         setSuccessMsg("Doctor created successfully.");
         message.success("Doctor added successfully.");
-        fetchDoctorDetails(); // Refresh the table
+        fetchDoctorDetails();
       } else {
         message.error("Failed to add doctor.");
       }
@@ -219,33 +252,40 @@ const DoctorManagement = () => {
       width: 150,
       render: (_, record) => record.users?.login_id || "-",
     },
-    // {
-    //   title: "Role",
-    //   key: "role",
-    //   width: 120,
-    //   render: (_, record) =>
-    //     record.users?.user_organizations?.[0]?.user_roles?.[0]?.roles?.name ||
-    //     "-",
-    // },
   ];
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", background: "#f4f9ff" }}>
       <div className="flex-1 p-6 sm:p-8">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
             Doctor Management
           </h1>
-          {isNewDoctor && (
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAddDoctor}
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+            <Search
+              placeholder="Search doctors..."
+              allowClear
+              enterButton={<SearchOutlined />}
               size="large"
-            >
-              Add Doctor
-            </Button>
-          )}
+              style={{ width: "100%", minWidth: "300px", maxWidth: "400px" }}
+              onSearch={handleSearch}
+              onChange={handleSearchChange}
+              loading={tableLoading}
+            />
+
+            {isNewDoctor && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAddDoctor}
+                size="large"
+                style={{ minWidth: "140px" }}
+              >
+                Add Doctor
+              </Button>
+            )}
+          </div>
         </div>
 
         {successMsg && (
@@ -277,9 +317,16 @@ const DoctorManagement = () => {
             loading={tableLoading}
             rowKey="portalid"
             pagination={{
-              pageSize: 10,
+              current: currentPage,
+              pageSize: pageSize,
+              total: totalRecords,
               showSizeChanger: false,
-              showQuickJumper: true,
+              showQuickJumper: false,
+
+              onChange: (page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              },
             }}
             scroll={{ x: 800 }}
           />
@@ -306,6 +353,23 @@ const DoctorManagement = () => {
                   name="first_name"
                   rules={[
                     { required: true, message: "Please enter first name!" },
+                    {
+                      validator: (_, value) => {
+                        if (!value) return Promise.resolve();
+
+                        const prefixRegex =
+                          /^(mr|mrs|ms|miss|dr|prof)\.?(\s|$)/i;
+                        if (prefixRegex.test(value.trim())) {
+                          return Promise.reject(
+                            new Error(
+                              "Please enter only your first name, without prefixes."
+                            )
+                          );
+                        }
+
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
                 >
                   <Input placeholder="Enter first name" />
@@ -324,20 +388,6 @@ const DoctorManagement = () => {
                 >
                   <Input placeholder="Enter license number" />
                 </Form.Item>
-
-                {/* <Form.Item
-                  label="Role"
-                  name="roleId"
-                  rules={[{ required: true, message: "Please select a role!" }]}
-                >
-                  <Select placeholder="Select role">
-                    {roles.map((role) => (
-                      <Option key={role.id} value={role.id}>
-                        {role.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item> */}
 
                 <Form.Item
                   label="Gender"
@@ -376,30 +426,6 @@ const DoctorManagement = () => {
                 >
                   <Input placeholder="Enter phone number" maxLength={10} />
                 </Form.Item>
-
-                {/* <Form.Item
-                  label="Login ID"
-                  name="login_id"
-                  rules={[
-                    { required: true, message: "Please enter login ID!" },
-                  ]}
-                >
-                  <Input placeholder="Enter login ID" />
-                </Form.Item> */}
-
-                {/* <Form.Item
-                  label="Password"
-                  name="password"
-                  rules={[
-                    { required: true, message: "Please enter password!" },
-                    {
-                      min: 6,
-                      message: "Password must be at least 6 characters!",
-                    },
-                  ]}
-                >
-                  <Input.Password placeholder="Enter password" />
-                </Form.Item> */}
 
                 <Form.Item label="Address" name="address">
                   <Input placeholder="Enter address" />

@@ -13,7 +13,7 @@ import {
 } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 
 const { TextArea } = Input;
@@ -28,24 +28,44 @@ const Services = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [editingService, setEditingService] = useState(null);
-
   const [isNewService, setIsNewService] = useState(false);
+
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+  const [searchText, setSearchText] = useState("");
 
   const token = localStorage.getItem("token");
   const orgId = localStorage.getItem("selectedOrgId");
 
-  const fetchServices = async () => {
+  // Fetch services with pagination + search
+  const fetchServices = async (
+    page = pagination.current,
+    limit = pagination.pageSize,
+    search = searchText
+  ) => {
     setTableLoading(true);
     try {
       const response = await axios.get(
-        `${BACKEND_URL}/clientadmin/serviceManagement/getServices?orgId=${orgId}`,
+        `${BACKEND_URL}/clientadmin/serviceManagement/getServices`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          params: { orgId, page, limit, search },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setServices(response.data.data || []);
+
+      console.log("Fetched Services:", response.data);
+      const { services, totalRecords, currentPage } = response.data.data;
+
+      setServices(services || []);
+      setPagination((prev) => ({
+        ...prev,
+        current: currentPage || page,
+        pageSize: limit,
+        total: totalRecords || prev.total,
+      }));
     } catch (err) {
       console.error("Error fetching services:", err);
       message.error("Failed to fetch services");
@@ -56,7 +76,6 @@ const Services = () => {
 
   useEffect(() => {
     fetchServices();
-
     setIsNewService(isFeatureValid("SERVICE_MANAGEMENT", "ADD_SERVICE"));
   }, []);
 
@@ -105,11 +124,7 @@ const Services = () => {
             price: values.price,
             orgId: orgId,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         message.success("Service updated successfully");
         setSuccessMsg("Service updated successfully");
@@ -123,11 +138,7 @@ const Services = () => {
             price: values.price,
             orgId: orgId,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         message.success("Service added successfully");
         setSuccessMsg("Service added successfully");
@@ -148,18 +159,17 @@ const Services = () => {
       setLoading(false);
     }
   };
-
   const handleStatusChange = async (id, newStatus) => {
     try {
       setLoadingServiceId(id);
-      await axios.patch(
-        `${BACKEND_URL}/clientadmin/serviceManagement/updateService?id=${id}`,
-        { status: newStatus },
+      await axios.put(
+        `${BACKEND_URL}/clientadmin/serviceManagement/updateService`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+          id,
+          status: newStatus,
+          orgId: orgId,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       message.success("Status updated successfully");
       setSuccessMsg("Status updated successfully");
@@ -175,53 +185,14 @@ const Services = () => {
     }
   };
 
-  const handleDeleteService = async (id) => {
-    try {
-      setLoadingServiceId(id);
-      await axios.delete(
-        `${BACKEND_URL}/clientadmin/serviceManagement/deleteService?id=${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      message.success("Service deleted successfully");
-      setSuccessMsg("Service deleted successfully");
-      setErrorMsg("");
-      fetchServices();
-    } catch (err) {
-      setErrorMsg("Failed to delete service");
-      setSuccessMsg("");
-      message.error("Failed to delete service");
-      console.error("Delete error:", err);
-    } finally {
-      setLoadingServiceId(null);
-    }
-  };
-
   const columns = [
-    {
-      title: "ID",
-      dataIndex: "portal_id",
-      key: "portal_id",
-    },
-    {
-      title: "Service Name",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Price",
-      dataIndex: "price",
-      key: "price",
-      // render: (price) => `₹${price}`,
-    },
+    { title: "ID", dataIndex: "portal_id", key: "portal_id" },
+    { title: "Service Name", dataIndex: "name", key: "name" },
+    { title: "Price", dataIndex: "price", key: "price" },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
-      // width: 300,
       ellipsis: true,
     },
     {
@@ -251,11 +222,9 @@ const Services = () => {
         );
       },
     },
-
     {
       title: "Actions",
       key: "actions",
-      // width: 150,
       render: (_, record) => (
         <Space size="small">
           <Button
@@ -266,7 +235,7 @@ const Services = () => {
           >
             Edit
           </Button>
-          <Popconfirm
+          {/* <Popconfirm
             title="Are you sure you want to delete this service?"
             onConfirm={() => handleDeleteService(record.id)}
             okText="Yes"
@@ -281,35 +250,42 @@ const Services = () => {
             >
               Delete
             </Button>
-          </Popconfirm>
+          </Popconfirm> */}
         </Space>
       ),
     },
   ];
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "#f4f9ff",
-      }}
-    >
+    <Box sx={{ display: "flex", minHeight: "100vh", background: "#f4f9ff" }}>
       <div className="flex-1 p-6 sm:p-8">
+        {/* Header with Search + Add Button */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
             Service Management
           </h1>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddService}
-            size="large"
-          >
-            Add Service
-          </Button>
+          <div className="flex gap-2">
+            <Input.Search
+              placeholder="Search services"
+              allowClear
+              onSearch={(value) => {
+                setSearchText(value);
+                fetchServices(1, pagination.pageSize, value);
+              }}
+              style={{ width: 250 }}
+            />
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAddService}
+              size="large"
+            >
+              Add Service
+            </Button>
+          </div>
         </div>
 
+        {/* Alerts */}
         {successMsg && (
           <Alert
             message={successMsg}
@@ -320,7 +296,6 @@ const Services = () => {
             onClose={() => setSuccessMsg("")}
           />
         )}
-
         {errorMsg && (
           <Alert
             message={errorMsg}
@@ -332,6 +307,7 @@ const Services = () => {
           />
         )}
 
+        {/* Table */}
         <div className="bg-white rounded-lg shadow">
           <Table
             columns={columns}
@@ -339,14 +315,20 @@ const Services = () => {
             loading={tableLoading}
             rowKey="id"
             pagination={{
-              pageSize: 10,
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
               showSizeChanger: false,
-              showQuickJumper: true,
+              showQuickJumper: false,
+              onChange: (page, pageSize) => {
+                fetchServices(page, pageSize, searchText);
+              },
             }}
             scroll={{ x: 800 }}
           />
         </div>
 
+        {/* Modal */}
         <Modal
           title={editingService ? "Edit Service" : "Add New Service"}
           open={isModalVisible}
@@ -409,7 +391,6 @@ const Services = () => {
                   className="mb-4"
                 />
               )}
-
               {successMsg && (
                 <Alert
                   message={successMsg}

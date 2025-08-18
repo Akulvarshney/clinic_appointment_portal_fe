@@ -42,7 +42,7 @@ function App() {
           />
           <Route path="*" element={<Navigate to="/superadmin/dashboard" />} />
         </Route>
-      ) : isLoggedIn ? (
+      ) : isLoggedIn && role !== "SUPERADMIN" ? (
         <Route element={<LoggedInLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="clients">

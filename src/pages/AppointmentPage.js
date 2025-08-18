@@ -119,10 +119,14 @@ export default function AppointmentPage() {
     console.log("New date will be:", newDate);
     setCurrentDate(newDate);
   };
-  
+
   const goToday = () => {
     const today = new Date();
-    const newDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const newDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
     console.log("Going to today:", newDate);
     setCurrentDate(newDate);
   };
@@ -149,8 +153,8 @@ export default function AppointmentPage() {
           }
         );
 
-        const employees = response.data.response.data|| [];
-        console.log("Employeeesss "   , employees)
+        const employees = response.data.response.data || [];
+        console.log("Employeeesss ", employees);
         const formatted = employees.map((emp) => ({
           id: emp.id,
           name: emp.first_name,
@@ -336,7 +340,7 @@ export default function AppointmentPage() {
         setAppointmentsLoading(true);
         // Clear existing appointments immediately when date changes
         setAppointments([]);
-        
+
         const date = dayjs(currentDate).startOf("day").toISOString();
         console.log("Fetching appointments for date:", date);
         console.log("Current date object:", currentDate);
@@ -363,9 +367,13 @@ export default function AppointmentPage() {
           remarks: appt.remarks,
           color: getStatusColor(appt.status) || "#e2eafc",
         }));
-        
+
         console.log("Formatted appointments:", formattedAppts);
-        console.log("Setting appointments state with:", formattedAppts.length, "appointments");
+        console.log(
+          "Setting appointments state with:",
+          formattedAppts.length,
+          "appointments"
+        );
         setAppointments(formattedAppts);
         setAppointmentsLoading(false);
       } catch (err) {
@@ -585,16 +593,34 @@ export default function AppointmentPage() {
   };
 
   const onDoubleClickCol = (e, resourceId) => {
-    // alert(resourceId)
-    const col = colRefs.current[resourceId];
+    // Check if user is allowed to add appointments
+    if (!isAllowedToAddAppointment) {
+      messageApi.error("You are not allowed to add an appointment.");
+      return;
+    }
 
+    // Check if the current date is in the past
+    const today = dayjs().startOf("day");
+    const currentDateDayjs = dayjs(currentDate).startOf("day");
+
+    if (currentDateDayjs.isBefore(today, "day")) {
+      messageApi.error(
+        "Cannot create appointments for past dates. Please select today or a future date."
+      );
+      return;
+    }
+
+    // Proceed with normal appointment creation logic
+    const col = colRefs.current[resourceId];
     if (!col) return;
+
     const rect = col.getBoundingClientRect();
     const y = e.clientY - rect.top;
     const minsFromTop = floorSnapTo((y / SLOT_HEIGHT) * SLOT_MINUTES);
     const clamped = clamp(minsFromTop, 0, totalMinutes - SLOT_MINUTES);
     const h = Math.floor(clamped / 60) + START_HOUR;
     const m = clamped % 60;
+
     const start = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
@@ -603,6 +629,7 @@ export default function AppointmentPage() {
       m
     );
     const end = new Date(start.getTime() + SLOT_MINUTES * 60000);
+
     setNewApptInfo({ resourceId, start, end });
     form.setFieldsValue({
       title: "",
@@ -778,10 +805,12 @@ export default function AppointmentPage() {
         </div>
 
         <div style={{ fontSize: 13, fontWeight: 500, color: "#555" }}>
-          Drag to move • Drag edges to resize • Double-click to add • Click appointment
+          Drag to move • Drag edges to resize • Double-click to add • Click
+          appointment
           {appointmentsLoading && " • Loading..."}
           <div style={{ fontSize: 11, marginTop: 4 }}>
-            Showing {appointments.length} appointments for {currentDate.toDateString()}
+            Showing {appointments.length} appointments for{" "}
+            {currentDate.toDateString()}
           </div>
         </div>
       </div>
@@ -831,20 +860,23 @@ export default function AppointmentPage() {
 
   function renderAppointmentsForResource(r) {
     const appts = appointments.filter((a) => a.resourceId === r.id);
-    console.log(`Rendering ${appts.length} appointments for resource ${r.id} (${r.name}):`, appts);
-    
+    console.log(
+      `Rendering ${appts.length} appointments for resource ${r.id} (${r.name}):`,
+      appts
+    );
+
     if (appts.length === 0) {
       console.log(`No appointments found for resource ${r.id}`);
     }
-    
+
     return appts.map((a) => {
       const minsTop = clamp(minutesSinceStart(a.start), 0, totalMinutes);
       const topPx = (minsTop / SLOT_MINUTES) * SLOT_HEIGHT;
       const durMins = Math.max(15, (a.end - a.start) / 60000);
       const heightPx = Math.max(16, (durMins / SLOT_MINUTES) * SLOT_HEIGHT);
-      
+
       console.log(`Appointment ${a.id}: top=${topPx}px, height=${heightPx}px`);
-      
+
       return (
         <div
           key={a.id}
@@ -888,7 +920,7 @@ export default function AppointmentPage() {
             }}
             onMouseDown={(e) => startResize(e, a.id, "top")}
           />
-          {/* bottom resize handle */}
+
           <div
             style={{
               position: "absolute",
@@ -923,9 +955,12 @@ export default function AppointmentPage() {
   }
 
   function renderResourceColumns() {
-    console.log("Rendering resource columns. Total appointments:", appointments.length);
+    console.log(
+      "Rendering resource columns. Total appointments:",
+      appointments.length
+    );
     console.log("Current appointments:", appointments);
-    
+
     return (
       <div
         style={{
@@ -1062,7 +1097,7 @@ export default function AppointmentPage() {
           <Form.Item name="title" label="Title" rules={[{ required: true }]}>
             <Input placeholder="Appointment title" />
           </Form.Item>
-          
+
           <Form.Item name="clientId" label="Client">
             <Select
               showSearch

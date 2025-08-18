@@ -33,14 +33,18 @@ const Login = () => {
 
       const { token, user } = response.data;
 
-      login(user, token);
+      console.log("User data login page:", user);
+
+      login(user, token, [], user.role);
       // Save user & token
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
       if (user.role === "SUPERADMIN") {
+        console.log("Superadmin");
         navigate("/superadmin/dashboard");
       } else {
+        console.log("Non-superadmin user, redirecting to dashboard");
         navigate("/dashboard");
       }
     } catch (error) {

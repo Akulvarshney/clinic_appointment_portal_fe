@@ -9,6 +9,7 @@ import {
   message,
   Alert,
   Switch,
+  Spin,
 } from "antd";
 import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
@@ -23,11 +24,14 @@ const RoleManagement = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [editingRole, setEditingRole] = useState(null);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
+
   const orgId = localStorage.getItem("selectedOrgId");
   const token = localStorage.getItem("token");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchRoles = async () => {
+    setTableLoading(true);
     try {
       const response = await axios.get(
         `${BACKEND_URL}/clientAdmin/userMgmt/getRoles?orgId=${orgId}`,
@@ -43,10 +47,13 @@ const RoleManagement = () => {
     } catch (err) {
       console.error("Error fetching roles:", err);
       message.error("Something went wrong while fetching roles.");
+    } finally {
+      setTableLoading(false);
     }
   };
 
   const fetchAllTabsAndFeatureOfRole = async (roleId) => {
+    setTableLoading(true);
     try {
       const response = await axios.get(
         `${BACKEND_URL}/clientAdmin/userMgmt/getTabsAndFeaturesByRole?roleId=${roleId}`,
@@ -62,6 +69,8 @@ const RoleManagement = () => {
     } catch (err) {
       console.error("Error fetching role features:", err);
       message.error("Something went wrong while fetching features.");
+    } finally {
+      setTableLoading(false);
     }
   };
 
@@ -87,10 +96,8 @@ const RoleManagement = () => {
   };
 
   const handleCreateRole = async (values) => {
+    setIsSubmitting(true);
     try {
-      const orgId = localStorage.getItem("selectedOrgId");
-      const token = localStorage.getItem("token");
-
       const response = await axios.post(
         `${BACKEND_URL}/clientAdmin/userMgmt/createRole`,
         {
@@ -110,25 +117,24 @@ const RoleManagement = () => {
         setErrorMsg("");
         setSuccessMsg("Role created successfully.");
         fetchRoles(); // Refresh table
-        setIsSubmitting(false);
-        message.success("Role added successfully.");
       } else {
-        setIsSubmitting(false);
         message.error("Failed to add role.");
       }
     } catch (error) {
       console.error("API Error:", error);
       setSuccessMsg("");
-      setIsSubmitting(false);
-      setErrorMsg("Please try again later or with other Role Name");
+      setErrorMsg("Please try again later or with another Role Name");
       message.error(
         error.response?.data?.message ||
           "Something went wrong. Please try again."
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleSubmitRoleFeatureUpdates = async () => {
+    setIsSubmitting(true);
     try {
       const payload = {
         roleId: editingRole.id,
@@ -153,10 +159,12 @@ const RoleManagement = () => {
       setEditModalVisible(false);
       setSelectedRoleData([]);
       setEditingRole(null);
-      fetchRoles(); // Refresh roles after update
+      fetchRoles();
     } catch (error) {
       console.error("Error submitting features:", error);
       message.error("Failed to update role features");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -203,6 +211,7 @@ const RoleManagement = () => {
 
   return (
     <div>
+      {/* Header */}
       <div
         style={{
           display: "flex",
@@ -217,11 +226,12 @@ const RoleManagement = () => {
         </Button>
       </div>
 
+      {/* Table */}
       <div className="bg-white rounded-lg shadow">
         <Table
           columns={roleColumns}
           dataSource={roles}
-          // loading={tableLoading}
+          loading={tableLoading}
           rowKey="id"
           pagination={{
             pageSize: 10,
@@ -232,6 +242,7 @@ const RoleManagement = () => {
         />
       </div>
 
+      {/* Create Role Modal */}
       <Modal
         title="Create New Role"
         open={modalVisible}
@@ -287,7 +298,12 @@ const RoleManagement = () => {
             )}
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" block>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={isSubmitting}
+              >
                 Save Role
               </Button>
             </Form.Item>
@@ -295,11 +311,13 @@ const RoleManagement = () => {
         </div>
       </Modal>
 
+      {/* Edit Role Modal */}
       <Modal
         title={`Edit Role: ${editingRole?.name}`}
         open={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
         width={800}
+        bodyStyle={{ maxHeight: "60vh", overflowY: "auto" }}
         footer={[
           <Button key="cancel" onClick={() => setEditModalVisible(false)}>
             Cancel
@@ -308,6 +326,7 @@ const RoleManagement = () => {
             key="submit"
             type="primary"
             onClick={handleSubmitRoleFeatureUpdates}
+            loading={isSubmitting}
           >
             Submit Changes
           </Button>,
@@ -342,6 +361,8 @@ const RoleManagement = () => {
           dataSource={tableData}
           pagination={false}
           bordered
+          scroll={{ y: 300 }}
+          loading={tableLoading}
         />
       </Modal>
     </div>

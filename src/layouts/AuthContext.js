@@ -21,7 +21,8 @@ export const AuthProvider = ({ children }) => {
       setUser(storedUser);
       setOrganizations(storedOrganizations || []);
 
-      // ✅ Prefer SuperAdmin role if available
+      console.log("Stored User:", storedUser);
+
       const detectedRole =
         storedUser.role || storedOrganizations?.[0]?.roles?.[0] || null;
 
