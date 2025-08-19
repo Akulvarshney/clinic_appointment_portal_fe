@@ -77,12 +77,15 @@ const OrganisationListing = () => {
           const action = e.key;
           try {
             console.log(`Updating status for ${record.id} to ${action}`);
+            setLoading(true);
             await handleActionOnApplication(record.id, action, remark);
             message.success(
               `${record.organization_name} ${action.toLowerCase()} successfully`
             );
+            setLoading(false);
             fetchOrganizations();
           } catch (error) {
+            setLoading(false);
             message.error("Failed to update status");
           }
         };
