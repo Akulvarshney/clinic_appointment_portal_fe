@@ -124,6 +124,14 @@ const NotificationManagement = () => {
           >
             <Input placeholder="Enter name" />
           </Form.Item>
+
+          <Form.Item
+            name="uniqueName"
+            label="Notification Unique Name"
+            rules={[{ required: true, message: "Please enter Unique notification name" }]}
+          >
+            <Input placeholder="Enter Unique name" />
+          </Form.Item>
           <Form.Item
             name="description"
             label="Notification Description"

@@ -683,6 +683,7 @@ export default function AppointmentPage() {
       const end = newApptInfo?.end;
       const doctorId = values.doctorId;
       const serviceId = values.service;
+      const employeeId = values.employeeId;
 
       console.log(start);
       console.log(end);
@@ -703,6 +704,7 @@ export default function AppointmentPage() {
         remarks,
         doctorId,
         serviceId,
+        employeeId
       };
       console.log(newAppt);
 
