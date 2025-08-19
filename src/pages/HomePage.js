@@ -27,17 +27,19 @@ const HomePage = () => {
   const [openNewForm, setOpenNewForm] = useState(false);
   const [openTrackForm, setOpenTrackForm] = useState(false);
 
-  const [OrgName, setOrgName] = useState(false);
+  const [OrgName, setOrgName] = useState(false); 
   const [yourFullName, setyourFullName] = useState(false);
   const [OrgShortName, setOrgShortName] = useState(false);
   const [OrgPhone, setOrgPhone] = useState(false);
   const [orgEmail, setorgEmail] = useState(false);
   const [orgAddress, setorgAddress] = useState(false);
   const [errorMsgNewApplication, seterrorMsgNewApplication] = useState(false);
+  const [successMsgNewApplication, setSuccessMsgNewApplication] = useState("");
 
   const [trackingMobile, setTrackingMobile] = useState(false);
   const [trackingId, setTrackingId] = useState(false);
   const [errorTrackApplication, seterrorTrackApplication] = useState("");
+  const [successTrackApplication, setsuccessTrackApplication] = useState("");
 
   const modalStyle = {
     position: "absolute",
@@ -52,6 +54,8 @@ const HomePage = () => {
   };
 
   const submitNewApplicationRequest = async () => {
+    seterrorMsgNewApplication("");
+    setSuccessMsgNewApplication("");
     try {
       const response = await axios.post(
         `${BACKEND_URL}/noAuth/newApplication/submitApplication`,
@@ -65,8 +69,8 @@ const HomePage = () => {
         }
       );
 
-      console.log("response ", response.data);
 
+      
       if (!response.data.success) {
         notification.error({
           message: "Error",
@@ -77,14 +81,18 @@ const HomePage = () => {
         );
         return;
       }
-
+            console.log("response  successMsgNewApplication", response.data , response.data.trackingId);
+      const trackingId = response.data.trackingId;
       // ✅ Show success notification
-      notification.success({
-        message: "Success",
-        description: response.data.message || "Application submitted.",
-      });
+      // notification.success({
+      //   message: "Success",
+      //   description: response.data.message || "Application submitted.",
+      // });
 
-      // ✅ Reset form
+      setSuccessMsgNewApplication(`Application Submitted with TrackingId : ${trackingId}` )
+
+      setTimeout(() => {
+      setOpenNewForm(false);
       setOrgName("");
       setOrgShortName("");
       setOrgPhone("");
@@ -92,9 +100,8 @@ const HomePage = () => {
       setorgEmail("");
       setorgAddress("");
       seterrorMsgNewApplication("");
-
-      // ✅ Close modal
-      setOpenNewForm(false);
+      setSuccessMsgNewApplication("");
+      }, 8000); 
     } catch (error) {
       const msg =
         error.response?.data?.message || "An unexpected error occurred.";
@@ -105,20 +112,23 @@ const HomePage = () => {
         description: msg,
       });
 
-      seterrorMsgNewApplication(msg);
+      seterrorMsgNewApplication("Unexpected Error Occurred");
     }
   };
 
   const trackApplicationStatus = async () => {
     seterrorTrackApplication("");
+    setsuccessTrackApplication("");
     if (!trackingId || !trackingMobile) {
       seterrorTrackApplication("Enter Mobile Number and TrackingId");
+      return;
     }
     try {
       const response = await axios.get(
         `${BACKEND_URL}/noAuth/newApplication/trackApplication?mobileNumber=${trackingMobile}&trackingId=${trackingId}`
       );
       console.log("response ", response.data); // "1" if the organization name is also corrrect
+      setsuccessTrackApplication(`${response.data.message}`)
     } catch (error) {
       if (error.response?.status === 401) {
         seterrorTrackApplication(error.response.data.message);
@@ -286,6 +296,12 @@ const HomePage = () => {
                 {errorMsgNewApplication}
               </Alert>
             )}
+
+            {successMsgNewApplication && (
+              <Alert severity="success" sx={{ fontSize: "0.85rem" }}>
+                {successMsgNewApplication}
+              </Alert>
+            )}
             <Button
               variant="contained"
               fullWidth
@@ -355,6 +371,11 @@ const HomePage = () => {
             {errorTrackApplication && (
               <Alert severity="error" sx={{ fontSize: "0.85rem" }}>
                 {errorTrackApplication}
+              </Alert>
+            )}
+            {successTrackApplication && (
+              <Alert severity="success" sx={{ fontSize: "0.85rem" }}>
+                {successTrackApplication}
               </Alert>
             )}
             <Button

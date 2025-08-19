@@ -24,6 +24,12 @@ const SuperAdminSidebar = () => {
         >
           <FaChartBar className="mr-3" /> Organizations
         </li>
+                <li
+          className="flex items-center text-blue-600 font-bold hover:text-blue-800 transition duration-300 cursor-pointer"
+          onClick={() => navigate("/sa/NotificationManagement")}
+        >
+          <FaChartBar className="mr-3" /> NotificationCenter
+        </li>
         {/* <li className="flex items-center text-gray-600 hover:text-blue-500 transition duration-300 cursor-pointer">
           <FaShoppingCart className="mr-3" /> NFT Marketplace
         </li>

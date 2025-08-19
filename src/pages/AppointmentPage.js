@@ -365,6 +365,9 @@ export default function AppointmentPage() {
           service: appt.services?.name || "",
           status: appt.status || "",
           remarks: appt.remarks,
+          employeeName : appt.employees?.first_name || "",
+          doctorName: appt.doctors?.first_name || "",
+
           color: getStatusColor(appt.status) || "#e2eafc",
         }));
 
@@ -633,11 +636,12 @@ export default function AppointmentPage() {
     setNewApptInfo({ resourceId, start, end });
     form.setFieldsValue({
       title: "",
-      client: "",
+      clientId: "",
       employeeId: "",
       notes: "",
       doctorId: "",
       service: "",
+      employeeId:"",
       date: dayjs(currentDate),
     });
     setShowNewApptModal(true);
@@ -651,7 +655,7 @@ export default function AppointmentPage() {
   };
 
   const saveNewAppointment = async (valuesFromForm) => {
-    // things to be update later : service dropdown , doctor , note
+
     try {
       console.log("values formmmm ", valuesFromForm);
       const today = dayjs().startOf("day");
@@ -664,6 +668,12 @@ export default function AppointmentPage() {
         return;
       }
       const values = valuesFromForm || form.getFieldsValue();
+      if (!values.clientId || !values.service ){
+        messageApi.error(
+        "Please enter Mandatory Fields.( Client and Service )"
+      );
+      return;
+      }
 
       const title = values.title || "Appointment";
       const remarks = values.notes || "";
@@ -681,7 +691,7 @@ export default function AppointmentPage() {
         return;
       }
 
-      // This object is sent to the backend (no mkId, backend generates it)
+        //Include Employee Id here
       const newAppt = {
         title,
         clientId,
@@ -1094,11 +1104,11 @@ export default function AppointmentPage() {
           layout="vertical"
           initialValues={{ date: dayjs(currentDate) }}
         >
-          <Form.Item name="title" label="Title" rules={[{ required: true }]}>
+          {/* <Form.Item name="title" label="Title" rules={[{ required: true }]}>
             <Input placeholder="Appointment title" />
-          </Form.Item>
+          </Form.Item> */}
 
-          <Form.Item name="clientId" label="Client">
+          <Form.Item name="clientId" label="Client" >
             <Select
               showSearch
               placeholder="Select client"
@@ -1238,8 +1248,7 @@ export default function AppointmentPage() {
               </Descriptions.Item>
 
               <Descriptions.Item label="Employee Name">
-                {(Resources.find((r) => r.id === detailAppt.resourceId) || {})
-                  .name || detailAppt.resourceId}
+                {detailAppt.employeeName || "N/A"}
               </Descriptions.Item>
 
               <Descriptions.Item label="Service Name">
@@ -1247,8 +1256,7 @@ export default function AppointmentPage() {
               </Descriptions.Item>
 
               <Descriptions.Item label="Doctor">
-                {(Doctor.find((d) => d.id === detailAppt.doctorId) || {})
-                  .name || "N/A"}
+                {detailAppt.doctorName || "N/A"}
               </Descriptions.Item>
 
               <Descriptions.Item label="Status">

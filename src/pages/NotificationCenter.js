@@ -38,7 +38,7 @@ const NotificationCenter = () => {
   const handleToggle = async (checked, record) => {
     try {
       await axios.put(
-        `${BACKEND_URL}/clientAdmin/userMgmt/updateNotification/${record.id}`,
+        `${BACKEND_URL}/clientAdmin/userMgmt/updateNotification?id=${record.id}`,
         { is_active: checked },
         {
           headers: {

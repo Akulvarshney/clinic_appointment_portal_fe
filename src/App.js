@@ -23,6 +23,7 @@ import "../src/App.css";
 import Settings from "./pages/settings/Settings";
 import ClientManagement from "./pages/ClientManagement";
 import ClientDetailPage from "./pages/ClientDetailPage";
+import NotificationManagement from "./pages/SuperAdmin/NotificationCreation"
 
 function App() {
   const { isLoggedIn, role, isAuthReady } = useAuth();
@@ -39,6 +40,10 @@ function App() {
           <Route
             path="/sa/organisationListing"
             element={<OrganisationListing />}
+          />
+          <Route
+            path="/sa/NotificationManagement"
+            element={<NotificationManagement />}
           />
           <Route path="*" element={<Navigate to="/superadmin/dashboard" />} />
         </Route>

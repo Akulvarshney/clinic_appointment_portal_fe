@@ -23,6 +23,7 @@ const RoleManagement = () => {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [editingRole, setEditingRole] = useState(null);
+  
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
@@ -40,7 +41,10 @@ const RoleManagement = () => {
         }
       );
       if (response.status === 200) {
-        setRoles(response.data.response || []);
+         const filteredRoles = (response.data.response || []).filter(
+          (role) => !(role.is_deletable === false && role.description === "DEFAULT ADMIN" && role.is_admin===true)
+        );
+        setRoles(filteredRoles|| []);
       } else {
         message.error("Failed to fetch roles.");
       }

@@ -59,9 +59,9 @@ const Sidebar = () => {
         }`}
       >
         {/* Header - Fixed */}
-        <div className="flex items-center justify-between p-4 border-b border-blue-500">
+        {/* <div className="flex items-center justify-between p-3 border-b border-blue-500">
           {!collapsed && (
-            <h2 className="text-2xl font-extrabold tracking-widest uppercase">
+            <h2 className="text-lg font-bold tracking-widest uppercase">
               GloryWellnic
             </h2>
           )}
@@ -71,7 +71,21 @@ const Sidebar = () => {
           >
             {collapsed ? <FaBars /> : <FaChevronLeft />}
           </button>
-        </div>
+        </div> */}
+        <div className="flex items-center justify-between p-3 border-b border-blue-500">
+  {!collapsed && (
+    <h2 className="text-lg font-semibold tracking-wide uppercase">
+      GloryWellnic
+    </h2>
+  )}
+  <button
+    onClick={() => setCollapsed(!collapsed)}
+    className="p-2 rounded-full bg-white text-blue-700 hover:text-blue-500 transition"
+  >
+    {collapsed ? <FaBars /> : <FaChevronLeft />}
+  </button>
+</div>
+
 
         {/* Scrollable Middle Section */}
         <div className="flex-1 overflow-y-auto">
