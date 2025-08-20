@@ -38,13 +38,16 @@ const UserManagement = () => {
   const orgId = localStorage.getItem("selectedOrgId");
   const token = localStorage.getItem("token");
   const [isAllowedToAddEmployee, setIsAllowedToAddEmployee] = useState(false);
+  const [isAllowedToChangeRole, setIsAllowedToChangeRole] = useState(false);
 
   console.log("isAllowedToAddEmployee", isAllowedToAddEmployee);
+  console.log("isAllowedToChangeRole", isAllowedToChangeRole);
 
   useEffect(() => {
     setIsAllowedToAddEmployee(
       isFeatureValid("EMPLOYEE_MANAGEMENT", "ADD_EMPLOYEE")
     );
+    setIsAllowedToChangeRole(isFeatureValid("EMPLOYEE_MANAGEMENT", "CHANGE_EMP_ROLE") )
     fetchRoles();
     fetchEmployeeDetails(pagination.current, searchText);
   }, []);
@@ -261,6 +264,7 @@ const UserManagement = () => {
               record?.users?.user_organizations?.[0]?.user_roles?.[0]?.roles
                 ?.id || ""
             }
+            disabled={!isAllowedToChangeRole}
             onChange={(value) => handleRoleChange(record.userid, value)}
             loading={rowLoadingStates[record.userid]}
             style={{ minWidth: 120 }}

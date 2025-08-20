@@ -102,13 +102,12 @@ export default function AppointmentPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm] = Form.useForm();
 
-
   const colRefs = useRef({});
   const timeRulerRef = useRef(null);
   const mainColumnsRef = useRef(null);
 
   const [showNewApptModal, setShowNewApptModal] = useState(false);
-  const [newApptInfo, setNewApptInfo] = useState(null); 
+  const [newApptInfo, setNewApptInfo] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailAppt, setDetailAppt] = useState(null);
 
@@ -183,16 +182,16 @@ export default function AppointmentPage() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        console.log("siddhant> " ,response.data)
+        console.log("siddhant> ", response.data);
         const doctor = response.data.data.records || [];
-        console.log("doctor "   , doctor)
+        console.log("doctor ", doctor);
         const formatted = doctor.map((doc) => ({
           id: doc.id,
           name: doc.first_name,
           color: "#e3f2fd",
           dot: doc.color || "#789",
         }));
-        console.log("formatted , ", formatted)
+        console.log("formatted , ", formatted);
         setDoctor(formatted);
       } catch (err) {
         console.error(err);
@@ -401,11 +400,10 @@ export default function AppointmentPage() {
           remarks: appt.remarks,
           employeeName: appt.employees?.first_name || "",
           doctorName: appt.doctors?.first_name || "",
-          employeeId:appt.employees?.id || "",
-          doctorId:appt.doctors?.id || "",
-          serviceId :appt.services?.id || "",
+          employeeId: appt.employees?.id || "",
+          doctorId: appt.doctors?.id || "",
+          serviceId: appt.services?.id || "",
           color: getStatusColor(appt.status) || "#e2eafc",
-
         }));
 
         console.log("Formatted appointments:", formattedAppts);
@@ -1179,7 +1177,11 @@ export default function AppointmentPage() {
             label="Employee"
             rules={[{ required: false }]}
           >
-            <Select placeholder="Select employee (optional)">
+            <Select
+              placeholder="Select employee (optional)"
+              showSearch
+              optionFilterProp="children"
+            >
               {Employees.map((Employee) => (
                 <Option key={Employee.name} value={Employee.id}>
                   {Employee.name}
@@ -1193,7 +1195,11 @@ export default function AppointmentPage() {
             label="Doctor"
             rules={[{ required: false }]}
           >
-            <Select placeholder="Select Doctor (optional)">
+            <Select
+              placeholder="Select Doctor (optional)"
+              showSearch
+              optionFilterProp="children"
+            >
               {Doctor.map((Doctor) => (
                 <Option key={Doctor.name} value={Doctor.id}>
                   {Doctor.name}
@@ -1207,7 +1213,11 @@ export default function AppointmentPage() {
             label="Service"
             rules={[{ required: false }]}
           >
-            <Select placeholder="Select Service (optional)">
+            <Select
+              placeholder="Select Service (optional)"
+              showSearch
+              optionFilterProp="children"
+            >
               {Services.map((Service) => (
                 <Option key={Service.name} value={Service.id}>
                   {Service.name}
@@ -1238,263 +1248,330 @@ export default function AppointmentPage() {
       </Modal>
 
       {/* Appointment Detail Modal (Antd) */}
-        <Modal
-  title={
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <span style={{ fontWeight: "bold", fontSize: 18 }}>🗓 Appointment Details</span>
-      {!isEditing && detailAppt && (
-        <Button
-          type="primary"
-          onClick={() => {
-            setIsEditing(true);
-            editForm.setFieldsValue({
-              doctorId: detailAppt.doctorId || null,
-              employeeId: detailAppt.employeeId || null,
-              serviceId: detailAppt.serviceId || null,
-              notes: detailAppt.remarks || "",
-            });
-          }}
-        >
-          Edit
-        </Button>
-        
-      )}
-    </div>
-  }
-  open={showDetailModal}
-  onCancel={() => {
-    closeDetailModal();
-    setIsEditing(false);
-    editForm.resetFields();
-  }}
-  footer={
-    isEditing
-      ? [
-          <Button
-            key="cancel"
-            onClick={() => {
-              setIsEditing(false);
-              editForm.resetFields();
-            }}
-          >
-            Cancel
-          </Button>,
-          <Button key="save" type="primary" onClick={() => editForm.submit()}>
-            Save
-          </Button>,
-        ]
-      : [
-          <Button key="close" type="primary" onClick={closeDetailModal}>
-            Close
-          </Button>,
-        ]
-  }
-  width={900}
-  bodyStyle={{
-    padding: "20px 32px",
-    maxHeight: "75vh",
-    overflowY: "auto",
-  }}
->
-  {detailAppt && !isEditing && (
-    <div>
-      <h2 style={{ marginBottom: 16, color: "#1890ff" }}>{detailAppt.title}</h2>
-
-      <Descriptions
-        bordered
-        column={2}
-        size="middle"
-        labelStyle={{ fontWeight: "bold", width: 150 }}
-      >
-        <Descriptions.Item label="Client">{detailAppt.client || "N/A"}</Descriptions.Item>
-
-        <Descriptions.Item label="Time">
-          {timeLabel(detailAppt.start.getHours(), detailAppt.start.getMinutes())} —{" "}
-          {timeLabel(detailAppt.end.getHours(), detailAppt.end.getMinutes())}
-        </Descriptions.Item>
-
-        <Descriptions.Item label="Resource">
-          {(Resources.find((r) => r.id === detailAppt.resourceId) || {}).name || detailAppt.resourceId}
-        </Descriptions.Item>
-
-        <Descriptions.Item label="Employee Name">{detailAppt.employeeName || "N/A"}</Descriptions.Item>
-
-        <Descriptions.Item label="Service Name">{detailAppt.service || "N/A"}</Descriptions.Item>
-
-        <Descriptions.Item label="Doctor">{detailAppt.doctorName || "N/A"}</Descriptions.Item>
-
-        <Descriptions.Item label="Status">
-          <Select
-            value={detailAppt.status}
-            style={{ width: 180 }}
-            onChange={async (value) => {
-              try {
-                await updateAppointmentStatus(detailAppt.id, value);
-                setDetailAppt((prev) => ({ ...prev, status: value }));
-                setAppointments((prev) =>
-                  prev.map((appt) => (appt.id === detailAppt.id ? { ...appt, status: value } : appt))
-                );
-              } catch {
-                message.error("Could not update status");
-              }
-            }}
-            options={[
-              { label: "Booked", value: "BOOKED" },
-              { label: "Confirmed", value: "CONFIRMED" },
-              { label: "Visited", value: "VISITED" },
-              { label: "No Show", value: "NO_SHOW" },
-            ]}
-          />
-        </Descriptions.Item>
-
-        <Descriptions.Item label="Remarks">
-          {detailAppt.remarks || <em style={{ color: "#999" }}>No remarks</em>}
-        </Descriptions.Item>
-      </Descriptions>
-
-      <Divider />
-
-      {!showCancelInput ? (
-        <Button
-          danger
-          type="primary"
-          block
-          style={{ marginTop: 12 }}
-          onClick={() => setShowCancelInput(true)}
-        >
-          Cancel Appointment
-        </Button>
-      ) : (
-        <div style={{ marginTop: 12 }}>
-          <Input.TextArea
-            placeholder="Enter cancellation remarks"
-            rows={3}
-            value={cancelRemarks}
-            onChange={(e) => setCancelRemarks(e.target.value)}
-          />
+      <Modal
+        title={
           <div
             style={{
-              marginTop: 12,
               display: "flex",
-              gap: 8,
-              justifyContent: "flex-end",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            <Button danger type="primary" onClick={handleCancelAppointment}>
-              Save Cancellation
-            </Button>
-            <Button onClick={() => setShowCancelInput(false)}>Close</Button>
+            <span style={{ fontWeight: "bold", fontSize: 18 }}>
+              🗓 Appointment Details
+            </span>
+            {!isEditing && detailAppt && (
+              <Button
+                className="mr-10"
+                type="primary"
+                onClick={() => {
+                  setIsEditing(true);
+                  editForm.setFieldsValue({
+                    doctorId: detailAppt.doctorId || null,
+                    employeeId: detailAppt.employeeId || null,
+                    serviceId: detailAppt.serviceId || null,
+                    notes: detailAppt.remarks || "",
+                  });
+                }}
+              >
+                Edit
+              </Button>
+            )}
           </div>
-        </div>
-      )}
-    </div>
-  )}
-
-  {detailAppt && isEditing && (
-    <Form
-      form={editForm}
-      layout="vertical"
-      onFinish={async (values) => {
-        try {
-          const payload = {
-            id: detailAppt.id,
-            doctorId: values.doctorId,
-            employeeId: values.employeeId,
-            serviceId: values.serviceId,
-            notes: values.notes,
-          };
-          await axios.patch(`${BACKEND_URL}/appointments/appt/updateAppointmentDetails`, payload, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          setDetailAppt((prev) => ({
-            ...prev,
-            doctorId: values.doctorId,
-            employeeId: values.employeeId,
-            serviceId: values.serviceId,
-            remarks: values.notes,
-            doctorName: Doctor.find((d) => d.id === values.doctorId)?.name || "",
-            employeeName: Employees.find((e) => e.id === values.employeeId)?.name || "",
-            service: Services.find((s) => s.id === values.serviceId)?.name || "",
-          }));
-
-          setAppointments((prev) =>
-            prev.map((appt) =>
-              appt.id === detailAppt.id
-                ? {
-                    ...appt,
-                    doctorId: values.doctorId,
-                    employeeId: values.employeeId,
-                    serviceId: values.serviceId,
-                    remarks: values.notes,
-                    doctorName: Doctor.find((d) => d.id === values.doctorId)?.name || "",
-                    employeeName: Employees.find((e) => e.id === values.employeeId)?.name || "",
-                    service: Services.find((s) => s.id === values.serviceId)?.name || "",
-                  }
-                : appt
-            )
-          );
-
-          message.success("Appointment updated successfully");
+        }
+        open={showDetailModal}
+        onCancel={() => {
+          closeDetailModal();
           setIsEditing(false);
           editForm.resetFields();
-          setShowDetailModal(false);
-          setDetailAppt(null);
-        } catch (err) {
-          console.error("Error updating appointment details:", err);
-          message.error("Failed to update appointment");
+        }}
+        footer={
+          isEditing
+            ? [
+                <Button
+                  key="cancel"
+                  onClick={() => {
+                    setIsEditing(false);
+                    editForm.resetFields();
+                  }}
+                >
+                  Cancel
+                </Button>,
+                <Button
+                  key="save"
+                  type="primary"
+                  onClick={() => editForm.submit()}
+                >
+                  Save
+                </Button>,
+              ]
+            : [
+                <Button key="close" type="primary" onClick={closeDetailModal}>
+                  Close
+                </Button>,
+              ]
         }
-      }}
-    >
-      <Form.Item
-        label="Doctor"
-        name="doctorId"
-        rules={[{ required: true, message: "Please select a doctor" }]}
+        width={900}
+        bodyStyle={{
+          padding: "20px 32px",
+          maxHeight: "75vh",
+          overflowY: "auto",
+        }}
       >
-        <Select placeholder="Select Doctor" showSearch optionFilterProp="children">
-          {Doctor.map((doc) => (
-            <Option key={doc.id} value={doc.id}>
-              {doc.name}
-            </Option>
-          ))}
-        </Select>
-      </Form.Item>
+        {detailAppt && !isEditing && (
+          <div>
+            <h2 style={{ marginBottom: 16, color: "#1890ff" }}>
+              {detailAppt.title}
+            </h2>
 
-      <Form.Item
-        label="Employee"
-        name="employeeId"
-        rules={[{ required: true, message: "Please select an employee" }]}
-      >
-        <Select placeholder="Select Employee" showSearch optionFilterProp="children">
-          {Employees.map((emp) => (
-            <Option key={emp.id} value={emp.id}>
-              {emp.name}
-            </Option>
-          ))}
-        </Select>
-      </Form.Item>
+            <Descriptions
+              bordered
+              column={2}
+              size="middle"
+              labelStyle={{ fontWeight: "bold", width: 150 }}
+            >
+              <Descriptions.Item label="Client">
+                {detailAppt.client || "N/A"}
+              </Descriptions.Item>
 
-      <Form.Item
-        label="Service"
-        name="serviceId"
-        rules={[{ required: true, message: "Please select a service" }]}
-      >
-        <Select placeholder="Select Service" showSearch optionFilterProp="children">
-          {Services.map((service) => (
-            <Option key={service.id} value={service.id}>
-              {service.name}
-            </Option>
-          ))}
-        </Select>
-      </Form.Item>
+              <Descriptions.Item label="Time">
+                {timeLabel(
+                  detailAppt.start.getHours(),
+                  detailAppt.start.getMinutes()
+                )}{" "}
+                —{" "}
+                {timeLabel(
+                  detailAppt.end.getHours(),
+                  detailAppt.end.getMinutes()
+                )}
+              </Descriptions.Item>
 
-      <Form.Item label="Notes" name="notes">
-        <Input.TextArea rows={3} placeholder="Enter notes" />
-      </Form.Item>
-    </Form>
-  )}
-</Modal>
+              <Descriptions.Item label="Resource">
+                {(Resources.find((r) => r.id === detailAppt.resourceId) || {})
+                  .name || detailAppt.resourceId}
+              </Descriptions.Item>
 
+              <Descriptions.Item label="Employee Name">
+                {detailAppt.employeeName || "N/A"}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Service Name">
+                {detailAppt.service || "N/A"}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Doctor">
+                {detailAppt.doctorName || "N/A"}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Status">
+                <Select
+                  value={detailAppt.status}
+                  style={{ width: 180 }}
+                  onChange={async (value) => {
+                    try {
+                      await updateAppointmentStatus(detailAppt.id, value);
+                      setDetailAppt((prev) => ({ ...prev, status: value }));
+                      setAppointments((prev) =>
+                        prev.map((appt) =>
+                          appt.id === detailAppt.id
+                            ? { ...appt, status: value }
+                            : appt
+                        )
+                      );
+                    } catch {
+                      message.error("Could not update status");
+                    }
+                  }}
+                  options={[
+                    { label: "Booked", value: "BOOKED" },
+                    { label: "Confirmed", value: "CONFIRMED" },
+                    { label: "Visited", value: "VISITED" },
+                    { label: "No Show", value: "NO_SHOW" },
+                  ]}
+                />
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Remarks">
+                {detailAppt.remarks || (
+                  <em style={{ color: "#999" }}>No remarks</em>
+                )}
+              </Descriptions.Item>
+            </Descriptions>
+
+            <Divider />
+
+            {!showCancelInput ? (
+              <Button
+                danger
+                type="primary"
+                block
+                style={{ marginTop: 12 }}
+                onClick={() => setShowCancelInput(true)}
+              >
+                Cancel Appointment
+              </Button>
+            ) : (
+              <div style={{ marginTop: 12 }}>
+                <Input.TextArea
+                  placeholder="Enter cancellation remarks"
+                  rows={3}
+                  value={cancelRemarks}
+                  onChange={(e) => setCancelRemarks(e.target.value)}
+                />
+                <div
+                  style={{
+                    marginTop: 12,
+                    display: "flex",
+                    gap: 8,
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <Button
+                    danger
+                    type="primary"
+                    onClick={handleCancelAppointment}
+                  >
+                    Save Cancellation
+                  </Button>
+                  <Button onClick={() => setShowCancelInput(false)}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {detailAppt && isEditing && (
+          <Form
+            form={editForm}
+            layout="vertical"
+            onFinish={async (values) => {
+              try {
+                const payload = {
+                  id: detailAppt.id,
+                  doctorId: values.doctorId,
+                  employeeId: values.employeeId,
+                  serviceId: values.serviceId,
+                  notes: values.notes,
+                };
+                await axios.patch(
+                  `${BACKEND_URL}/appointments/appt/updateAppointmentDetails`,
+                  payload,
+                  {
+                    headers: { Authorization: `Bearer ${token}` },
+                  }
+                );
+
+                setDetailAppt((prev) => ({
+                  ...prev,
+                  doctorId: values.doctorId,
+                  employeeId: values.employeeId,
+                  serviceId: values.serviceId,
+                  remarks: values.notes,
+                  doctorName:
+                    Doctor.find((d) => d.id === values.doctorId)?.name || "",
+                  employeeName:
+                    Employees.find((e) => e.id === values.employeeId)?.name ||
+                    "",
+                  service:
+                    Services.find((s) => s.id === values.serviceId)?.name || "",
+                }));
+
+                setAppointments((prev) =>
+                  prev.map((appt) =>
+                    appt.id === detailAppt.id
+                      ? {
+                          ...appt,
+                          doctorId: values.doctorId,
+                          employeeId: values.employeeId,
+                          serviceId: values.serviceId,
+                          remarks: values.notes,
+                          doctorName:
+                            Doctor.find((d) => d.id === values.doctorId)
+                              ?.name || "",
+                          employeeName:
+                            Employees.find((e) => e.id === values.employeeId)
+                              ?.name || "",
+                          service:
+                            Services.find((s) => s.id === values.serviceId)
+                              ?.name || "",
+                        }
+                      : appt
+                  )
+                );
+
+                message.success("Appointment updated successfully");
+                setIsEditing(false);
+                editForm.resetFields();
+                setShowDetailModal(false);
+                setDetailAppt(null);
+              } catch (err) {
+                console.error("Error updating appointment details:", err);
+                message.error("Failed to update appointment");
+              }
+            }}
+          >
+            <Form.Item
+              label="Doctor"
+              name="doctorId"
+              rules={[{ required: true, message: "Please select a doctor" }]}
+            >
+              <Select
+                placeholder="Select Doctor"
+                showSearch
+                optionFilterProp="children"
+              >
+                {Doctor.map((doc) => (
+                  <Option key={doc.id} value={doc.id}>
+                    {doc.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Employee"
+              name="employeeId"
+              rules={[{ required: true, message: "Please select an employee" }]}
+            >
+              <Select
+                placeholder="Select Employee"
+                showSearch
+                optionFilterProp="children"
+              >
+                {Employees.map((emp) => (
+                  <Option key={emp.id} value={emp.id}>
+                    {emp.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Service"
+              name="serviceId"
+              rules={[{ required: true, message: "Please select a service" }]}
+            >
+              <Select
+                placeholder="Select Service"
+                showSearch
+                optionFilterProp="children"
+              >
+                {Services.map((service) => (
+                  <Option key={service.id} value={service.id}>
+                    {service.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item label="Notes" name="notes">
+              <Input.TextArea rows={3} placeholder="Enter notes" />
+            </Form.Item>
+          </Form>
+        )}
+      </Modal>
 
       {/* Main page */}
       <div

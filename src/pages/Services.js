@@ -29,6 +29,8 @@ const Services = () => {
   const [successMsg, setSuccessMsg] = useState("");
   const [editingService, setEditingService] = useState(null);
   const [isNewService, setIsNewService] = useState(false);
+  const [isAllowedToEdit, setIsAllowedToEdit] = useState(false);
+  const [isAllowedToDisable, setIsAllowedToDisable] = useState(false);
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -76,6 +78,10 @@ const Services = () => {
 
   useEffect(() => {
     fetchServices();
+    setIsAllowedToEdit(isFeatureValid("SERVICE_MANAGEMENT", "EDIT_SERVICE"));
+    setIsAllowedToDisable(
+      isFeatureValid("SERVICE_MANAGEMENT", "DELETE_SERVICE")
+    );
     setIsNewService(isFeatureValid("SERVICE_MANAGEMENT", "ADD_SERVICE"));
   }, []);
 
@@ -211,6 +217,7 @@ const Services = () => {
             }
             okText="Yes"
             cancelText="No"
+            disabled={!isAllowedToDisable}
           >
             <Tag
               color={isEnabled ? "green" : "red"}
@@ -232,6 +239,7 @@ const Services = () => {
             icon={<EditOutlined />}
             onClick={() => handleEditService(record)}
             size="small"
+            disabled={!isAllowedToEdit}
           >
             Edit
           </Button>
@@ -274,14 +282,16 @@ const Services = () => {
               }}
               style={{ width: 250 }}
             />
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAddService}
-              size="large"
-            >
-              Add Service
-            </Button>
+            {isNewService && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAddService}
+                size="large"
+              >
+                Add Service
+              </Button>
+            )}
           </div>
         </div>
 
