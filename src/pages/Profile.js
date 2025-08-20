@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import {
   Card,
   Avatar,
@@ -196,7 +197,7 @@ const Profile = () => {
     try {
       setResetPasswordLoading(true);
       const response = await axios.post(
-        "http://localhost:8080/api/v1/noAuth/auth/forgotPassword",
+        `${BACKEND_URL}noAuth/auth/forgotPassword`,
         {
           identifier: values.identifier,
         },
@@ -229,7 +230,7 @@ const Profile = () => {
     try {
       setResetPasswordLoading(true);
       const response = await axios.post(
-        "http://localhost:8080/api/v1/noAuth/auth/verifyPasswordResetOtp",
+        `${BACKEND_URL}/noAuth/auth/verifyPasswordResetOtp`,
         {
           identifier: resetIdentifier,
           otp: values.otp,
@@ -260,7 +261,7 @@ const Profile = () => {
     try {
       setResetPasswordLoading(true);
       const response = await axios.post(
-        "http://localhost:8080/api/v1/noAuth/auth/resetPassword",
+        `${BACKEND_URL}/api/v1/noAuth/auth/resetPassword`,
         {
           identifier: resetIdentifier,
           newPassword: values.newPassword,
