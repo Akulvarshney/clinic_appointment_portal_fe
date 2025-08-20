@@ -97,6 +97,8 @@ export default function AppointmentPage() {
   const [cancelRemarks, setCancelRemarks] = useState("");
 
   const [clientOptions, setClientOptions] = useState([]);
+  const [clientLoading, setClientLoading] = useState(false);
+  const [clientSearchValue, setClientSearchValue] = useState("");
 
   const colRefs = useRef({});
   const timeRulerRef = useRef(null);
@@ -247,30 +249,58 @@ export default function AppointmentPage() {
     fetchResources();
   }, [orgId, token]);
 
-  useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const response = await axios.get(
-          `${BACKEND_URL}/patient/clients/clientListing`,
-          {
-            params: {
-              // search,
-              // page: pagination.current,
-              limit: 10000,
-              orgId,
-            },
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+  // Fetch clients with search functionality
+  const fetchClients = async (searchTerm = "") => {
+    if (!orgId || !token) return;
 
-        setClientOptions(response.data.data || []);
-      } catch (err) {
-        console.error("Error fetching clients:", err);
-        message.error("Failed to fetch clients");
-      }
-    };
+    try {
+      setClientLoading(true);
+      const response = await axios.get(
+        `${BACKEND_URL}/patient/clients/clientListing`,
+        {
+          params: {
+            search: searchTerm,
+            page: 1,
+            limit: 10,
+            orgId,
+          },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const clients = response.data.data || [];
+      setClientOptions(clients);
+    } catch (err) {
+      console.error("Error fetching clients:", err);
+      message.error("Failed to fetch clients");
+    } finally {
+      setClientLoading(false);
+    }
+  };
+
+  // Debounced search function
+  const debouncedFetchClients = useMemo(
+    () => debounce(fetchClients, 300),
+    [orgId, token]
+  );
+
+  // Initial client fetch on component mount
+  useEffect(() => {
     fetchClients();
   }, [orgId, token]);
+
+  // Handle client search
+  const handleClientSearch = (value) => {
+    setClientSearchValue(value);
+    debouncedFetchClients(value);
+  };
+
+  // Clean up debounced function on unmount
+  useEffect(() => {
+    return () => {
+      debouncedFetchClients.cancel();
+    };
+  }, [debouncedFetchClients]);
 
   const updateAppointmentStatus = async (appId, status) => {
     try {
@@ -365,7 +395,7 @@ export default function AppointmentPage() {
           service: appt.services?.name || "",
           status: appt.status || "",
           remarks: appt.remarks,
-          employeeName : appt.employees?.first_name || "",
+          employeeName: appt.employees?.first_name || "",
           doctorName: appt.doctors?.first_name || "",
 
           color: getStatusColor(appt.status) || "#e2eafc",
@@ -641,9 +671,11 @@ export default function AppointmentPage() {
       notes: "",
       doctorId: "",
       service: "",
-      employeeId:"",
+      employeeId: "",
       date: dayjs(currentDate),
     });
+    // Reset client search when opening modal
+    setClientSearchValue("");
     setShowNewApptModal(true);
   };
 
@@ -655,7 +687,6 @@ export default function AppointmentPage() {
   };
 
   const saveNewAppointment = async (valuesFromForm) => {
-
     try {
       console.log("values formmmm ", valuesFromForm);
       const today = dayjs().startOf("day");
@@ -668,11 +699,11 @@ export default function AppointmentPage() {
         return;
       }
       const values = valuesFromForm || form.getFieldsValue();
-      if (!values.clientId || !values.service ){
+      if (!values.clientId || !values.service) {
         messageApi.error(
-        "Please enter Mandatory Fields.( Client and Service )"
-      );
-      return;
+          "Please enter Mandatory Fields.( Client and Service )"
+        );
+        return;
       }
 
       const title = values.title || "Appointment";
@@ -692,7 +723,7 @@ export default function AppointmentPage() {
         return;
       }
 
-        //Include Employee Id here
+      //Include Employee Id here
       const newAppt = {
         title,
         clientId,
@@ -704,7 +735,7 @@ export default function AppointmentPage() {
         remarks,
         doctorId,
         serviceId,
-        employeeId
+        employeeId,
       };
       console.log(newAppt);
 
@@ -738,6 +769,8 @@ export default function AppointmentPage() {
   const closeNewApptModal = () => {
     setShowNewApptModal(false);
     setNewApptInfo(null);
+    // Reset client search when closing modal
+    setClientSearchValue("");
   };
   const closeDetailModal = () => {
     setShowDetailModal(false);
@@ -1110,18 +1143,20 @@ export default function AppointmentPage() {
             <Input placeholder="Appointment title" />
           </Form.Item> */}
 
-          <Form.Item name="clientId" label="Client" >
+          <Form.Item name="clientId" label="Client">
             <Select
               showSearch
-              placeholder="Select client"
-              optionFilterProp="children"
+              placeholder="Search and select client"
+              optionFilterProp={false}
+              loading={clientLoading}
+              searchValue={clientSearchValue}
+              onSearch={handleClientSearch}
               onChange={(value, option) => {
-                form.setFieldsValue({ clientId: option.value });
+                form.setFieldsValue({ clientId: value });
               }}
-              filterOption={(input, option) =>
-                (option?.children?.toString() ?? "")
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
+              filterOption={false}
+              notFoundContent={
+                clientLoading ? "Loading..." : "No clients found"
               }
             >
               {clientOptions.map((client) => (
