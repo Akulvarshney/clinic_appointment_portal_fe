@@ -19,13 +19,14 @@ const DashboardPage = () => {
   const [stats, setStats] = useState([]);
    const [pieData, setPieData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const barData = [
-    { name: "Mon", value: 240 },
-    { name: "Tue", value: 180 },
-    { name: "Wed", value: 280 },
-    { name: "Thu", value: 120 },
-    { name: "Fri", value: 340 },
-  ];
+  const [barData, setbarData] = useState([])
+  // const barData = [
+  //   { name: "Mon", value: 240 },
+  //   { name: "Tue", value: 180 },
+  //   { name: "Wed", value: 280 },
+  //   { name: "Thu", value: 120 },
+  //   { name: "Fri", value: 340 },
+  // ];
 
   // const pieData = [
   //   { name: "Group A", value: 400 },
@@ -49,6 +50,31 @@ const DashboardPage = () => {
         //console.log(res.data)
 
         setStats(res.data.response);
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        //const res = await axios.get(`${BACKEND_URL}/clientAdmin/getDashboardDetails/KPI?orgId=${orgId}`);
+        const res = await axios.get(
+          `${BACKEND_URL}/clientAdmin/getDashboardDetails/barChart?orgId=${orgId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        console.log(res.data)
+        setbarData(res.data.response);
+
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
       } finally {
@@ -135,7 +161,7 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 animate-slideInLeft">
             <h4 className="text-2xl font-semibold mb-5 text-gray-700">
-              Appointments this week
+              Appointments next 5 Days
             </h4>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={barData}>

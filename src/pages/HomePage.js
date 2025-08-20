@@ -153,7 +153,7 @@ const HomePage = () => {
                 variant="h5"
                 sx={{ opacity: 0.9, mb: 7, fontWeight: 500, lineHeight: 1.4 }}
               >
-                Complete Clinic & Wellness Center Management Solution
+                Simplifying Management, Amplifying Care
               </Typography>
               <Stack
                 direction={{ xs: "column", sm: "row" }}
