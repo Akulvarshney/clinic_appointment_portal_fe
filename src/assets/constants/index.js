@@ -1,4 +1,5 @@
 export const BACKEND_URL = "http://localhost:8080/api/v1";
+//export const BACKEND_URL = "https://glorywellnic.onrender.com/api/v1";
 
 const data1 = localStorage.getItem("organizations");
 const data = data1 ? JSON.parse(data1) : null;
