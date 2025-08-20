@@ -7,37 +7,41 @@ import {
   Modal,
   TextField,
   Stack,
-  Container,
   Grid,
-  AppBar,
-  Toolbar,
-  IconButton,
-  Paper,
-  Fade,
   Alert,
+  Paper,
+  Divider,
+  Fade,
+  Container,
+  Card,
 } from "@mui/material";
-
-import LoginIcon from "@mui/icons-material/Login";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import SearchIcon from "@mui/icons-material/Search";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import GroupIcon from "@mui/icons-material/Group";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import SecurityIcon from "@mui/icons-material/Security";
+import BoltIcon from "@mui/icons-material/Bolt";
 import { BACKEND_URL } from "../assets/constants";
-import { message, notification } from "antd";
+import { notification } from "antd";
 
 const HomePage = () => {
   const [openNewForm, setOpenNewForm] = useState(false);
   const [openTrackForm, setOpenTrackForm] = useState(false);
 
-  const [OrgName, setOrgName] = useState(false); 
-  const [yourFullName, setyourFullName] = useState(false);
-  const [OrgShortName, setOrgShortName] = useState(false);
-  const [OrgPhone, setOrgPhone] = useState(false);
-  const [orgEmail, setorgEmail] = useState(false);
-  const [orgAddress, setorgAddress] = useState(false);
-  const [errorMsgNewApplication, seterrorMsgNewApplication] = useState(false);
+  const [OrgName, setOrgName] = useState("");
+  const [yourFullName, setyourFullName] = useState("");
+  const [OrgShortName, setOrgShortName] = useState("");
+  const [OrgPhone, setOrgPhone] = useState("");
+  const [orgEmail, setorgEmail] = useState("");
+  const [orgAddress, setorgAddress] = useState("");
+  const [errorMsgNewApplication, seterrorMsgNewApplication] = useState("");
   const [successMsgNewApplication, setSuccessMsgNewApplication] = useState("");
 
-  const [trackingMobile, setTrackingMobile] = useState(false);
-  const [trackingId, setTrackingId] = useState(false);
+  const [trackingMobile, setTrackingMobile] = useState("");
+  const [trackingId, setTrackingId] = useState("");
   const [errorTrackApplication, seterrorTrackApplication] = useState("");
   const [successTrackApplication, setsuccessTrackApplication] = useState("");
 
@@ -46,11 +50,11 @@ const HomePage = () => {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: 440,
-    bgcolor: "background.paper",
-    borderRadius: 3,
-    boxShadow: 24,
-    p: 4,
+    width: 480,
+    borderRadius: 8,
+    p: 5,
+    background: "#fff",
+    boxShadow: "0 16px 40px rgba(0,0,0,0.2)",
   };
 
   const submitNewApplicationRequest = async () => {
@@ -69,49 +73,35 @@ const HomePage = () => {
         }
       );
 
-
-      
       if (!response.data.success) {
         notification.error({
           message: "Error",
           description: response.data.message || "Failed to submit application.",
         });
-        seterrorMsgNewApplication(
-          response.data.message || "Failed to submit application."
-        );
+        seterrorMsgNewApplication(response.data.message || "Failed.");
         return;
       }
-            console.log("response  successMsgNewApplication", response.data , response.data.trackingId);
-      const trackingId = response.data.trackingId;
-      // ✅ Show success notification
-      // notification.success({
-      //   message: "Success",
-      //   description: response.data.message || "Application submitted.",
-      // });
 
-      setSuccessMsgNewApplication(`Application Submitted with TrackingId : ${trackingId}` )
+      const trackingId = response.data.trackingId;
+      setSuccessMsgNewApplication(
+        `Application Submitted ✔ Tracking ID: ${trackingId}`
+      );
 
       setTimeout(() => {
-      setOpenNewForm(false);
-      setOrgName("");
-      setOrgShortName("");
-      setOrgPhone("");
-      setyourFullName("");
-      setorgEmail("");
-      setorgAddress("");
-      seterrorMsgNewApplication("");
-      setSuccessMsgNewApplication("");
-      }, 8000); 
+        setOpenNewForm(false);
+        setOrgName("");
+        setOrgShortName("");
+        setOrgPhone("");
+        setyourFullName("");
+        setorgEmail("");
+        setorgAddress("");
+        seterrorMsgNewApplication("")
+        seterrorMsgNewApplication("");
+        setSuccessMsgNewApplication("");
+      }, 6000);
     } catch (error) {
-      const msg =
-        error.response?.data?.message || "An unexpected error occurred.";
-      const status = error.response?.status;
-
-      notification.error({
-        message: `Error${status ? ` (${status})` : ""}`,
-        description: msg,
-      });
-
+      const msg = error.response?.data?.message || "Unexpected error";
+      notification.error({ message: "Error", description: msg });
       seterrorMsgNewApplication("Unexpected Error Occurred");
     }
   };
@@ -120,275 +110,379 @@ const HomePage = () => {
     seterrorTrackApplication("");
     setsuccessTrackApplication("");
     if (!trackingId || !trackingMobile) {
-      seterrorTrackApplication("Enter Mobile Number and TrackingId");
+      seterrorTrackApplication("Enter Mobile Number & Tracking ID");
       return;
     }
     try {
       const response = await axios.get(
         `${BACKEND_URL}/noAuth/newApplication/trackApplication?mobileNumber=${trackingMobile}&trackingId=${trackingId}`
       );
-      console.log("response ", response.data); // "1" if the organization name is also corrrect
-      setsuccessTrackApplication(`${response.data.message}`)
+      setsuccessTrackApplication(`${response.data.message}`);
     } catch (error) {
       if (error.response?.status === 401) {
         seterrorTrackApplication(error.response.data.message);
-        // seterrorMsgNewApplication("Invalid LoginId or password.");
       } else {
-        seterrorTrackApplication("An error occurred. Please try again.");
+        seterrorTrackApplication("Something went wrong. Try again.");
       }
     }
   };
 
-  const openNotification = () => {
-    console.log("asdads");
-    notification.success({
-      message: "Test Success",
-      description: "This is a test notification",
-    });
-  };
-
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(to right top, #c6f1ff, #d3d2ff)",
-        overflow: "hidden",
-      }}
-    >
-      <Grid
-        container
-        direction="column"
-        justifyContent="center"
-        alignItems="center"
-        sx={{ height: "calc(100vh - 64px)" }}
+    <Box sx={{ background: "#f9fbff", minHeight: "100vh" }}>
+      {/* Hero Section */}
+      <Box
+        sx={{
+          py: 14,
+          background: "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
+          color: "white",
+          textAlign: "center",
+        }}
       >
-        <Fade in={true} timeout={1000}>
-          <Box textAlign="center">
-            <Typography
-              variant="h2"
-              fontWeight="bold"
-              color="primary.dark"
-              gutterBottom
-            >
-              Welcome to GloryWellnic
-            </Typography>
-            <Typography variant="h6" color="text.secondary" mb={5}>
-              Simplifying Management, Amplifying Care.
-            </Typography>
-
-            <Stack spacing={3} direction="row" justifyContent="center">
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<AddCircleOutlineIcon />}
-                sx={{
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: 10,
-                  fontWeight: "bold",
-                  backgroundColor: "#1976d2",
-                  boxShadow: 3,
-                  "&:hover": { backgroundColor: "#1565c0" },
-                }}
-                onClick={() => setOpenNewForm(true)}
+        <Container maxWidth="md">
+          <Fade in timeout={900}>
+            <Box>
+              <Typography
+                variant="h2"
+                fontWeight="900"
+                gutterBottom
+                sx={{ textShadow: "0 4px 15px rgba(0,0,0,0.3)", letterSpacing: 2 }}
               >
-                Become our Client
-              </Button>
-
-              <Button
-                variant="outlined"
-                size="large"
-                startIcon={<SearchIcon />}
-                sx={{
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: 10,
-                  fontWeight: "bold",
-                  color: "#388e3c",
-                  borderColor: "#388e3c",
-                  boxShadow: 3,
-                  "&:hover": {
-                    backgroundColor: "#e8f5e9",
-                  },
-                }}
-                onClick={() => setOpenTrackForm(true)}
+                GloryWellnic
+              </Typography>
+              <Typography
+                variant="h5"
+                sx={{ opacity: 0.9, mb: 7, fontWeight: 500, lineHeight: 1.4 }}
               >
-                Check Status
-              </Button>
-            </Stack>
-          </Box>
-        </Fade>
-      </Grid>
-      {/* Modal for New Form */}
+                Complete Clinic & Wellness Center Management Solution
+              </Typography>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={4}
+                justifyContent="center"
+              >
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={<AddCircleOutlineIcon />}
+                  sx={{
+                    px: 6,
+                    py: 1.8,
+                    borderRadius: "50px",
+                    fontWeight: "700",
+                    backgroundColor: "white",
+                    color: "#1976d2",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.22)",
+                    transition: "all 0.3s ease",
+                    "&:hover": { backgroundColor: "#f0f0f0", transform: "scale(1.05)" },
+                  }}
+                  onClick={() => {setOpenNewForm(true); seterrorMsgNewApplication(""); setSuccessMsgNewApplication("") }}
+                >
+                  Become our Partner
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<SearchIcon />}
+                  sx={{
+                    px: 6,
+                    py: 1.8,
+                    borderRadius: "50px",
+                    fontWeight: "700",
+                    color: "white",
+                    borderColor: "white",
+                    boxShadow: "0 4px 15px rgba(255,255,255,0.4)",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.15)",
+                      transform: "scale(1.05)",
+                    },
+                  }}
+                  onClick={() => {setOpenTrackForm(true); seterrorTrackApplication(""); setsuccessTrackApplication("");}}
+                >
+                  Check Status
+                </Button>
+              </Stack>
+            </Box>
+          </Fade>
+        </Container>
+      </Box>
+
+      {/* Partner Steps */}
+      <Box sx={{ py: 12, backgroundColor: "#fff" }}>
+        <Container>
+          <Typography
+            variant="h4"
+            align="center"
+            fontWeight="900"
+            gutterBottom
+            sx={{ letterSpacing: 1 }}
+          >
+            Steps to Become Our Partner
+          </Typography>
+          <Grid container spacing={6} justifyContent="center" sx={{ mt: 6 }}>
+            {[
+              {
+                icon: <AssignmentTurnedInIcon color="primary" fontSize="large" />,
+                title: "Submit Application",
+                desc: "Provide your clinic or organization details to get started.",
+                bgColor: "rgba(25, 118, 210, 0.1)",
+              },
+              {
+                icon: <VerifiedUserIcon color="primary" fontSize="large" />,
+                title: "Super Admin Approval",
+                desc: "We will verify the details and approve the Organization Request",
+                bgColor: "rgba(63, 81, 181, 0.1)",
+              },
+              {
+                icon: <MailOutlineIcon color="primary" fontSize="large" />,
+                title: "Receive Credentials",
+                desc: "You’ll get admin credentials via email and can login instantly.",
+                bgColor: "rgba(66, 165, 245, 0.1)",
+              },
+            ].map((step, i) => (
+              <Grid item xs={12} sm={6} md={4} key={i}>
+                <Card
+                  elevation={6}
+                  sx={{
+                    p: 5,
+                    borderRadius: 6,
+                    backgroundColor: step.bgColor,
+                    textAlign: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 2,
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    cursor: "default",
+                    height: "100%",
+                    "&:hover": {
+                      transform: "translateY(-10px)",
+                      boxShadow: "0 20px 40px rgba(0,0,0,0.16)",
+                    },
+                  }}
+                >
+                  {step.icon}
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    gutterBottom
+                    sx={{ mt: 1 }}
+                  >
+                    {step.title}
+                  </Typography>
+                  <Typography
+                    color="text.secondary"
+                    sx={{ px: 1, maxWidth: 320 }}
+                  >
+                    {step.desc}
+                  </Typography>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* Features Section */}
+      <Box sx={{ py: 14, backgroundColor: "#f4f8ff" }}>
+        <Container maxWidth="lg">
+          <Typography
+            variant="h4"
+            align="center"
+            fontWeight="900"
+            gutterBottom
+            sx={{ letterSpacing: 1, mb: 6 }}
+          >
+            Why Choose GloryWellnic?
+          </Typography>
+          <Grid container spacing={5} justifyContent="center">
+            {[
+              {
+                icon: <GroupIcon fontSize="large" sx={{ color: "#1976d2" }} />,
+                title: "User & Role Management",
+                desc:
+                  "Create multiple users, assign roles, and set custom permissions with precision and ease.",
+                bgColor: "rgba(25, 118, 210, 0.15)",
+              },
+              {
+                icon: <EventAvailableIcon fontSize="large" sx={{ color: "#1e88e5" }} />,
+                title: "Smart Appointment Scheduling",
+                desc:
+                  "Effortlessly book and manage appointments with a sleek, integrated calendar.",
+                bgColor: "rgba(30, 136, 229, 0.15)",
+              },
+              {
+                icon: <SecurityIcon fontSize="large" sx={{ color: "#43a047" }} />,
+                title: "Secure & Reliable",
+                desc:
+                  "Enterprise-grade authentication and tracking to safeguard clinic data.",
+                bgColor: "rgba(67, 160, 71, 0.15)",
+              },
+              {
+                icon: <BoltIcon fontSize="large" sx={{ color: "#fdd835" }} />,
+                title: "Simple & Fast",
+                desc:
+                  "Designed with busy professionals in mind, for effortless, speedy operations.",
+                bgColor: "rgba(253, 216, 53, 0.15)",
+              },
+            ].map((feature, i) => (
+              <Grid item xs={12} sm={6} md={3} key={i} sx={{ display: "flex" }}>
+                <Paper
+                  elevation={5}
+                  sx={{
+                    p: 5,
+                    borderRadius: 6,
+                    backgroundColor: feature.bgColor,
+                    textAlign: "center",
+                    height: "100%",
+                    flexGrow: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 2,
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    cursor: "default",
+                    "&:hover": {
+                      transform: "translateY(-10px)",
+                      boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
+                    },
+                  }}
+                >
+                  {feature.icon}
+                  <Typography variant="h6" fontWeight="bold" sx={{ mt: 1 }}>
+                    {feature.title}
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ flexGrow: 1, px: 1 }}>
+                    {feature.desc}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* Footer */}
+      <Box
+        sx={{
+          py: 5,
+          textAlign: "center",
+          bgcolor: "#1976d2",
+          color: "white",
+          borderTop: "5px solid #42a5f5",
+          letterSpacing: 1,
+          fontWeight: 500,
+        }}
+      >
+        © 2025 GloryWellnic. All rights reserved.
+      </Box>
+
+      {/* New Application Modal */}
       <Modal open={openNewForm} onClose={() => setOpenNewForm(false)}>
-        <Box
-          sx={{
-            ...modalStyle,
-            width: 500, // increased modal width
-            borderRadius: 4, // rounded corners
-            boxShadow: 24,
-            p: 4,
-            backgroundColor: "#fff",
-          }}
-        >
+        <Paper sx={modalStyle}>
           <Typography
             variant="h6"
+            align="center"
             fontWeight="bold"
             gutterBottom
-            align="center"
-            sx={{ color: "#333" }}
           >
-            Submit New Application
+            Become our Client
           </Typography>
-
-          <Stack spacing={2} mt={2}>
+          <Divider sx={{ mb: 3 }} />
+          <Stack spacing={3}>
             <TextField
               label="Organization Name"
               fullWidth
-              size="medium"
-              variant="outlined"
-              sx={{ borderRadius: 2 }}
               onChange={(e) => setOrgName(e.target.value)}
             />
             <TextField
               label="Your Full Name"
               fullWidth
-              size="medium"
-              variant="outlined"
-              sx={{ borderRadius: 2 }}
               onChange={(e) => setyourFullName(e.target.value)}
             />
             <TextField
               label="Organization Short Name"
               fullWidth
-              size="medium"
-              variant="outlined"
-              sx={{ borderRadius: 2 }}
               onChange={(e) => setOrgShortName(e.target.value)}
             />
             <TextField
               label="Mobile"
               fullWidth
-              size="medium"
-              variant="outlined"
-              sx={{ borderRadius: 2 }}
               onChange={(e) => setOrgPhone(e.target.value)}
             />
             <TextField
               label="Email"
               fullWidth
-              size="medium"
-              variant="outlined"
-              sx={{ borderRadius: 2 }}
               onChange={(e) => setorgEmail(e.target.value)}
             />
             <TextField
               label="Address"
               fullWidth
-              size="medium"
               multiline
-              rows={2}
-              variant="outlined"
+              rows={3}
               onChange={(e) => setorgAddress(e.target.value)}
-              sx={{ borderRadius: 2 }}
             />
+
             {errorMsgNewApplication && (
-              <Alert severity="error" sx={{ fontSize: "0.85rem" }}>
-                {errorMsgNewApplication}
-              </Alert>
+              <Alert severity="error">{errorMsgNewApplication}</Alert>
+            )}
+            {successMsgNewApplication && (
+              <Alert severity="success">{successMsgNewApplication}</Alert>
             )}
 
-            {successMsgNewApplication && (
-              <Alert severity="success" sx={{ fontSize: "0.85rem" }}>
-                {successMsgNewApplication}
-              </Alert>
-            )}
             <Button
               variant="contained"
-              fullWidth
               onClick={submitNewApplicationRequest}
-              sx={{
-                borderRadius: 3,
-                py: 1.2,
-                backgroundColor: "#1976d2",
-                textTransform: "none",
-                fontWeight: "bold",
-                fontSize: "16px",
-                "&:hover": {
-                  backgroundColor: "#115293",
-                },
-              }}
+              fullWidth
+              sx={{ py: 1.6, fontWeight: "bold", fontSize: "1rem" }}
             >
               Submit
             </Button>
           </Stack>
-        </Box>
+        </Paper>
       </Modal>
-      {/* Modal for Track Application */}
+
+      {/* Track Application Modal */}
       <Modal open={openTrackForm} onClose={() => setOpenTrackForm(false)}>
-        <Box
-          sx={{
-            ...modalStyle,
-            borderRadius: 4,
-            boxShadow: 24,
-            p: 4,
-            background: "linear-gradient(to right, #e0f7fa, #ffffff)",
-          }}
-        >
+        <Paper sx={modalStyle}>
           <Typography
             variant="h6"
+            align="center"
             fontWeight="bold"
             gutterBottom
-            align="center"
           >
-            🚀 Track Application
+            Track Application
           </Typography>
-          <Stack spacing={2} mt={2}>
+          <Divider sx={{ mb: 3 }} />
+          <Stack spacing={3}>
             <TextField
               label="Mobile Number"
               fullWidth
-              size="small"
-              variant="outlined"
               onChange={(e) => setTrackingMobile(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <span style={{ paddingRight: 8, color: "#888" }}>📱</span>
-                ),
-              }}
             />
             <TextField
               label="Tracking ID"
               fullWidth
-              size="small"
-              variant="outlined"
               onChange={(e) => setTrackingId(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <span style={{ paddingRight: 8, color: "#888" }}>🔍</span>
-                ),
-              }}
             />
-
             {errorTrackApplication && (
-              <Alert severity="error" sx={{ fontSize: "0.85rem" }}>
-                {errorTrackApplication}
-              </Alert>
+              <Alert severity="error">{errorTrackApplication}</Alert>
             )}
             {successTrackApplication && (
-              <Alert severity="success" sx={{ fontSize: "0.85rem" }}>
-                {successTrackApplication}
-              </Alert>
+              <Alert severity="success">{successTrackApplication}</Alert>
             )}
+
             <Button
               variant="contained"
               color="success"
-              fullWidth
-              sx={{ borderRadius: 3, py: 1 }}
               onClick={trackApplicationStatus}
+              fullWidth
+              sx={{ py: 1.6, fontWeight: "bold", fontSize: "1rem" }}
             >
               Track Now
             </Button>
           </Stack>
-        </Box>
+        </Paper>
       </Modal>
     </Box>
   );
