@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { Box } from "@mui/material";
 import debounce from "lodash/debounce";
@@ -119,7 +119,7 @@ const ClientManagement = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
+      console.log("clients?? ", response.data.data);
       setClients(response.data.data || []);
       setPagination((prev) => ({
         ...prev,
@@ -240,6 +240,12 @@ const ClientManagement = () => {
     setPagination(paginationInfo);
   };
 
+  const categoriesFilter = [
+    ...new Set(
+      clients.map((c) => c.categories?.category_name?.trim()).filter(Boolean) // removes null/undefined
+    ),
+  ].map((cat) => ({ text: cat, value: cat }));
+
   const columns = [
     {
       title: "Name",
@@ -304,6 +310,11 @@ const ClientManagement = () => {
     {
       title: "Category",
       key: "category",
+      dataIndex: ["categories", "category_name"],
+      filters: categoriesFilter,
+      onFilter: (value, record) =>
+        (record.categories?.category_name || "").toLowerCase() ===
+        value.toLowerCase(),
       render: (_, record) => record.categories?.category_name || "-",
     },
 
