@@ -13,7 +13,7 @@ import {
   Alert,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import Sidebar from "../components/SideBar";
+
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 
 const { Option } = Select;
@@ -47,7 +47,9 @@ const UserManagement = () => {
     setIsAllowedToAddEmployee(
       isFeatureValid("EMPLOYEE_MANAGEMENT", "ADD_EMPLOYEE")
     );
-    setIsAllowedToChangeRole(isFeatureValid("EMPLOYEE_MANAGEMENT", "CHANGE_EMP_ROLE") )
+    setIsAllowedToChangeRole(
+      isFeatureValid("EMPLOYEE_MANAGEMENT", "CHANGE_EMP_ROLE")
+    );
     fetchRoles();
     fetchEmployeeDetails(pagination.current, searchText);
   }, []);

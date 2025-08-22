@@ -1016,7 +1016,8 @@ export default function AppointmentPage() {
         style={{
           display: "grid",
           position: "relative",
-          gridTemplateColumns: `repeat(${Resources.length}, minmax(0,1fr))`,
+          //gridTemplateColumns: `repeat(${Resources.length}, minmax(0,1fr))`,
+          gridTemplateColumns: `repeat(${Resources.length}, minmax(170px, 1fr))`,
           minHeight: slotCount * SLOT_HEIGHT,
           background: "#f9fafb",
           height: "100%",
@@ -1077,9 +1078,10 @@ export default function AppointmentPage() {
           zIndex: 10,
           background: "#fff",
           borderBottom: "1px solid #e0e7ef",
-          gridTemplateColumns: `repeat(${
-            Resources.length || 1
-          }, minmax(0,1fr))`,
+          // gridTemplateColumns: `repeat(${
+          //   Resources.length || 1
+          // }, minmax(0,1fr))`,
+          gridTemplateColumns: `repeat(${Resources.length}, minmax(170px, 1fr))`,
           height: HEADER_H,
           userSelect: "none",
         }}
@@ -1094,7 +1096,7 @@ export default function AppointmentPage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontWeight: 600,
+              fontWeight: 450,
               color: "#345",
               borderRight:
                 i === Resources.length - 1 ? "none" : "1px solid #e0e7ef",
@@ -1590,8 +1592,11 @@ export default function AppointmentPage() {
         <div
           style={{
             height: "100%",
-            maxWidth: 1200,
-            margin: "0 auto",
+            //maxWidth: 1200,
+            //margin: "0 auto",
+            margin: "0",
+            flex: "1",
+            //width: "100%",
             borderRadius: 18,
             border: "1px solid #e0e7ef",
             background: "#fff",
@@ -1614,10 +1619,12 @@ export default function AppointmentPage() {
               ref={mainColumnsRef}
               style={{
                 overflowY: "scroll",
+                overflowX: "auto",
                 position: "relative",
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
                 userSelect: "none",
+                width: "100%",
               }}
             >
               {renderStickyHeader()}

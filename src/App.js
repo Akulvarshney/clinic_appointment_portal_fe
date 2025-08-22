@@ -18,12 +18,13 @@ import ResourceManagement from "./pages/ResourceManagement";
 import ServicesManagement from "./pages/Services";
 import AppointmentPage from "./pages/AppointmentPage";
 import ForgotPassword from "./pages/ForgotPassword";
+import ReminderManagement from "./pages/ReminderManagement";
 
 import "../src/App.css";
 import Settings from "./pages/settings/Settings";
 import ClientManagement from "./pages/ClientManagement";
 import ClientDetailPage from "./pages/ClientDetailPage";
-import NotificationManagement from "./pages/SuperAdmin/NotificationCreation"
+import NotificationManagement from "./pages/SuperAdmin/NotificationCreation";
 
 function App() {
   const { isLoggedIn, role, isAuthReady } = useAuth();
@@ -61,6 +62,7 @@ function App() {
           <Route path="/resourceManagement" element={<ResourceManagement />} />
           <Route path="/servicesManagement" element={<ServicesManagement />} />
           <Route path="/appointments" element={<AppointmentPage />} />
+          <Route path="/reminders" element={<ReminderManagement />} />
           <Route path="*" element={<Navigate to="/dashboard" />} />
         </Route>
       ) : (
