@@ -1,7 +1,8 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
+import { Select } from "antd";
+import Sidebar from "../components/SideBar.js";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
-import Sidebar from "../components/SideBar.js"; // adjust the path as needed
 import {
   BarChart,
   Bar,
@@ -17,9 +18,33 @@ import {
 const DashboardPage = () => {
   const orgId = localStorage.getItem("selectedOrgId");
   const [stats, setStats] = useState([]);
-   const [pieData, setPieData] = useState([]);
+  const [pieData, setPieData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [barData, setbarData] = useState([])
+  const [barData, setbarData] = useState([]);
+  const { Option } = Select;
+
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  const monthsList = [
+    { label: "All", value: null },
+    { label: "Jan", value: 1 },
+    { label: "Feb", value: 2 },
+    { label: "Mar", value: 3 },
+    { label: "Apr", value: 4 },
+    { label: "May", value: 5 },
+    { label: "Jun", value: 6 },
+    { label: "Jul", value: 7 },
+    { label: "Aug", value: 8 },
+    { label: "Sep", value: 9 },
+    { label: "Oct", value: 10 },
+    { label: "Nov", value: 11 },
+    { label: "Dec", value: 12 },
+  ];
+  const yearList = [
+    { label: "2025", value: 2025 },
+    { label: "2026", value: 2026 },
+  ];
   // const barData = [
   //   { name: "Mon", value: 240 },
   //   { name: "Tue", value: 180 },
@@ -59,7 +84,6 @@ const DashboardPage = () => {
     fetchStats();
   }, []);
 
-
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -72,9 +96,8 @@ const DashboardPage = () => {
             },
           }
         );
-        console.log(res.data)
+        console.log(res.data);
         setbarData(res.data.response);
-
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
       } finally {
@@ -84,22 +107,24 @@ const DashboardPage = () => {
     fetchStats();
   }, []);
 
-
-
   useEffect(() => {
     const fetchClientCategories = async () => {
       try {
-        //const res = await axios.get(`${BACKEND_URL}/clientAdmin/getDashboardDetails/KPI?orgId=${orgId}`);
         const res = await axios.get(
-          `${BACKEND_URL}/clientAdmin/getDashboardDetails/PieChart?orgId=${orgId}`,
+          `${BACKEND_URL}/clientAdmin/getDashboardDetails/PieChart`,
           {
+            params: {
+              orgId,
+              month: selectedMonth,
+              year: selectedYear,
+            },
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        console.log("pieDAta. " , res.data)
         setPieData(res.data.response);
+        //setSelectedMonth(null);
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
       } finally {
@@ -107,9 +132,7 @@ const DashboardPage = () => {
       }
     };
     fetchClientCategories();
-  }, []);
-
-
+  }, [selectedMonth, selectedYear]);
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-100 to-blue-50 font-sans text-gray-800">
@@ -145,18 +168,18 @@ const DashboardPage = () => {
           ))}
         </div> */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {stats.map(({ title, amount, badge }, i) => (
-              <div
-                key={i}
-                className="bg-white p-6 rounded-2xl shadow-md hover:shadow-2xl border-l-4 border-blue-500 hover:border-blue-700 transition-all duration-300 transform hover:-translate-y-1"
-              >
-                <h4 className="text-gray-500 font-semibold text-lg">{title}</h4>
-                <p className="text-3xl font-bold text-gray-800 mt-2">
-                  {amount} {badge}
-                </p>
-              </div>
-            ))}
-          </div>
+          {stats.map(({ title, amount, badge }, i) => (
+            <div
+              key={i}
+              className="bg-white p-6 rounded-2xl shadow-md hover:shadow-2xl border-l-4 border-blue-500 hover:border-blue-700 transition-all duration-300 transform hover:-translate-y-1"
+            >
+              <h4 className="text-gray-500 font-semibold text-lg">{title}</h4>
+              <p className="text-3xl font-bold text-gray-800 mt-2">
+                {amount} {badge}
+              </p>
+            </div>
+          ))}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 animate-slideInLeft">
@@ -174,9 +197,46 @@ const DashboardPage = () => {
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 animate-slideInRight">
-            <h4 className="text-2xl font-semibold mb-5 text-gray-700">
-              Client Categories
-            </h4>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                marginBottom: "12px",
+              }}
+            >
+              <h4 className="text-2xl font-semibold mb-5 text-gray-700">
+                Client Categories
+              </h4>
+              <Select
+                value={selectedMonth}
+                onChange={setSelectedMonth}
+                //onChange={setSelectedMonth}
+                placeholder="Select Month"
+                style={{ width: 180, marginBottom: 15 }}
+                allowClear // shows 'null' when cleared
+              >
+                {monthsList.map((month) => (
+                  <Option key={month.value} value={month.value}>
+                    {month.label}
+                  </Option>
+                ))}
+              </Select>
+
+              <Select
+                value={selectedYear}
+                onChange={setSelectedYear}
+                placeholder="Select Year"
+                style={{ width: 180, marginBottom: 15 }}
+                allowClear // shows 'null' when cleared
+              >
+                {yearList.map((year) => (
+                  <Option key={year.value} value={year.value}>
+                    {year.label}
+                  </Option>
+                ))}
+              </Select>
+            </div>
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
                 <Pie
@@ -187,13 +247,10 @@ const DashboardPage = () => {
                   cy="50%"
                   outerRadius={85}
                   fill="#8884d8"
-                  label={({ name, value }) => `${name} (${value})`} 
+                  label={({ name, value }) => `${name} (${value})`}
                 >
                   {pieData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.color}
-                    />
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
               </PieChart>

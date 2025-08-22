@@ -1450,10 +1450,10 @@ export default function AppointmentPage() {
               try {
                 const payload = {
                   id: detailAppt.id,
-                  doctorId: values.doctorId,
-                  employeeId: values.employeeId,
-                  serviceId: values.serviceId,
-                  notes: values.notes,
+                  doctorId: values.doctorId || null,
+                  employeeId: values.employeeId || null,
+                  serviceId: values.serviceId || null,
+                  notes: values.notes || null,
                 };
                 await axios.patch(
                   `${BACKEND_URL}/appointments/appt/updateAppointmentDetails`,
@@ -1515,7 +1515,7 @@ export default function AppointmentPage() {
             <Form.Item
               label="Doctor"
               name="doctorId"
-              rules={[{ required: true, message: "Please select a doctor" }]}
+              rules={[{ required: false, message: "Please select a doctor" }]}
             >
               <Select
                 placeholder="Select Doctor"
@@ -1533,7 +1533,9 @@ export default function AppointmentPage() {
             <Form.Item
               label="Employee"
               name="employeeId"
-              rules={[{ required: true, message: "Please select an employee" }]}
+              rules={[
+                { required: false, message: "Please select an employee" },
+              ]}
             >
               <Select
                 placeholder="Select Employee"
