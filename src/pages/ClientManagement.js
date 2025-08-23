@@ -39,6 +39,7 @@ const ClientManagement = () => {
     pageSize: 10,
     total: 0,
   });
+  const [categorySelected, setCategorySelected] = useState(null);
   const [isMobileView, setIsMobileView] = useState(false);
   const [isAddClientFeatureValid, setIsAddClientFeatureValid] = useState(false);
 
@@ -55,7 +56,7 @@ const ClientManagement = () => {
 
   useEffect(() => {
     fetchClients();
-  }, [search, pagination.current]);
+  }, [search, pagination.current, categorySelected]);
 
   const fetchRoleId = async () => {
     try {
@@ -115,15 +116,21 @@ const ClientManagement = () => {
             page: pagination.current,
             limit: pagination.pageSize,
             orgId,
+            categoryId: categorySelected,
           },
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       console.log("clients?? ", response.data.data);
       setClients(response.data.data || []);
+
+      // Fix pagination total calculation
       setPagination((prev) => ({
         ...prev,
-        total: response.data.totalPages * pagination.pageSize,
+        total:
+          response.data.totalCount ||
+          response.data.total ||
+          response.data.totalPages * prev.pageSize,
       }));
     } catch (err) {
       console.error("Error fetching clients:", err);
@@ -227,17 +234,35 @@ const ClientManagement = () => {
     }
   };
 
-  // const handleSearch = (value) => {
-  //   setSearch(value);
-  //   setPagination((prev) => ({ ...prev, current: 1 }));
-  // };
-  const handleSearch = debounce((value) => {
-    setSearch(value);
-    setPagination((prev) => ({ ...prev, current: 1 }));
-  }, 500);
+  // Create debounced search handler
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((value) => {
+        setSearch(value);
+        setPagination((prev) => ({ ...prev, current: 1 }));
+      }, 500),
+    []
+  );
 
-  const handleTableChange = (paginationInfo) => {
-    setPagination(paginationInfo);
+  const handleSearch = (value) => {
+    debouncedSearch(value);
+  };
+
+  // Fix table change handler to properly handle pagination
+  const handleTableChange = (paginationInfo, filters, sorter) => {
+    setPagination({
+      current: paginationInfo.current,
+      pageSize: paginationInfo.pageSize,
+      total: paginationInfo.total,
+    });
+    fetchClients();
+  };
+
+  // Fix category filter handler
+  const handleCategoryFilter = (value) => {
+    console.log("Category selected:", value);
+    setCategorySelected(value || null); // Handle clear case
+    setPagination((prev) => ({ ...prev, current: 1 })); // Reset to first page
   };
 
   const categoriesFilter = [
@@ -251,7 +276,6 @@ const ClientManagement = () => {
       title: "Name",
       dataIndex: "first_name",
       key: "first_name",
-
       render: (firstName, record) => {
         const fullName =
           `${firstName || ""} ${record.last_name || ""}`.trim() || "-";
@@ -278,14 +302,12 @@ const ClientManagement = () => {
       title: "Address",
       dataIndex: "address",
       key: "address",
-
       ellipsis: true,
     },
     {
       title: "Date of Birth",
       dataIndex: "date_of_birth",
       key: "date_of_birth",
-
       render: (dob) =>
         dob
           ? new Date(dob).toLocaleDateString("en-US", {
@@ -304,25 +326,41 @@ const ClientManagement = () => {
       title: "Occupation",
       dataIndex: "occupation",
       key: "occupation",
-
       ellipsis: true,
     },
     {
       title: "Category",
       key: "category",
       dataIndex: ["categories", "category_name"],
-      filters: categoriesFilter,
-      onFilter: (value, record) =>
-        (record.categories?.category_name || "").toLowerCase() ===
-        value.toLowerCase(),
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+      }) => (
+        <div style={{ padding: 8 }}>
+          <Select
+            style={{ width: 200 }}
+            placeholder="Select Category"
+            value={categorySelected}
+            onChange={handleCategoryFilter}
+            allowClear
+            onClear={() => handleCategoryFilter(null)}
+          >
+            {categories?.map((category) => (
+              <Option key={category.id} value={category.id}>
+                {category.category_name}
+              </Option>
+            ))}
+          </Select>
+        </div>
+      ),
       render: (_, record) => record.categories?.category_name || "-",
     },
-
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
-
       ellipsis: true,
     },
   ];
@@ -344,8 +382,7 @@ const ClientManagement = () => {
               onChange={(e) => {
                 if (!e.target.value) {
                   handleSearch("");
-                }
-                if (e.target.value) {
+                } else {
                   handleSearch(e.target.value);
                 }
               }}
@@ -396,7 +433,7 @@ const ClientManagement = () => {
             pagination={{
               ...pagination,
               showSizeChanger: false,
-              showQuickJumper: true,
+              showQuickJumper: false,
             }}
             onChange={handleTableChange}
           />

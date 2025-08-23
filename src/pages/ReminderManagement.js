@@ -77,7 +77,7 @@ const ReminderPage = () => {
         {
           params: {
             orgId: orgId,
-            date: selectedDate.startOf("day").toISOString(),
+            date: selectedDate.startOf("day").format("YYYY-MM-DD"),
           },
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -144,7 +144,7 @@ const ReminderPage = () => {
         {
           orgId,
           clientId: values.client,
-          reminderdate: values.date.startOf("day").toISOString(),
+          reminderdate: values.date.startOf("day").format("YYYY-MM-DD"),
           comments: values.comments,
         },
         {

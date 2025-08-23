@@ -138,7 +138,6 @@ export default function AppointmentPage() {
   const totalMinutes = (END_HOUR - START_HOUR) * 60;
   const slotCount = totalMinutes / SLOT_MINUTES;
 
-  // build times array (for time-ruler rows)
   const timeSlots = useMemo(() => {
     const out = [];
     for (let h = START_HOUR; h < END_HOUR; h++) {
@@ -1078,9 +1077,6 @@ export default function AppointmentPage() {
           zIndex: 10,
           background: "#fff",
           borderBottom: "1px solid #e0e7ef",
-          // gridTemplateColumns: `repeat(${
-          //   Resources.length || 1
-          // }, minmax(0,1fr))`,
           gridTemplateColumns: `repeat(${Resources.length}, minmax(170px, 1fr))`,
           height: HEADER_H,
           userSelect: "none",
@@ -1089,37 +1085,44 @@ export default function AppointmentPage() {
         {(Resources.length
           ? Resources
           : [{ id: "loading", name: "Loading..." }]
-        ).map((r, i) => (
-          <div
-            key={r.id + "_" + i}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 450,
-              color: "#345",
-              borderRight:
-                i === Resources.length - 1 ? "none" : "1px solid #e0e7ef",
-              height: "100%",
-              userSelect: "none",
-            }}
-          >
-            <span
-              style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+        ).map((r, i) => {
+          // Calculate appointment count for this resource
+          const appointmentCount = appointments.filter(
+            (a) => a.resourceId === r.id
+          ).length;
+
+          return (
+            <div
+              key={r.id + "_" + i}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 450,
+                color: "#345",
+                borderRight:
+                  i === Resources.length - 1 ? "none" : "1px solid #e0e7ef",
+                height: "100%",
+                userSelect: "none",
+              }}
             >
               <span
-                style={{
-                  height: 14,
-                  width: 14,
-                  borderRadius: 7,
-                  display: "inline-block",
-                  background: r.dot || "#789",
-                }}
-              />
-              {r.name}
-            </span>
-          </div>
-        ))}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+              >
+                <span
+                  style={{
+                    height: 14,
+                    width: 14,
+                    borderRadius: 7,
+                    display: "inline-block",
+                    background: r.dot || "#789",
+                  }}
+                />
+                {r.name} ({appointmentCount})
+              </span>
+            </div>
+          );
+        })}
       </div>
     );
   }

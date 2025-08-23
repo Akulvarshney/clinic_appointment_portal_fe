@@ -18,6 +18,8 @@ import {
   Select,
   Input,
   DatePicker,
+  Modal,
+  Form,
 } from "antd";
 import {
   UserOutlined,
@@ -36,7 +38,10 @@ import {
   PlusOutlined,
   SearchOutlined,
   FilterOutlined,
+  SaveOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -45,9 +50,14 @@ const { Search } = Input;
 const ClientDetailPage = () => {
   const { clientId } = useParams();
   const [messageApi, contextHolder] = message.useMessage();
+  const [form] = Form.useForm();
   console.log("Client ID:", clientId);
   const token = localStorage.getItem("token");
   const [clientData, setClientData] = React.useState(null);
+
+  // Edit functionality state
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Appointment filtering and pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,9 +70,7 @@ const ClientDetailPage = () => {
 
   useEffect(() => {
     const response1 = isFeatureValid("CLIENT_LISTING", "VIEW_MOBILE");
-
     setIsMobileView(response1);
-
     console.log("isFeatureValid response:", response1);
   }, []);
 
@@ -70,31 +78,99 @@ const ClientDetailPage = () => {
     messageApi.info("This feature is coming soon!");
   };
 
-  useEffect(() => {
-    const fetchClientData = async () => {
-      try {
-        const response = await axios.get(
-          `${BACKEND_URL}/patient/clients/clientDetails/${clientId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Cache-Control": "no-cache",
-            },
-          }
-        );
-        setClientData(response.data.data);
-      } catch (error) {
-        console.error(
-          "Error fetching client data:",
-          error.response?.data || error.message
-        );
-      }
-    };
+  const fetchClientData = async () => {
+    try {
+      const response = await axios.get(
+        `${BACKEND_URL}/patient/clients/clientDetails/${clientId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache",
+          },
+        }
+      );
+      setClientData(response.data.data);
+    } catch (error) {
+      console.error(
+        "Error fetching client data:",
+        error.response?.data || error.message
+      );
+      messageApi.error("Failed to fetch client data");
+    }
+  };
 
+  useEffect(() => {
     if (clientId) {
       fetchClientData();
     }
   }, [clientId]);
+
+  // Edit client functionality
+  const handleEditClient = () => {
+    if (clientData) {
+      form.setFieldsValue({
+        first_name: clientData.first_name,
+        last_name: clientData.last_name,
+        phone: clientData.phone,
+        email: clientData.email,
+        date_of_birth: clientData.date_of_birth
+          ? dayjs(clientData.date_of_birth)
+          : null,
+        address: clientData.address,
+      });
+      setIsEditModalVisible(true);
+    }
+  };
+
+  const handleSaveClient = async (values) => {
+    setIsLoading(true);
+    try {
+      const payload = {
+        first_name: values.first_name,
+        last_name: values.last_name,
+        phone: values.phone,
+        email: values.email,
+        date_of_birth: values.date_of_birth
+          ? values.date_of_birth.format("YYYY-MM-DD")
+          : null,
+        address: values.address,
+      };
+
+      const response = await axios.put(
+        `${BACKEND_URL}/patient/clients/editclientDetails/${clientData.userid}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        messageApi.success("Client details updated successfully!");
+        setIsEditModalVisible(false);
+        form.resetFields();
+        // Refresh client data
+        await fetchClientData();
+      }
+    } catch (error) {
+      console.error(
+        "Error updating client:",
+        error.response?.data || error.message
+      );
+      messageApi.error(
+        error.response?.data?.message || "Failed to update client details"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditModalVisible(false);
+    form.resetFields();
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -306,7 +382,7 @@ const ClientDetailPage = () => {
               <Button
                 type="primary"
                 icon={<EditOutlined />}
-                onClick={() => commingSoon()}
+                onClick={handleEditClient}
               >
                 Edit Client
               </Button>
@@ -568,6 +644,118 @@ const ClientDetailPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Edit Client Modal */}
+        <Modal
+          title="Edit Client Details"
+          open={isEditModalVisible}
+          onCancel={handleCancelEdit}
+          footer={null}
+          width={600}
+          destroyOnClose={true}
+        >
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSaveClient}
+            requiredMark={false}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Form.Item
+                name="first_name"
+                label="First Name"
+                rules={[
+                  { required: true, message: "Please enter first name" },
+                  {
+                    min: 2,
+                    message: "First name must be at least 2 characters",
+                  },
+                ]}
+              >
+                <Input placeholder="Enter first name" />
+              </Form.Item>
+
+              <Form.Item
+                name="last_name"
+                label="Last Name"
+                rules={[
+                  { required: true, message: "Please enter last name" },
+                  {
+                    min: 2,
+                    message: "Last name must be at least 2 characters",
+                  },
+                ]}
+              >
+                <Input placeholder="Enter last name" />
+              </Form.Item>
+            </div>
+
+            <Form.Item
+              name="phone"
+              label="Phone Number"
+              rules={[
+                { required: true, message: "Please enter phone number" },
+                {
+                  pattern: /^[\+]?[0-9\-\s\(\)]+$/,
+                  message: "Please enter a valid phone number",
+                },
+              ]}
+            >
+              <Input placeholder="Enter phone number" />
+            </Form.Item>
+
+            <Form.Item
+              name="email"
+              label="Email Address"
+              rules={[
+                { required: true, message: "Please enter email address" },
+                {
+                  type: "email",
+                  message: "Please enter a valid email address",
+                },
+              ]}
+            >
+              <Input placeholder="Enter email address" />
+            </Form.Item>
+
+            <Form.Item
+              name="date_of_birth"
+              label="Date of Birth"
+              rules={[
+                { required: true, message: "Please select date of birth" },
+              ]}
+            >
+              <DatePicker
+                style={{ width: "100%" }}
+                format="YYYY-MM-DD"
+                placeholder="Select date of birth"
+                disabledDate={(current) => current && current.isAfter(dayjs())}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="address"
+              label="Address"
+              rules={[{ required: true, message: "Please enter address" }]}
+            >
+              <Input.TextArea rows={3} placeholder="Enter full address" />
+            </Form.Item>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button onClick={handleCancelEdit} icon={<CloseOutlined />}>
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={isLoading}
+                icon={<SaveOutlined />}
+              >
+                Save Changes
+              </Button>
+            </div>
+          </Form>
+        </Modal>
       </div>
     </div>
   );
