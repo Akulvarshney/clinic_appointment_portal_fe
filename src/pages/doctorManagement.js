@@ -401,7 +401,13 @@ const DoctorManagement = () => {
                   </Select>
                 </Form.Item>
 
-                <Form.Item label="Date of Birth" name="dob">
+                <Form.Item
+                  label="Date of Birth"
+                  name="dob"
+                  rules={[
+                    { required: true, message: "Please enter phone number!" },
+                  ]}
+                >
                   <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
 

@@ -11,12 +11,18 @@ import {
   Tag,
   Space,
 } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import { Box } from "@mui/material";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 
 const { TextArea } = Input;
+const { Search } = Input;
 
 const Services = () => {
   const [form] = Form.useForm();
@@ -273,14 +279,16 @@ const Services = () => {
             Service Management
           </h1>
           <div className="flex gap-2">
-            <Input.Search
+            <Search
               placeholder="Search services"
               allowClear
+              enterButton={<SearchOutlined />}
+              size="large"
               onSearch={(value) => {
                 setSearchText(value);
                 fetchServices(1, pagination.pageSize, value);
               }}
-              style={{ width: 250 }}
+              style={{ maxWidth: 400 }}
             />
             {isNewService && (
               <Button

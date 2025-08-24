@@ -12,11 +12,12 @@ import {
   message,
   Alert,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 
 const { Option } = Select;
+const { Search } = Input;
 
 const UserManagement = () => {
   const [form] = Form.useForm();
@@ -291,7 +292,7 @@ const UserManagement = () => {
               Employee Management
             </h1>
             <div className="flex gap-3 items-center">
-              <Input.Search
+              {/* <Input.Search
                 placeholder="Search employees..."
                 allowClear
                 onSearch={handleSearch}
@@ -302,6 +303,24 @@ const UserManagement = () => {
                 }}
                 style={{ width: 300 }}
                 size="large"
+              /> */}
+
+              <Search
+                placeholder="Search employees..."
+                allowClear
+                onSearch={handleSearch}
+                onChange={(e) => {
+                  if (e.target.value === "") {
+                    setSearchText("");
+                  }
+                }}
+                // style={{ width: 300 }}
+                size="large"
+                enterButton={<SearchOutlined />}
+                // size="large"
+                // onSearch={handleSearch}
+
+                style={{ maxWidth: 400 }}
               />
               {isAllowedToAddEmployee ? (
                 <Button
@@ -434,7 +453,13 @@ const UserManagement = () => {
                   <Input placeholder="Enter phone number" maxLength={10} />
                 </Form.Item>
 
-                <Form.Item label="Date of Birth" name="dob">
+                <Form.Item
+                  label="Date of Birth"
+                  name="dob"
+                  rules={[
+                    { required: true, message: "Please enter phone number!" },
+                  ]}
+                >
                   <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
 
