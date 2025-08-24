@@ -204,7 +204,7 @@ const ReminderPage = () => {
     },
     {
       title: "Last Remarks",
-      dataIndex: "remarks",
+      dataIndex: "remindercompletedremarks",
       width: 200,
     },
   ];

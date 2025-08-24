@@ -45,8 +45,11 @@ const ResourceManagement = () => {
           },
         }
       );
-      //console.log("resoiurces>>> ", response.data.response);
-      setResources(response.data.response || []);
+      setResources(
+        (response.data.response || []).sort((a, b) => {
+          return (a.resource_order ?? 0) - (b.resource_order ?? 0);
+        })
+      );
     } catch (err) {
       console.error("Error fetching resources:", err);
       message.error("Failed to fetch resources");
@@ -216,6 +219,16 @@ const ResourceManagement = () => {
       // sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
+      title: "Resource Order",
+      dataIndex: "resource_order",
+      key: "resource_order",
+      render: (order) => (
+        <Tag color="blue" style={{ cursor: "pointer" }}>
+          {order}
+        </Tag>
+      ),
+    },
+    {
       title: "Status",
       dataIndex: "status",
       key: "status",
@@ -369,20 +382,24 @@ const ResourceManagement = () => {
               >
                 <Input placeholder="Enter resource name" />
               </Form.Item>
-              <Form.Item
-                label="Resource Order"
-                name="Order"
-                rules={[
-                  { required: true, message: "Please enter Resource Order!" },
-                  {
-                    type: "number",
-                    min: 1,
-                    message: "Resource order must be a positive integer!",
-                  },
-                ]}
-              >
-                <InputNumber style={{ width: "100%" }} precision={0} />
-              </Form.Item>
+
+              {/* Only show Resource Order input when editing */}
+              {editingResource && (
+                <Form.Item
+                  label="Resource Order"
+                  name="Order"
+                  rules={[
+                    { required: true, message: "Please enter Resource Order!" },
+                    {
+                      type: "number",
+                      min: 1,
+                      message: "Resource order must be a positive integer!",
+                    },
+                  ]}
+                >
+                  <InputNumber style={{ width: "100%" }} precision={0} />
+                </Form.Item>
+              )}
 
               {errorMsg && (
                 <Alert
