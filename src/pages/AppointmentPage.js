@@ -1071,16 +1071,16 @@ export default function AppointmentPage() {
     );
   }
   function renderStickyHeader() {
-    const sortedResources = [...Resources].sort((a, b) => {
-      const orderA = a.resource_order != null ? Number(a.resource_order) : null;
-      const orderB = b.resource_order != null ? Number(b.resource_order) : null;
+    // const sortedResources = [...Resources].sort((a, b) => {
+    //   const orderA = a.resource_order != null ? Number(a.resource_order) : null;
+    //   const orderB = b.resource_order != null ? Number(b.resource_order) : null;
 
-      if (orderA == null && orderB == null) return 0;
-      if (orderA == null) return -1;
-      if (orderB == null) return 1;
+    //   if (orderA == null && orderB == null) return 0;
+    //   if (orderA == null) return -1;
+    //   if (orderB == null) return 1;
 
-      return orderA - orderB;
-    });
+    //   return orderA - orderB;
+    // });
     // console.log(
     //   "Sorted resources:",
     //   sortedResources.map((r) => ({
@@ -1098,13 +1098,13 @@ export default function AppointmentPage() {
           zIndex: 10,
           background: "#fff",
           borderBottom: "1px solid #e0e7ef",
-          gridTemplateColumns: `repeat(${sortedResources.length}, minmax(165px, 1fr))`,
+          gridTemplateColumns: `repeat(${Resources.length}, minmax(165px, 1fr))`,
           height: HEADER_H,
           userSelect: "none",
         }}
       >
-        {(sortedResources.length
-          ? sortedResources
+        {(Resources.length
+          ? Resources
           : [{ id: "loading", name: "Loading..." }]
         ).map((r, i) => {
           const appointmentCount = appointments.filter(
@@ -1122,9 +1122,7 @@ export default function AppointmentPage() {
                 fontWeight: 450,
                 color: "#345",
                 borderRight:
-                  i === sortedResources.length - 1
-                    ? "none"
-                    : "1px solid #e0e7ef", // ✅ fixed
+                  i === Resources.length - 1 ? "none" : "1px solid #e0e7ef", // ✅ fixed
                 height: "100%",
                 userSelect: "none",
               }}
