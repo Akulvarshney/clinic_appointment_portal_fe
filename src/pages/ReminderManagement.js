@@ -106,6 +106,7 @@ const ReminderPage = () => {
   const handleToday = () => setSelectedDate(dayjs());
 
   const handleCheckReminder = (reminder) => {
+    console.log("sidd", reminder);
     setCurrentReminder(reminder);
     setShowRemarkModal(true);
   };
@@ -117,7 +118,7 @@ const ReminderPage = () => {
     }
     try {
       await axios.put(
-        `${BACKEND_URL}/clientadmin/reminderManagement/updateReminder/${currentReminder.id}/complete`,
+        `${BACKEND_URL}/clientadmin/reminderManagement/updateReminder?id=${currentReminder.uuid}`,
         {
           remarks: remark,
           orgId,

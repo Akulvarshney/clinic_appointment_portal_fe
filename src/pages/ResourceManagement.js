@@ -10,6 +10,7 @@ import {
   Alert,
   Tag,
   Space,
+  InputNumber,
 } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -28,6 +29,7 @@ const ResourceManagement = () => {
   const [editingResource, setEditingResource] = useState(null);
 
   const [isNewService, setIsNewService] = useState(false);
+  const [editResourceFeature, setEditResourceFeature] = useState(false);
 
   const token = localStorage.getItem("token");
   const orgId = localStorage.getItem("selectedOrgId");
@@ -43,6 +45,7 @@ const ResourceManagement = () => {
           },
         }
       );
+      //console.log("resoiurces>>> ", response.data.response);
       setResources(response.data.response || []);
     } catch (err) {
       console.error("Error fetching resources:", err);
@@ -56,6 +59,9 @@ const ResourceManagement = () => {
     fetchResources();
 
     setIsNewService(isFeatureValid("RESOURCE_MANAGEMENT", "ADD_RESOURCE"));
+    setEditResourceFeature(
+      isFeatureValid("RESOURCE_MANAGEMENT", "EDIT_RESOURCE")
+    );
   }, []);
 
   const handleAddResource = () => {
@@ -70,6 +76,7 @@ const ResourceManagement = () => {
     setEditingResource(resource);
     form.setFieldsValue({
       name: resource.name,
+      Order: resource.resource_order,
     });
     setIsModalVisible(true);
     setErrorMsg("");
@@ -93,11 +100,12 @@ const ResourceManagement = () => {
       if (editingResource) {
         // Update existing resource (assuming API endpoint exists)
         await axios.put(
-          `${BACKEND_URL}/clientadmin/resourceManagement/updateResource`,
+          `${BACKEND_URL}/clientadmin/resourceManagement/updateResources`,
           {
             id: editingResource.id,
             resourceName: values.name,
             orgId: orgId,
+            order: values.Order,
           },
           {
             headers: {
@@ -114,6 +122,7 @@ const ResourceManagement = () => {
           {
             resourceName: values.name,
             orgId: orgId,
+            order: values.Order,
           },
           {
             headers: {
@@ -144,9 +153,9 @@ const ResourceManagement = () => {
   const handleStatusChange = async (id, newStatus) => {
     try {
       setLoadingResourceId(id);
-      await axios.patch(
-        `${BACKEND_URL}/clientadmin/resourceManagement/updateResources?id=${id}`,
-        { status: newStatus },
+      await axios.put(
+        `${BACKEND_URL}/clientadmin/resourceManagement/updateResources`,
+        { status: newStatus, id: id },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -244,6 +253,7 @@ const ResourceManagement = () => {
             icon={<EditOutlined />}
             onClick={() => handleEditResource(record)}
             size="small"
+            disabled={!editResourceFeature}
           >
             Edit
           </Button>
@@ -252,6 +262,7 @@ const ResourceManagement = () => {
             onConfirm={() => handleDeleteResource(record.id)}
             okText="Yes"
             cancelText="No"
+            disabled={!editResourceFeature}
           >
             <Button
               type="link"
@@ -357,6 +368,20 @@ const ResourceManagement = () => {
                 ]}
               >
                 <Input placeholder="Enter resource name" />
+              </Form.Item>
+              <Form.Item
+                label="Resource Order"
+                name="Order"
+                rules={[
+                  { required: true, message: "Please enter Resource Order!" },
+                  {
+                    type: "number",
+                    min: 1,
+                    message: "Resource order must be a positive integer!",
+                  },
+                ]}
+              >
+                <InputNumber style={{ width: "100%" }} precision={0} />
               </Form.Item>
 
               {errorMsg && (

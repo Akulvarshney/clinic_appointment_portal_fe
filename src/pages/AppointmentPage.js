@@ -13,7 +13,7 @@ const START_HOUR = 8;
 const END_HOUR = 21;
 const SLOT_MINUTES = 15;
 const SLOT_HEIGHT = 30;
-const HEADER_H = 40;
+const HEADER_H = 50;
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
@@ -181,9 +181,9 @@ export default function AppointmentPage() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        console.log("siddhant> ", response.data);
+        // console.log("siddhant> ", response.data);
         const doctor = response.data.data.records || [];
-        console.log("doctor ", doctor);
+        // console.log("doctor ", doctor);
         const formatted = doctor.map((doc) => ({
           id: doc.id,
           name: doc.first_name,
@@ -236,13 +236,15 @@ export default function AppointmentPage() {
           }
         );
 
-        const roles = response.data.response || [];
-        const formatted = roles.map((emp) => ({
+        const appts = response.data.response || [];
+        const formatted = appts.map((emp) => ({
           id: emp.id,
           name: emp.name,
           color: "#e3f2fd",
           dot: emp.color || "#789",
+          resource_order: emp.resource_order,
         }));
+        // console.log("Resources>> ", formatted);
         setResources(formatted);
       } catch (err) {
         console.error(err);
@@ -374,8 +376,8 @@ export default function AppointmentPage() {
         setAppointments([]);
 
         const date = dayjs(currentDate).startOf("day").toISOString();
-        console.log("Fetching appointments for date:", date);
-        console.log("Current date object:", currentDate);
+        //console.log("Fetching appointments for date:", date);
+        //console.log("Current date object:", currentDate);
 
         const response = await axios.get(
           `${BACKEND_URL}/appointments/appt/getActiveAppointments?orgId=${orgId}&date=${date}`,
@@ -385,7 +387,7 @@ export default function AppointmentPage() {
         );
 
         const apptsFromAPI = response.data.response || [];
-        console.log("Raw appointments from API:", apptsFromAPI);
+        //console.log("Raw appointments from API:", apptsFromAPI);
 
         const formattedAppts = apptsFromAPI.map((appt) => ({
           id: appt.id,
@@ -405,12 +407,12 @@ export default function AppointmentPage() {
           color: getStatusColor(appt.status) || "#e2eafc",
         }));
 
-        console.log("Formatted appointments:", formattedAppts);
-        console.log(
-          "Setting appointments state with:",
-          formattedAppts.length,
-          "appointments"
-        );
+        // console.log("Formatted appointments:", formattedAppts);
+        // console.log(
+        //   "Setting appointments state with:",
+        //   formattedAppts.length,
+        //   "appointments"
+        // );
         setAppointments(formattedAppts);
         setAppointmentsLoading(false);
       } catch (err) {
@@ -692,7 +694,7 @@ export default function AppointmentPage() {
 
   const saveNewAppointment = async (valuesFromForm) => {
     try {
-      console.log("values formmmm ", valuesFromForm);
+      //console.log("values formmmm ", valuesFromForm);
       const today = dayjs().startOf("day");
       const date = valuesFromForm.date || "";
       if (date.isBefore(today, "day")) {
@@ -741,7 +743,7 @@ export default function AppointmentPage() {
         serviceId,
         employeeId,
       };
-      console.log(newAppt);
+      //console.log(newAppt);
 
       // Optional: local overlap check before calling backend
       if (isOverlapping(newAppt, appointments)) {
@@ -871,7 +873,8 @@ export default function AppointmentPage() {
       <div
         ref={timeRulerRef}
         style={{
-          borderRight: "1px solid #e0e7ef",
+          borderRight: "1px solid #a6c2e2ff",
+          // borderRight: "1px solid #e0e7ef",
           background: "#f8fafc",
           position: "relative",
           overflowY: "scroll",
@@ -889,8 +892,8 @@ export default function AppointmentPage() {
               borderBottom: "1px dashed #e0e7ef",
               paddingRight: 8,
               textAlign: "right",
-              fontSize: 11,
-              color: "#789",
+              fontSize: 15,
+              color: "rgba(126, 159, 193, 1)",
               display: "flex",
               alignItems: "flex-start",
               userSelect: "none",
@@ -909,10 +912,10 @@ export default function AppointmentPage() {
 
   function renderAppointmentsForResource(r) {
     const appts = appointments.filter((a) => a.resourceId === r.id);
-    console.log(
-      `Rendering ${appts.length} appointments for resource ${r.id} (${r.name}):`,
-      appts
-    );
+    // console.log(
+    //   `Rendering ${appts.length} appointments for resource ${r.id} (${r.name}):`,
+    //   appts
+    // );
 
     if (appts.length === 0) {
       console.log(`No appointments found for resource ${r.id}`);
@@ -924,7 +927,7 @@ export default function AppointmentPage() {
       const durMins = Math.max(15, (a.end - a.start) / 60000);
       const heightPx = Math.max(16, (durMins / SLOT_MINUTES) * SLOT_HEIGHT);
 
-      console.log(`Appointment ${a.id}: top=${topPx}px, height=${heightPx}px`);
+      //console.log(`Appointment ${a.id}: top=${topPx}px, height=${heightPx}px`);
 
       return (
         <div
@@ -1016,7 +1019,7 @@ export default function AppointmentPage() {
           display: "grid",
           position: "relative",
           //gridTemplateColumns: `repeat(${Resources.length}, minmax(0,1fr))`,
-          gridTemplateColumns: `repeat(${Resources.length}, minmax(170px, 1fr))`,
+          gridTemplateColumns: `repeat(${Resources.length}, minmax(165px, 1fr))`,
           minHeight: slotCount * SLOT_HEIGHT,
           background: "#f9fafb",
           height: "100%",
@@ -1030,6 +1033,7 @@ export default function AppointmentPage() {
               ref={(el) => (colRefs.current[r.id] = el)}
               style={{
                 position: "relative",
+                //borderRight: "1px solid #e0e7ef",
                 borderRight: "1px solid #e0e7ef",
                 background: "#fff",
               }}
@@ -1052,7 +1056,7 @@ export default function AppointmentPage() {
                   key={i}
                   style={{
                     height: SLOT_HEIGHT,
-                    borderBottom: "1px solid #f6f8fa",
+                    borderBottom: "1px solid #eef3f7ff",
                   }}
                 />
               ))}
@@ -1066,8 +1070,25 @@ export default function AppointmentPage() {
       </div>
     );
   }
-
   function renderStickyHeader() {
+    const sortedResources = [...Resources].sort((a, b) => {
+      const orderA = a.resource_order != null ? Number(a.resource_order) : null;
+      const orderB = b.resource_order != null ? Number(b.resource_order) : null;
+
+      if (orderA == null && orderB == null) return 0;
+      if (orderA == null) return -1;
+      if (orderB == null) return 1;
+
+      return orderA - orderB;
+    });
+    // console.log(
+    //   "Sorted resources:",
+    //   sortedResources.map((r) => ({
+    //     name: r.name,
+    //     order: r.resource_order,
+    //   }))
+    // );
+
     return (
       <div
         style={{
@@ -1077,16 +1098,15 @@ export default function AppointmentPage() {
           zIndex: 10,
           background: "#fff",
           borderBottom: "1px solid #e0e7ef",
-          gridTemplateColumns: `repeat(${Resources.length}, minmax(170px, 1fr))`,
+          gridTemplateColumns: `repeat(${sortedResources.length}, minmax(165px, 1fr))`,
           height: HEADER_H,
           userSelect: "none",
         }}
       >
-        {(Resources.length
-          ? Resources
+        {(sortedResources.length
+          ? sortedResources
           : [{ id: "loading", name: "Loading..." }]
         ).map((r, i) => {
-          // Calculate appointment count for this resource
           const appointmentCount = appointments.filter(
             (a) => a.resourceId === r.id
           ).length;
@@ -1097,11 +1117,14 @@ export default function AppointmentPage() {
               style={{
                 display: "flex",
                 alignItems: "center",
+                flexDirection: "column",
                 justifyContent: "center",
                 fontWeight: 450,
                 color: "#345",
                 borderRight:
-                  i === Resources.length - 1 ? "none" : "1px solid #e0e7ef",
+                  i === sortedResources.length - 1
+                    ? "none"
+                    : "1px solid #e0e7ef", // ✅ fixed
                 height: "100%",
                 userSelect: "none",
               }}
@@ -1111,14 +1134,19 @@ export default function AppointmentPage() {
               >
                 <span
                   style={{
-                    height: 14,
-                    width: 14,
+                    height: 11,
+                    width: 11,
                     borderRadius: 7,
                     display: "inline-block",
                     background: r.dot || "#789",
                   }}
                 />
-                {r.name} ({appointmentCount})
+                {r.name}
+              </span>
+              <span
+                style={{ fontSize: 14, color: "#555", paddingBottom: "3px" }}
+              >
+                ({appointmentCount})
               </span>
             </div>
           );
@@ -1126,6 +1154,82 @@ export default function AppointmentPage() {
       </div>
     );
   }
+
+  // function renderStickyHeader() {
+  //   const sortedResources = [...Resources].sort((a, b) => {
+  //     if (a.resource_order == null && b.resource_order == null) return 0;
+  //     if (a.resource_order == null) return -1;
+  //     if (b.resource_order == null) return 1;
+  //     if (a.resource_order !== b.resource_order) {
+  //       return a.resource_order - b.resource_order;
+  //     }
+  //     return 0;
+  //   });
+
+  //   return (
+  //     <div
+  //       style={{
+  //         display: "grid",
+  //         position: "sticky",
+  //         top: 0,
+  //         zIndex: 10,
+  //         background: "#fff",
+  //         borderBottom: "1px solid #e0e7ef",
+  //         gridTemplateColumns: `repeat(${sortedResources.length}, minmax(165px, 1fr))`,
+  //         height: HEADER_H,
+  //         userSelect: "none",
+  //       }}
+  //     >
+  //       {(sortedResources.length
+  //         ? sortedResources
+  //         : [{ id: "loading", name: "Loading..." }]
+  //       ).map((r, i) => {
+  //         // Calculate appointment count for this resource
+  //         const appointmentCount = appointments.filter(
+  //           (a) => a.resourceId === r.id
+  //         ).length;
+
+  //         return (
+  //           <div
+  //             key={r.id + "_" + i}
+  //             style={{
+  //               display: "flex",
+  //               alignItems: "center",
+  //               flexDirection: "column",
+  //               justifyContent: "center",
+  //               fontWeight: 450,
+  //               color: "#345",
+  //               borderRight:
+  //                 i === Resources.length - 1 ? "none" : "1px solid #e0e7ef",
+  //               height: "100%",
+  //               userSelect: "none",
+  //             }}
+  //           >
+  //             <span
+  //               style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+  //             >
+  //               <span
+  //                 style={{
+  //                   height: 11,
+  //                   width: 11,
+  //                   borderRadius: 7,
+  //                   display: "inline-block",
+  //                   background: r.dot || "#789",
+  //                 }}
+  //               />
+  //               {r.name}
+  //             </span>
+  //             <span
+  //               style={{ fontSize: 14, color: "#555", paddingBottom: "3px" }}
+  //             >
+  //               ({appointmentCount})
+  //             </span>
+  //           </div>
+  //         );
+  //       })}
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
@@ -1602,6 +1706,7 @@ export default function AppointmentPage() {
             //width: "100%",
             borderRadius: 18,
             border: "1px solid #e0e7ef",
+
             background: "#fff",
             boxShadow: "0 2px 16px #e3f2fd88",
             overflow: "hidden",
@@ -1613,7 +1718,7 @@ export default function AppointmentPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "100px 1fr",
+              gridTemplateColumns: "70px 1fr",
               height: "calc(100vh - 80px)",
             }}
           >

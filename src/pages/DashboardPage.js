@@ -1,8 +1,9 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Select } from "antd";
+import { useNavigate } from "react-router-dom"; // ✅ navigation
 import Sidebar from "../components/SideBar.js";
-import { BACKEND_URL, isFeatureValid } from "../assets/constants";
+import { BACKEND_URL } from "../assets/constants";
 import {
   BarChart,
   Bar,
@@ -14,6 +15,12 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
+import {
+  UserOutlined,
+  CalendarOutlined,
+  PieChartOutlined,
+  DollarOutlined,
+} from "@ant-design/icons";
 
 const DashboardPage = () => {
   const orgId = localStorage.getItem("selectedOrgId");
@@ -22,6 +29,7 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [barData, setbarData] = useState([]);
   const { Option } = Select;
+  const navigate = useNavigate(); // ✅ for navigation
 
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -45,25 +53,26 @@ const DashboardPage = () => {
     { label: "2025", value: 2025 },
     { label: "2026", value: 2026 },
   ];
-  // const barData = [
-  //   { name: "Mon", value: 240 },
-  //   { name: "Tue", value: 180 },
-  //   { name: "Wed", value: 280 },
-  //   { name: "Thu", value: 120 },
-  //   { name: "Fri", value: 340 },
-  // ];
 
-  // const pieData = [
-  //   { name: "Group A", value: 400 },
-  //   { name: "Group B", value: 300 },
-  //   { name: "Group C", value: 300 },
-  // ];
+  // Example mapping of KPI → page
+  const kpiRoutes = {
+    "Total Clients": "/clients",
+    "Today Appointments": "/appointments",
+    "Today's Reminders": "/reminders",
+    //Balance: "/billing",
+  };
 
-  const COLORS = ["#007bff", "#00C49F", "#FFBB28"];
+  const icons = [
+    <UserOutlined />,
+    <CalendarOutlined />,
+    <PieChartOutlined />,
+    <DollarOutlined />,
+  ];
+
+  // ✅ Fetch KPI stats
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        //const res = await axios.get(`${BACKEND_URL}/clientAdmin/getDashboardDetails/KPI?orgId=${orgId}`);
         const res = await axios.get(
           `${BACKEND_URL}/clientAdmin/getDashboardDetails/KPI?orgId=${orgId}`,
           {
@@ -72,8 +81,6 @@ const DashboardPage = () => {
             },
           }
         );
-        //console.log(res.data)
-
         setStats(res.data.response);
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
@@ -84,10 +91,10 @@ const DashboardPage = () => {
     fetchStats();
   }, []);
 
+  // ✅ Fetch bar chart
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchBar = async () => {
       try {
-        //const res = await axios.get(`${BACKEND_URL}/clientAdmin/getDashboardDetails/KPI?orgId=${orgId}`);
         const res = await axios.get(
           `${BACKEND_URL}/clientAdmin/getDashboardDetails/barChart?orgId=${orgId}`,
           {
@@ -96,7 +103,6 @@ const DashboardPage = () => {
             },
           }
         );
-        console.log(res.data);
         setbarData(res.data.response);
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
@@ -104,27 +110,23 @@ const DashboardPage = () => {
         setLoading(false);
       }
     };
-    fetchStats();
+    fetchBar();
   }, []);
 
+  // ✅ Fetch pie chart
   useEffect(() => {
     const fetchClientCategories = async () => {
       try {
         const res = await axios.get(
           `${BACKEND_URL}/clientAdmin/getDashboardDetails/PieChart`,
           {
-            params: {
-              orgId,
-              month: selectedMonth,
-              year: selectedYear,
-            },
+            params: { orgId, month: selectedMonth, year: selectedYear },
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
         setPieData(res.data.response);
-        //setSelectedMonth(null);
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
       } finally {
@@ -135,86 +137,66 @@ const DashboardPage = () => {
   }, [selectedMonth, selectedYear]);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-100 to-blue-50 font-sans text-gray-800">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-blue-50 font-sans text-gray-800">
       <main className="flex-1 px-6 md:px-12 py-10 animate-fadeIn">
+        {/* HEADER */}
         <header className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4">
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-wide">
-            Main Dashboard
+          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 drop-shadow-sm">
+            Dashboard Overview
           </h2>
-          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 shadow-xl border-4 border-white animate-bounce"></div>
+          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 shadow-lg border-4 border-white flex items-center justify-center text-white font-bold text-xl">
+            ✨
+          </div>
         </header>
 
-        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {[
-            { title: "Total clients", amount: "$350.40" },
-            { title: "Today Appointments", amount: "$642.39" },
-            {
-              title: "Total Appointments",
-              amount: "$574.34",
-              //badge: <span className="text-green-500 text-lg ml-2">+23%</span>,
-            },
-            { title: "Balance", amount: "$1,000" },
-            
-          ].map(({ title, amount, badge }, i) => (
-            <div
-              key={i}
-              className="bg-white p-6 rounded-2xl shadow-md hover:shadow-2xl border-l-4 border-blue-500 hover:border-blue-700 transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <h4 className="text-gray-500 font-semibold text-lg">{title}</h4>
-              <p className="text-3xl font-bold text-gray-800 mt-2">
-                {amount} {badge}
-              </p>
-            </div>
-          ))}
-        </div> */}
+        {/* KPI CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {stats.map(({ title, amount, badge }, i) => (
             <div
               key={i}
-              className="bg-white p-6 rounded-2xl shadow-md hover:shadow-2xl border-l-4 border-blue-500 hover:border-blue-700 transition-all duration-300 transform hover:-translate-y-1"
+              onClick={() => navigate(kpiRoutes[title] || "/")}
+              className="cursor-pointer relative bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl border-l-4 border-blue-500 hover:border-purple-600 transition-all duration-300 transform hover:-translate-y-1"
             >
+              <div className="absolute top-4 right-4 text-blue-500 text-2xl">
+                {icons[i % icons.length]}
+              </div>
               <h4 className="text-gray-500 font-semibold text-lg">{title}</h4>
-              <p className="text-3xl font-bold text-gray-800 mt-2">
+              <p className="text-3xl font-bold text-gray-900 mt-2">
                 {amount} {badge}
               </p>
             </div>
           ))}
         </div>
 
+        {/* CHARTS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 animate-slideInLeft">
-            <h4 className="text-2xl font-semibold mb-5 text-gray-700">
-              Appointments next 7 Days
+          {/* BAR CHART */}
+          <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300">
+            <h4 className="text-2xl font-semibold mb-5 text-gray-700 flex items-center gap-2">
+              📅 Appointments (Next 7 Days)
             </h4>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={barData}>
-                <XAxis dataKey="name" stroke="#888" />
-                <YAxis stroke="#888" />
+                <XAxis dataKey="name" stroke="#666" />
+                <YAxis stroke="#666" />
                 <Tooltip cursor={{ fill: "#f1f5f9" }} />
                 <Bar dataKey="value" fill="#007bff" radius={[10, 10, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 animate-slideInRight">
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                marginBottom: "12px",
-              }}
-            >
-              <h4 className="text-2xl font-semibold mb-5 text-gray-700">
-                Client Categories
+          {/* PIE CHART */}
+          <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center gap-4 mb-5">
+              <h4 className="text-2xl font-semibold text-gray-700 flex items-center gap-2">
+                🧑‍🤝‍🧑 Client Categories
               </h4>
               <Select
                 value={selectedMonth}
                 onChange={setSelectedMonth}
-                //onChange={setSelectedMonth}
-                placeholder="Select Month"
-                style={{ width: 180, marginBottom: 15 }}
-                allowClear // shows 'null' when cleared
+                placeholder="Month"
+                style={{ width: 140 }}
+                allowClear
               >
                 {monthsList.map((month) => (
                   <Option key={month.value} value={month.value}>
@@ -222,13 +204,12 @@ const DashboardPage = () => {
                   </Option>
                 ))}
               </Select>
-
               <Select
                 value={selectedYear}
                 onChange={setSelectedYear}
-                placeholder="Select Year"
-                style={{ width: 180, marginBottom: 15 }}
-                allowClear // shows 'null' when cleared
+                placeholder="Year"
+                style={{ width: 140 }}
+                allowClear
               >
                 {yearList.map((year) => (
                   <Option key={year.value} value={year.value}>
@@ -245,12 +226,17 @@ const DashboardPage = () => {
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  outerRadius={85}
-                  fill="#8884d8"
+                  outerRadius={90}
                   label={({ name, value }) => `${name} (${value})`}
                 >
                   {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        entry.color ||
+                        ["#007bff", "#00C49F", "#FFBB28", "#FF8042"][index % 4]
+                      } // ✅ pick from backend if available
+                    />
                   ))}
                 </Pie>
               </PieChart>
