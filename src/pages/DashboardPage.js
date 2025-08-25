@@ -127,6 +127,7 @@ const DashboardPage = () => {
             },
           }
         );
+        console.log(res.data.response);
         setPieData(res.data.response);
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);

@@ -379,6 +379,30 @@ const ClientDetailPage = () => {
                 <Tag color="purple">
                   Age: {calculateAge(clientData?.date_of_birth)}
                 </Tag>
+                {clientData?.client_organization_category?.[0]
+                  ?.booked_status === "BOOKED" ? (
+                  <Tag
+                    style={{
+                      backgroundColor: "green", // green
+                      color: "white",
+                      border: "none",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Booked
+                  </Tag>
+                ) : (
+                  <Tag
+                    style={{
+                      backgroundColor: "#dc2626", // red
+                      color: "white",
+                      border: "none",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Unbooked
+                  </Tag>
+                )}
               </div>
             </div>
 
@@ -614,6 +638,82 @@ const ClientDetailPage = () => {
                 Quick Actions
               </Title>
               <div className="space-y-3">
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  // type="primary"
+                  style={{
+                    width: "100%",
+                    borderRadius: "8px",
+                    fontWeight: 500,
+                    ...(clientData?.client_organization_category?.[0]
+                      ?.booked_status === "BOOKED"
+                      ? {
+                          backgroundColor: "#16a34a", // green fill
+                          borderColor: "#16a34a",
+                          color: "white",
+                        }
+                      : {
+                          backgroundColor: "white", // white fill
+                          borderColor: "#2563eb", // blue border
+                          color: "#2563eb", // blue text
+                        }),
+                  }}
+                  onClick={async () => {
+                    try {
+                      const currentStatus =
+                        clientData?.client_organization_category?.[0]
+                          ?.booked_status;
+                      const newStatus =
+                        currentStatus === "BOOKED" ? "UNBOOKED" : "BOOKED";
+
+                      await axios.put(
+                        `${BACKEND_URL}/patient/clients/updateClientBookedStatus`,
+                        {
+                          clientId: clientData.id,
+                          orgId: clientData.organization_id,
+                          status: newStatus,
+                          categoryId:
+                            clientData.client_organization_category[0]
+                              .category_id,
+                        },
+                        {
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/json",
+                          },
+                        }
+                      );
+
+                      messageApi.success(
+                        `Client marked as ${newStatus} (${
+                          clientData?.client_organization_category?.[0]
+                            ?.categories?.category_name || "No Category"
+                        })`
+                      );
+
+                      // optionally update UI without full refresh
+                      setClientData((prev) => ({
+                        ...prev,
+                        client_organization_category: [
+                          {
+                            ...prev.client_organization_category[0],
+                            booked_status: newStatus,
+                          },
+                        ],
+                      }));
+                    } catch (err) {
+                      console.error("Error updating client:", err);
+                      messageApi.error("Failed to update client");
+                    }
+                  }}
+                >
+                  {clientData?.client_organization_category?.[0]
+                    ?.booked_status === "BOOKED"
+                    ? "Mark as UNBOOKED"
+                    : "Mark as BOOKED"}
+                </Button>
+
                 <Button
                   type="primary"
                   block

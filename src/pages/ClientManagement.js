@@ -355,7 +355,10 @@ const ClientManagement = () => {
           </Select>
         </div>
       ),
-      render: (_, record) => record.categories?.category_name || "-",
+      //render: (_, record) => record.categories?.category_name || "-",
+      render: (_, record) =>
+        record.client_organization_category?.[0]?.categories?.category_name ||
+        "-",
     },
     {
       title: "Email",

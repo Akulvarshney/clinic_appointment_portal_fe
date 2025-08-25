@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "glorywellnic04"
-  }
+    "default": "glorywellnic04",
+    "prd": "glorywellnicprd"
+  },
+  "targets": {},
+  "etags": {}
 }
