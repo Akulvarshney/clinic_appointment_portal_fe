@@ -503,7 +503,7 @@ const ClientManagement = () => {
                   label="Email"
                   name="email"
                   rules={[
-                    { required: true, message: "Please enter your email!" },
+                    // { required: true, message: "Please enter your email!" },
                     {
                       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                       message: "Please enter a valid email address!",
@@ -541,7 +541,7 @@ const ClientManagement = () => {
               <Form.Item
                 label="Address"
                 name="address"
-                rules={[{ required: true, message: "Please enter address!" }]}
+                //rules={[{ required: true, message: "Please enter address!" }]}
               >
                 <Input.TextArea rows={3} placeholder="Enter complete address" />
               </Form.Item>
