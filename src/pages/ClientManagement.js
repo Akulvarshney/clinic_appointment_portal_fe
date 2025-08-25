@@ -492,13 +492,7 @@ const ClientManagement = () => {
                   </Select>
                 </Form.Item>
 
-                <Form.Item
-                  label="Date of Birth"
-                  name="dob"
-                  rules={[
-                    { required: true, message: "Please select date of birth!" },
-                  ]}
-                >
+                <Form.Item label="Date of Birth" name="dob">
                   <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
 

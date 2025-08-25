@@ -14,6 +14,7 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 import {
   UserOutlined,
@@ -171,7 +172,7 @@ const DashboardPage = () => {
         {/* CHARTS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* BAR CHART */}
-          <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300">
+          <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
             <h4 className="text-2xl font-semibold mb-5 text-gray-700 flex items-center gap-2">
               📅 Appointments (Next 7 Days)
             </h4>
@@ -191,6 +192,8 @@ const DashboardPage = () => {
               <h4 className="text-2xl font-semibold text-gray-700 flex items-center gap-2">
                 🧑‍🤝‍🧑 Client Categories
               </h4>
+            </div>
+            <div className="flex justify-end gap-4 mb-5">
               <Select
                 value={selectedMonth}
                 onChange={setSelectedMonth}
@@ -218,16 +221,18 @@ const DashboardPage = () => {
                 ))}
               </Select>
             </div>
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={pieData}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
-                  cy="50%"
+                  cy="40%"
                   outerRadius={90}
-                  label={({ name, value }) => `${name} (${value})`}
+                  legendType="circle"
+                  labelLine={false}
+                  label={false}
                 >
                   {pieData.map((entry, index) => (
                     <Cell
@@ -235,10 +240,21 @@ const DashboardPage = () => {
                       fill={
                         entry.color ||
                         ["#007bff", "#00C49F", "#FFBB28", "#FF8042"][index % 4]
-                      } // ✅ pick from backend if available
+                      }
                     />
                   ))}
                 </Pie>
+
+                {/* Legend with values */}
+                <Legend
+                  layout="horizontal"
+                  verticalAlign="bottom"
+                  align="center"
+                  iconType="circle"
+                  formatter={(value, entry) =>
+                    `${value} (${entry.payload.value})`
+                  }
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>

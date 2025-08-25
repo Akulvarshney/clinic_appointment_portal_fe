@@ -363,9 +363,14 @@ const ClientDetailPage = () => {
               <Title level={2} className="!mb-2">
                 {clientData?.first_name} {clientData?.last_name}
               </Title>
-              <Text className="text-gray-500 block mb-3">
-                Client ID: {clientData?.portalid}
-              </Text>
+              <div className="flex gap-5 items-center">
+                <Text className="text-gray-500 block mb-3">
+                  Client ID: {clientData?.portalid}
+                </Text>
+                <Text className="text-gray-500 block mb-3">
+                  Login ID: {clientData?.users.login_id}
+                </Text>
+              </div>
               <div className="flex flex-wrap gap-2">
                 <Tag color="blue" icon={<TeamOutlined />}>
                   {clientData?.organizations?.name}
