@@ -65,6 +65,8 @@ const ClientDetailPage = () => {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   const [isMobileView, setIsMobileView] = useState(false);
 
@@ -100,11 +102,39 @@ const ClientDetailPage = () => {
   };
 
   useEffect(() => {
+    fetchCategories();
+  }, []);
+  useEffect(() => {
     if (clientId) {
       fetchClientData();
     }
   }, [clientId]);
 
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        `${BACKEND_URL}/clientadmin/userMgmt/category?organization_id=${localStorage.getItem(
+          "selectedOrgId"
+        )}&is_valid=true`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (res.status !== 200) {
+        throw new Error("Failed to fetch categories");
+      }
+      console.log("Categories fetched:", res.data.categories);
+      setCategories(res.data.categories || []);
+    } catch (err) {
+      message.error("Failed to fetch categories");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
   // Edit client functionality
   const handleEditClient = () => {
     if (clientData) {
@@ -117,6 +147,8 @@ const ClientDetailPage = () => {
           ? dayjs(clientData.date_of_birth)
           : null,
         address: clientData.address,
+        gender: clientData.gender,
+        categoryId: clientData?.client_organization_category?.[0]?.category_id,
       });
       setIsEditModalVisible(true);
     }
@@ -126,6 +158,7 @@ const ClientDetailPage = () => {
     setIsLoading(true);
     try {
       const payload = {
+        orgId: localStorage.getItem("selectedOrgId"),
         first_name: values.first_name,
         last_name: values.last_name,
         phone: values.phone,
@@ -134,6 +167,8 @@ const ClientDetailPage = () => {
           ? values.date_of_birth.format("YYYY-MM-DD")
           : null,
         address: values.address,
+        gender: values.gender,
+        category: values.categoryId,
       };
 
       const response = await axios.put(
@@ -365,7 +400,7 @@ const ClientDetailPage = () => {
               </Title>
               <div className="flex gap-5 items-center">
                 <Text className="text-gray-500 block mb-3">
-                  Client ID: {clientData?.portalid}
+                  Client ID: {clientData?.client_organizations?.[0]?.portal_id}
                 </Text>
                 <Text className="text-gray-500 block mb-3">
                   Login ID: {clientData?.users.login_id}
@@ -673,9 +708,9 @@ const ClientDetailPage = () => {
                           clientId: clientData.id,
                           orgId: clientData.organization_id,
                           status: newStatus,
-                          categoryId:
-                            clientData.client_organization_category[0]
-                              .category_id,
+                          // categoryId:
+                          //   clientData.client_organization_category[0]
+                          //     .category_id,
                         },
                         {
                           headers: {
@@ -783,13 +818,11 @@ const ClientDetailPage = () => {
               <Form.Item
                 name="last_name"
                 label="Last Name"
-                rules={[
-                  { required: true, message: "Please enter last name" },
-                  {
-                    min: 2,
-                    message: "Last name must be at least 2 characters",
-                  },
-                ]}
+                rules={
+                  [
+                    //{ required: true, message: "Please enter last name" },
+                  ]
+                }
               >
                 <Input placeholder="Enter last name" />
               </Form.Item>
@@ -810,10 +843,40 @@ const ClientDetailPage = () => {
             </Form.Item>
 
             <Form.Item
+              label="Gender"
+              name="gender"
+              rules={[{ required: true, message: "Please select gender!" }]}
+            >
+              <Select placeholder="Select gender">
+                <Option value="Male">Male</Option>
+                <Option value="Female">Female</Option>
+                <Option value="Other">Other</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              label="Category"
+              name="categoryId" // this should match your backend field name
+              rules={[{ required: true, message: "Please select a category!" }]}
+            >
+              <Select
+                placeholder="Select category"
+                //value={form.getFieldValue("categoryId")} // auto-set value from Form
+                onChange={(value) => form.setFieldsValue({ categoryId: value })} // updates form
+                allowClear
+              >
+                {categories?.map((category) => (
+                  <Option key={category.id} value={category.id}>
+                    {category.category_name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
               name="email"
               label="Email Address"
               rules={[
-                { required: true, message: "Please enter email address" },
+                //{ required: true, message: "Please enter email address" },
                 {
                   type: "email",
                   message: "Please enter a valid email address",
@@ -826,9 +889,11 @@ const ClientDetailPage = () => {
             <Form.Item
               name="date_of_birth"
               label="Date of Birth"
-              rules={[
-                { required: true, message: "Please select date of birth" },
-              ]}
+              rules={
+                [
+                  // { required: true, message: "Please select date of birth" },
+                ]
+              }
             >
               <DatePicker
                 style={{ width: "100%" }}
@@ -841,7 +906,7 @@ const ClientDetailPage = () => {
             <Form.Item
               name="address"
               label="Address"
-              rules={[{ required: true, message: "Please enter address" }]}
+              //rules={[{ required: true, message: "Please enter address" }]}
             >
               <Input.TextArea rows={3} placeholder="Enter full address" />
             </Form.Item>

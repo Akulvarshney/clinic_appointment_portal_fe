@@ -289,6 +289,12 @@ const ClientManagement = () => {
         );
       },
     },
+    {
+      title: "Client ID",
+      //dataIndex: "gender",
+      dataIndex: ["client_organizations", 0, "portal_id"],
+      key: "gender",
+    },
     ...(isMobileView
       ? [
           {
@@ -298,25 +304,26 @@ const ClientManagement = () => {
           },
         ]
       : []),
+
     {
       title: "Address",
       dataIndex: "address",
       key: "address",
       ellipsis: true,
     },
-    {
-      title: "Date of Birth",
-      dataIndex: "date_of_birth",
-      key: "date_of_birth",
-      render: (dob) =>
-        dob
-          ? new Date(dob).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            })
-          : "-",
-    },
+    // {
+    //   title: "Date of Birth",
+    //   dataIndex: "date_of_birth",
+    //   key: "date_of_birth",
+    //   render: (dob) =>
+    //     dob
+    //       ? new Date(dob).toLocaleDateString("en-US", {
+    //           year: "numeric",
+    //           month: "2-digit",
+    //           day: "2-digit",
+    //         })
+    //       : "-",
+    // },
     {
       title: "Gender",
       dataIndex: "gender",
