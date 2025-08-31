@@ -83,7 +83,9 @@ const ClientDetailPage = () => {
   const fetchClientData = async () => {
     try {
       const response = await axios.get(
-        `${BACKEND_URL}/patient/clients/clientDetails/${clientId}`,
+        `${BACKEND_URL}/patient/clients/clientDetails/${clientId}?orgId=${localStorage.getItem(
+          "selectedOrgId"
+        )}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -400,7 +402,8 @@ const ClientDetailPage = () => {
               </Title>
               <div className="flex gap-5 items-center">
                 <Text className="text-gray-500 block mb-3">
-                  Client ID: {clientData?.client_organizations?.[0]?.portal_id}
+                  Client ID:{" "}
+                  {clientData?.client_organization_category?.[0]?.portal_id}
                 </Text>
                 <Text className="text-gray-500 block mb-3">
                   Login ID: {clientData?.users.login_id}
@@ -706,7 +709,7 @@ const ClientDetailPage = () => {
                         `${BACKEND_URL}/patient/clients/updateClientBookedStatus`,
                         {
                           clientId: clientData.id,
-                          orgId: clientData.organization_id,
+                          orgId: localStorage.getItem("selectedOrgId"),
                           status: newStatus,
                           // categoryId:
                           //   clientData.client_organization_category[0]

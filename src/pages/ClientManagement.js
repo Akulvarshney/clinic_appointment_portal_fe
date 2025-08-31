@@ -39,6 +39,8 @@ const ClientManagement = () => {
     pageSize: 10,
     total: 0,
   });
+  const [sort, setSort] = useState("portalid");
+  const [sortDir, setSortDir] = useState("desc");
   const [categorySelected, setCategorySelected] = useState(null);
   const [isMobileView, setIsMobileView] = useState(false);
   const [isAddClientFeatureValid, setIsAddClientFeatureValid] = useState(false);
@@ -47,16 +49,18 @@ const ClientManagement = () => {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetchRoleId();
-    checkMobileView();
-    fetchClients();
-    fetchCategories();
-    checkAddClientFeatureValid();
+    const initialize = async () => {
+      await fetchRoleId();
+      checkMobileView();
+      fetchCategories();
+      checkAddClientFeatureValid();
+    };
+    initialize();
   }, []);
 
   useEffect(() => {
     fetchClients();
-  }, [search, pagination.current, categorySelected]);
+  }, [search, pagination.current, categorySelected, sort, sortDir]);
 
   const fetchRoleId = async () => {
     try {
@@ -117,6 +121,8 @@ const ClientManagement = () => {
             limit: pagination.pageSize,
             orgId,
             categoryId: categorySelected,
+            sort,
+            sortDir,
           },
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -255,7 +261,8 @@ const ClientManagement = () => {
       pageSize: paginationInfo.pageSize,
       total: paginationInfo.total,
     });
-    fetchClients();
+
+    // fetchClients();
   };
 
   // Fix category filter handler
@@ -265,17 +272,12 @@ const ClientManagement = () => {
     setPagination((prev) => ({ ...prev, current: 1 })); // Reset to first page
   };
 
-  const categoriesFilter = [
-    ...new Set(
-      clients.map((c) => c.categories?.category_name?.trim()).filter(Boolean) // removes null/undefined
-    ),
-  ].map((cat) => ({ text: cat, value: cat }));
-
   const columns = [
     {
       title: "Name",
       dataIndex: "first_name",
-      key: "first_name",
+      key: "name",
+
       render: (firstName, record) => {
         const fullName =
           `${firstName || ""} ${record.last_name || ""}`.trim() || "-";
@@ -290,10 +292,22 @@ const ClientManagement = () => {
       },
     },
     {
-      title: "Client ID",
-      //dataIndex: "gender",
-      dataIndex: ["client_organizations", 0, "portal_id"],
-      key: "gender",
+      title: (
+        <p
+          // type="link"
+          onClick={() => {
+            setSort("portalid");
+            setSortDir((prev) => (prev === "desc" ? "asc" : "desc"));
+          }}
+        >
+          Client ID {sortDir === "asc" ? "▲" : "▼"}
+        </p>
+      ),
+      key: "portalid",
+      // sorter: true,
+
+      render: (_, record) =>
+        record.client_organization_category?.[0]?.portal_id || "-",
     },
     ...(isMobileView
       ? [
