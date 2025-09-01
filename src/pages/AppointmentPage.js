@@ -837,6 +837,16 @@ export default function AppointmentPage() {
           >
             →
           </button>
+          {/* ✅ Add Date Picker */}
+          <DatePicker
+            value={dayjs(currentDate)}
+            onChange={(date) => {
+              if (date) {
+                setCurrentDate(date.toDate());
+              }
+            }}
+            allowClear={false}
+          />
 
           <button
             type="button"
