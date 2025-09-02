@@ -110,6 +110,7 @@ export default function AppointmentPage() {
   const [newApptInfo, setNewApptInfo] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailAppt, setDetailAppt] = useState(null);
+  const [isViewClientMobile, setIsViewClientMobile] = useState(false);
 
   const [form] = Form.useForm();
 
@@ -145,6 +146,18 @@ export default function AppointmentPage() {
     }
     return out;
   }, []);
+  useEffect(() => {
+    const initialize = async () => {
+      checkAddClientFeatureValid();
+    };
+    initialize();
+  }, []);
+
+  const checkAddClientFeatureValid = () => {
+    const response = isFeatureValid("APPOINTMENT", "VIEW_CLIENT_MOBILE");
+    setIsViewClientMobile(response);
+    return response;
+  };
 
   useEffect(() => {
     async function fetchEmployees() {
@@ -387,7 +400,7 @@ export default function AppointmentPage() {
         );
 
         const apptsFromAPI = response.data.response || [];
-        //console.log("Raw appointments from API:", apptsFromAPI);
+        //console.log("Raw appointments from API Siddhant:", apptsFromAPI);
 
         const formattedAppts = apptsFromAPI.map((appt) => ({
           id: appt.id,
@@ -396,6 +409,9 @@ export default function AppointmentPage() {
           end: new Date(appt.end_time),
           resourceId: appt.resource_id,
           client: appt.clients?.first_name || "",
+          clientPhone: appt.clients?.phone || "",
+          clientPortalId:
+            appt.clients.client_organization_category[0].portal_id,
           service: appt.services?.name || "",
           status: appt.status || "",
           remarks: appt.remarks,
@@ -406,7 +422,7 @@ export default function AppointmentPage() {
           serviceId: appt.services?.id || "",
           color: getStatusColor(appt.status) || "#e2eafc",
         }));
-
+        //console.log("Raw appointments from API Siddhant2:", formattedAppts);
         // console.log("Formatted appointments:", formattedAppts);
         // console.log(
         //   "Setting appointments state with:",
@@ -1462,6 +1478,14 @@ export default function AppointmentPage() {
                   detailAppt.end.getMinutes()
                 )}
               </Descriptions.Item>
+              <Descriptions.Item label="Client Id">
+                {detailAppt.clientPortalId}
+              </Descriptions.Item>
+              {isViewClientMobile && (
+                <Descriptions.Item label="Client Mobile">
+                  {detailAppt.clientPhone}
+                </Descriptions.Item>
+              )}
 
               <Descriptions.Item label="Resource">
                 {(Resources.find((r) => r.id === detailAppt.resourceId) || {})
