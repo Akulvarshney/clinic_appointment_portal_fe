@@ -20,6 +20,7 @@ import ServicesManagement from "./pages/Services";
 import AppointmentPage from "./pages/AppointmentPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ReminderManagement from "./pages/ReminderManagement";
+import BillManagement from "./pages/BillManagement";
 
 import "../src/App.css";
 import Settings from "./pages/settings/Settings";
@@ -30,6 +31,7 @@ import NotificationManagement from "./pages/SuperAdmin/NotificationCreation";
 // ✅ Import icons
 import {
   FaTachometerAlt,
+  FaFileInvoice,
   FaUserMd,
   FaUsers,
   FaUserShield,
@@ -47,6 +49,11 @@ export const ROUTE_COMPONENTS = {
     component: DashboardPage,
     icon: <FaTachometerAlt />,
     label: "Dashboard",
+  },
+  "/billing": {
+    component: BillManagement,
+    icon: <FaFileInvoice />,
+    label: "Billing",
   },
   "/employeeManagement": {
     component: UserMgmt,

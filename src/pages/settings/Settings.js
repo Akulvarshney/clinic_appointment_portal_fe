@@ -3,6 +3,7 @@ import RoleManagement from "../RoleCreation";
 import ClientCategories from "../ClientCategories";
 import Profile from "../Profile";
 import NotificationCenter from "../NotificationCenter";
+import OrganizationInfo from "../OrganizationInfo";
 
 const { Table, Tabs } = require("antd");
 const { TabPane } = Tabs;
@@ -78,7 +79,8 @@ const Settings = () => {
       case "SYSTEM_PREFERENCES":
         return <div>Coming Soon</div>;
       case "AUDIT_LOGS":
-        return <div>Coming Soon</div>;
+        //return <div>Coming Soon</div>;
+        return <OrganizationInfo />;
       case "ROLE_MANAGEMENT":
         return <RoleManagement />;
       case "CLIENT_CATEGORIES":
