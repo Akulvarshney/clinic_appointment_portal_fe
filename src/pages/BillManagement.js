@@ -1,220 +1,155 @@
-import React, { useState } from "react";
-import { Table, Button, Radio, Space, Modal, Input, Form, message } from "antd";
-
-const initialData = {
-  invoices: [
-    {
-      key: "1",
-      number: "INV001",
-      clientName: "Acme Corp",
-      clientId: "C101",
-      amount: 1200,
-    },
-    {
-      key: "2",
-      number: "INV002",
-      clientName: "Globex Inc",
-      clientId: "C102",
-      amount: 850,
-    },
-  ],
-  quotations: [
-    {
-      key: "1",
-      number: "QT001",
-      clientName: "Beta Ltd",
-      clientId: "C201",
-      amount: 560,
-    },
-    {
-      key: "2",
-      number: "QT002",
-      clientName: "ZX Solutions",
-      clientId: "C202",
-      amount: 270,
-    },
-  ],
-  receipts: [
-    {
-      key: "1",
-      number: "RC001",
-      clientName: "John & Co.",
-      clientId: "C301",
-      amount: 340,
-    },
-    {
-      key: "2",
-      number: "RC002",
-      clientName: "Epsilon",
-      clientId: "C302",
-      amount: 1420,
-    },
-  ],
-};
-
-const tabConfig = [
-  { key: "invoices", label: "Invoices", createText: "Create Invoice" },
-  { key: "quotations", label: "Quotations", createText: "Create Quotation" },
-  { key: "receipts", label: "Receipts", createText: "Create Receipt" },
-];
+import React, { useState, useEffect } from "react";
+import { Table, Button, Radio, message } from "antd";
+import GenerateInvoiceModal from "./GenerateInvoiceModal";
+import { fetchServices } from "../services/OrgServices.js";
+import { fetchClients } from "../services/clientServices.js";
 
 const BillManagement = () => {
+  const orgId = localStorage.getItem("selectedOrgId");
   const [activeTab, setActiveTab] = useState("invoices");
-  const [data, setData] = useState(initialData);
-  const [loading, setLoading] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [data, setData] = useState({
+    invoices: [],
+    quotations: [],
+    receipts: [],
+  });
+  const [modalType, setModalType] = useState(null);
+  const [viewData, setViewData] = useState(null);
 
-  const [form] = Form.useForm();
+  useEffect(() => {
+    fetchServices();
+  }, [orgId]);
 
   const handleTabChange = (e) => setActiveTab(e.target.value);
-
-  const handleCreate = () => {
-    form.resetFields();
-    setIsModalVisible(true);
+  const handleCreate = (type) => {
+    setViewData(null);
+    setModalType(type);
   };
 
-  const handleModalOk = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        const newEntry = {
-          key: Date.now().toString(),
-          ...values,
-        };
-        setData((prev) => ({
-          ...prev,
-          [activeTab]: [...prev[activeTab], newEntry],
-        }));
-        setIsModalVisible(false);
-        message.success(
-          `${tabConfig.find((t) => t.key === activeTab).label} created`
-        );
-      })
-      .catch(() => {
-        message.error("Please fill all required fields");
-      });
+  const saveEntry = (entry, typeKey) => {
+    const transformed = {
+      billId: entry?.id || `BILL-${Date.now()}`,
+      clientName: entry?.client?.name || entry?.clientName || "Unknown",
+      billTo: entry?.billTo || "",
+      amount: entry?.grandTotal || entry?.amount || 0,
+      datePrinted: entry?.datePrinted || new Date().toLocaleDateString(),
+      raw: entry,
+    };
+
+    setData((prev) => ({
+      ...prev,
+      [typeKey]: [...prev[typeKey], transformed],
+    }));
+
+    message.success(`${typeKey.slice(0, -1)} created`);
+  };
+
+  const handleView = (record) => {
+    setViewData(record.raw);
+    setModalType(record.raw.type || "invoice");
+  };
+
+  const handlePrint = (record) => {
+    const printWindow = window.open("", "PRINT", "height=600,width=800");
+    printWindow.document.write(
+      "<html><head><title>Invoice</title></head><body>"
+    );
+    printWindow.document.write(
+      `<pre>${JSON.stringify(record.raw, null, 2)}</pre>`
+    );
+    printWindow.document.write("</body></html>");
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
   };
 
   const columns = [
-    { title: "Number", dataIndex: "number", key: "number", width: 120 },
-    {
-      title: "Client Name",
-      dataIndex: "clientName",
-      key: "clientName",
-      width: 200,
-    },
-    { title: "Client ID", dataIndex: "clientId", key: "clientId", width: 150 },
+    { title: "Bill ID", dataIndex: "billId", key: "billId" },
+    { title: "Client Name", dataIndex: "clientName", key: "clientName" },
+    { title: "Bill To", dataIndex: "billTo", key: "billTo" },
     {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      width: 120,
       render: (val) => `₹${val}`,
     },
+    { title: "Date Printed", dataIndex: "datePrinted", key: "datePrinted" },
     {
       title: "Action",
       key: "action",
       render: (_, record) => (
-        <Space>
+        <div className="flex gap-2">
           <Button
+            type="default"
             size="small"
-            onClick={() => message.info(`Viewing ${record.number}`)}
+            onClick={() => handleView(record)}
           >
             View
           </Button>
           <Button
-            size="small"
             type="primary"
-            onClick={() => message.info(`Editing ${record.number}`)}
+            size="small"
+            onClick={() => handlePrint(record)}
           >
-            Edit
+            Print
           </Button>
-        </Space>
+        </div>
       ),
     },
   ];
 
   return (
     <div style={{ padding: 24 }}>
-      {/* Header */}
-      <div
-        style={{
-          marginBottom: 24,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h1 style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>
-          Bill Management
-        </h1>
-        <Button type="primary" onClick={handleCreate}>
-          {tabConfig.find((tab) => tab.key === activeTab).createText}
-        </Button>
-      </div>
+      <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
+        Bill Management
+      </h1>
 
-      {/* Tabs */}
       <Radio.Group
         value={activeTab}
         onChange={handleTabChange}
-        style={{ marginBottom: 24 }}
+        style={{ margin: "16px 0" }}
         buttonStyle="solid"
       >
-        {tabConfig.map((tab) => (
-          <Radio.Button key={tab.key} value={tab.key}>
-            {tab.label}
-          </Radio.Button>
-        ))}
+        <Radio.Button value="invoices">Invoices</Radio.Button>
+        <Radio.Button value="quotations">Quotations</Radio.Button>
+        <Radio.Button value="receipts">Receipts</Radio.Button>
       </Radio.Group>
 
-      {/* Table */}
+      <div style={{ marginBottom: 16 }}>
+        {activeTab === "invoices" && (
+          <Button type="primary" onClick={() => handleCreate("invoice")}>
+            Create Invoice
+          </Button>
+        )}
+        {activeTab === "quotations" && (
+          <Button type="primary" onClick={() => handleCreate("quotation")}>
+            Create Quotation
+          </Button>
+        )}
+        {activeTab === "receipts" && (
+          <Button type="primary" onClick={() => handleCreate("receipt")}>
+            Create Receipt
+          </Button>
+        )}
+      </div>
+
       <Table
         dataSource={data[activeTab]}
         columns={columns}
-        rowKey="key"
-        loading={loading}
+        rowKey="billId"
         bordered
       />
 
-      {/* Modal for Create */}
-      <Modal
-        title={tabConfig.find((tab) => tab.key === activeTab).createText}
-        open={isModalVisible}
-        onOk={handleModalOk}
-        onCancel={() => setIsModalVisible(false)}
-        okText="Save"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="Number"
-            name="number"
-            rules={[{ required: true, message: "Please enter number" }]}
-          >
-            <Input placeholder="e.g. INV003" />
-          </Form.Item>
-          <Form.Item
-            label="Client Name"
-            name="clientName"
-            rules={[{ required: true, message: "Please enter client name" }]}
-          >
-            <Input placeholder="e.g. Acme Corp" />
-          </Form.Item>
-          <Form.Item
-            label="Client ID"
-            name="clientId"
-            rules={[{ required: true, message: "Please enter client ID" }]}
-          >
-            <Input placeholder="e.g. C105" />
-          </Form.Item>
-          <Form.Item
-            label="Amount"
-            name="amount"
-            rules={[{ required: true, message: "Please enter amount" }]}
-          >
-            <Input type="number" placeholder="e.g. 1200" />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <GenerateInvoiceModal
+        visible={!!modalType}
+        type={modalType}
+        initialData={viewData}
+        onClose={() => setModalType(null)}
+        onSuccess={(entry) => {
+          if (!modalType) return;
+          saveEntry(entry, modalType + "s");
+          setModalType(null);
+        }}
+      />
     </div>
   );
 };
