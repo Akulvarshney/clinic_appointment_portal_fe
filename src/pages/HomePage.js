@@ -24,10 +24,11 @@ import GroupIcon from "@mui/icons-material/Group";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import SecurityIcon from "@mui/icons-material/Security";
 import BoltIcon from "@mui/icons-material/Bolt";
-import { BACKEND_URL } from "../assets/constants";
-import { notification } from "antd";
+import { BACKEND_URL, states } from "../assets/constants";
+import { notification, Select } from "antd";
 
 const HomePage = () => {
+  const { Option } = Select;
   const [openNewForm, setOpenNewForm] = useState(false);
   const [openTrackForm, setOpenTrackForm] = useState(false);
 
@@ -37,6 +38,7 @@ const HomePage = () => {
   const [OrgPhone, setOrgPhone] = useState("");
   const [orgEmail, setorgEmail] = useState("");
   const [orgAddress, setorgAddress] = useState("");
+  const [orgState, setOrgState] = useState("");
   const [errorMsgNewApplication, seterrorMsgNewApplication] = useState("");
   const [successMsgNewApplication, setSuccessMsgNewApplication] = useState("");
 
@@ -69,6 +71,7 @@ const HomePage = () => {
           org_short_name: OrgShortName,
           client_name: yourFullName,
           email: orgEmail,
+          state: orgState,
           address: orgAddress,
         }
       );
@@ -90,12 +93,13 @@ const HomePage = () => {
       setTimeout(() => {
         setOpenNewForm(false);
         setOrgName("");
+        setOrgState("");
         setOrgShortName("");
         setOrgPhone("");
         setyourFullName("");
         setorgEmail("");
         setorgAddress("");
-        seterrorMsgNewApplication("")
+        seterrorMsgNewApplication("");
         seterrorMsgNewApplication("");
         setSuccessMsgNewApplication("");
       }, 6000);
@@ -145,7 +149,10 @@ const HomePage = () => {
                 variant="h2"
                 fontWeight="900"
                 gutterBottom
-                sx={{ textShadow: "0 4px 15px rgba(0,0,0,0.3)", letterSpacing: 2 }}
+                sx={{
+                  textShadow: "0 4px 15px rgba(0,0,0,0.3)",
+                  letterSpacing: 2,
+                }}
               >
                 GloryWellnic
               </Typography>
@@ -173,9 +180,16 @@ const HomePage = () => {
                     color: "#1976d2",
                     boxShadow: "0 6px 18px rgba(0,0,0,0.22)",
                     transition: "all 0.3s ease",
-                    "&:hover": { backgroundColor: "#f0f0f0", transform: "scale(1.05)" },
+                    "&:hover": {
+                      backgroundColor: "#f0f0f0",
+                      transform: "scale(1.05)",
+                    },
                   }}
-                  onClick={() => {setOpenNewForm(true); seterrorMsgNewApplication(""); setSuccessMsgNewApplication("") }}
+                  onClick={() => {
+                    setOpenNewForm(true);
+                    seterrorMsgNewApplication("");
+                    setSuccessMsgNewApplication("");
+                  }}
                 >
                   Become our Partner
                 </Button>
@@ -197,7 +211,11 @@ const HomePage = () => {
                       transform: "scale(1.05)",
                     },
                   }}
-                  onClick={() => {setOpenTrackForm(true); seterrorTrackApplication(""); setsuccessTrackApplication("");}}
+                  onClick={() => {
+                    setOpenTrackForm(true);
+                    seterrorTrackApplication("");
+                    setsuccessTrackApplication("");
+                  }}
                 >
                   Check Status
                 </Button>
@@ -222,7 +240,9 @@ const HomePage = () => {
           <Grid container spacing={6} justifyContent="center" sx={{ mt: 6 }}>
             {[
               {
-                icon: <AssignmentTurnedInIcon color="primary" fontSize="large" />,
+                icon: (
+                  <AssignmentTurnedInIcon color="primary" fontSize="large" />
+                ),
                 title: "Submit Application",
                 desc: "Provide your clinic or organization details to get started.",
                 bgColor: "rgba(25, 118, 210, 0.1)",
@@ -300,29 +320,32 @@ const HomePage = () => {
               {
                 icon: <GroupIcon fontSize="large" sx={{ color: "#1976d2" }} />,
                 title: "User & Role Management",
-                desc:
-                  "Create multiple users, assign roles, and set custom permissions with precision and ease.",
+                desc: "Create multiple users, assign roles, and set custom permissions with precision and ease.",
                 bgColor: "rgba(25, 118, 210, 0.15)",
               },
               {
-                icon: <EventAvailableIcon fontSize="large" sx={{ color: "#1e88e5" }} />,
+                icon: (
+                  <EventAvailableIcon
+                    fontSize="large"
+                    sx={{ color: "#1e88e5" }}
+                  />
+                ),
                 title: "Smart Appointment Scheduling",
-                desc:
-                  "Effortlessly book and manage appointments with a sleek, integrated calendar.",
+                desc: "Effortlessly book and manage appointments with a sleek, integrated calendar.",
                 bgColor: "rgba(30, 136, 229, 0.15)",
               },
               {
-                icon: <SecurityIcon fontSize="large" sx={{ color: "#43a047" }} />,
+                icon: (
+                  <SecurityIcon fontSize="large" sx={{ color: "#43a047" }} />
+                ),
                 title: "Secure & Reliable",
-                desc:
-                  "Enterprise-grade authentication and tracking to safeguard clinic data.",
+                desc: "Enterprise-grade authentication and tracking to safeguard clinic data.",
                 bgColor: "rgba(67, 160, 71, 0.15)",
               },
               {
                 icon: <BoltIcon fontSize="large" sx={{ color: "#fdd835" }} />,
                 title: "Simple & Fast",
-                desc:
-                  "Designed with busy professionals in mind, for effortless, speedy operations.",
+                desc: "Designed with busy professionals in mind, for effortless, speedy operations.",
                 bgColor: "rgba(253, 216, 53, 0.15)",
               },
             ].map((feature, i) => (
@@ -352,7 +375,10 @@ const HomePage = () => {
                   <Typography variant="h6" fontWeight="bold" sx={{ mt: 1 }}>
                     {feature.title}
                   </Typography>
-                  <Typography color="text.secondary" sx={{ flexGrow: 1, px: 1 }}>
+                  <Typography
+                    color="text.secondary"
+                    sx={{ flexGrow: 1, px: 1 }}
+                  >
                     {feature.desc}
                   </Typography>
                 </Paper>
@@ -422,6 +448,17 @@ const HomePage = () => {
               rows={3}
               onChange={(e) => setorgAddress(e.target.value)}
             />
+            <Select
+              showSearch
+              placeholder="Select State"
+              onChange={(value) => setOrgState(value)}
+            >
+              {states.map((state) => (
+                <Option key={state.value} value={state.value}>
+                  {state.label}
+                </Option>
+              ))}
+            </Select>
 
             {errorMsgNewApplication && (
               <Alert severity="error">{errorMsgNewApplication}</Alert>
