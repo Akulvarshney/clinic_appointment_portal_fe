@@ -15,7 +15,7 @@ import {
 } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import Sidebar from "../components/SideBar";
-import { BACKEND_URL, isFeatureValid } from "../assets/constants";
+import { BACKEND_URL, isFeatureValid, states } from "../assets/constants";
 import { Link, useNavigate } from "react-router-dom";
 
 const { Option } = Select;
@@ -204,6 +204,10 @@ const ClientManagement = () => {
           Firstname: values.first_name,
           Secondname: values.last_name,
           address: values.address,
+          state: values.state,
+          city: values.city,
+          pinCode: values.pinCode,
+          country: "INDIA",
           mobile: values.mobile,
           dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
           gender: values.gender,
@@ -320,9 +324,9 @@ const ClientManagement = () => {
       : []),
 
     {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
+      title: "State",
+      dataIndex: "state",
+      key: "state",
       ellipsis: true,
     },
     // {
@@ -469,7 +473,6 @@ const ClientManagement = () => {
           onCancel={handleModalCancel}
           footer={null}
           width={800}
-          // destroyOnClose
         >
           <div className="modal_outDiv">
             <Form
@@ -516,6 +519,22 @@ const ClientManagement = () => {
                   </Select>
                 </Form.Item>
 
+                <Form.Item
+                  label="Category"
+                  name="category"
+                  rules={[
+                    { required: true, message: "Please select category!" },
+                  ]}
+                >
+                  <Select placeholder="Select category" loading={loading}>
+                    {categories?.map((category) => (
+                      <Option key={category.id} value={category.id}>
+                        {category.category_name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
                 <Form.Item label="Date of Birth" name="dob">
                   <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
@@ -524,7 +543,6 @@ const ClientManagement = () => {
                   label="Email"
                   name="email"
                   rules={[
-                    // { required: true, message: "Please enter your email!" },
                     {
                       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                       message: "Please enter a valid email address!",
@@ -541,31 +559,55 @@ const ClientManagement = () => {
                 <Form.Item label="Emergency Contact" name="emergency_contact">
                   <Input placeholder="Enter emergency contact" />
                 </Form.Item>
-
-                <Form.Item
-                  label="Category"
-                  name="category"
-                  rules={[
-                    { required: true, message: "Please select category!" },
-                  ]}
-                >
-                  <Select placeholder="Select category" loading={loading}>
-                    {categories?.map((category) => (
-                      <Option key={category.id} value={category.id}>
-                        {category.category_name}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
               </div>
 
-              <Form.Item
-                label="Address"
-                name="address"
-                //rules={[{ required: true, message: "Please enter address!" }]}
-              >
+              {/* Address Section */}
+              <Form.Item label="Address" name="address">
                 <Input.TextArea rows={3} placeholder="Enter complete address" />
               </Form.Item>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Form.Item label="City" name="city">
+                  <Input placeholder="Enter city" />
+                </Form.Item>
+
+                <Form.Item
+                  label="State"
+                  name="state"
+                  rules={[{ required: true, message: "Please select State." }]}
+                >
+                  <Select placeholder="Select state" showSearch>
+                    {states?.map((s) => {
+                      return (
+                        <Option key={s.value} value={s.value}>
+                          {s.label}
+                        </Option>
+                      );
+                    })}
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label="Country" name="country">
+                  <Input
+                    placeholder="Enter country"
+                    defaultValue={"India"}
+                    disabled
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Pin Code"
+                  name="pinCode"
+                  rules={[
+                    {
+                      pattern: /^[0-9]{5,10}$/,
+                      message: "Please enter a valid pin code!",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Enter pin code" maxLength={10} />
+                </Form.Item>
+              </div>
 
               {errorMsg && (
                 <Alert
