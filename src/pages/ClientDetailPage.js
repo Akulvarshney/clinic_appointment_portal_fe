@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { BACKEND_URL, isFeatureValid } from "../assets/constants";
+import { BACKEND_URL, isFeatureValid, states } from "../assets/constants";
 import {
   Card,
   Avatar,
@@ -151,6 +151,7 @@ const ClientDetailPage = () => {
         address: clientData.address,
         gender: clientData.gender,
         categoryId: clientData?.client_organization_category?.[0]?.category_id,
+        state: clientData?.state,
       });
       setIsEditModalVisible(true);
     }
@@ -171,6 +172,7 @@ const ClientDetailPage = () => {
         address: values.address,
         gender: values.gender,
         category: values.categoryId,
+        state: values.state,
       };
 
       const response = await axios.put(
@@ -494,12 +496,23 @@ const ClientDetailPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
+                  <HomeOutlined className="text-gray-500" />
+                  <div>
+                    <Text className="text-gray-500 text-sm block">State</Text>
+                    <Text>{clientData?.state}</Text>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
                   <CalendarOutlined className="text-gray-500" />
                   <div>
                     <Text className="text-gray-500 text-sm block">
                       Date of Birth
                     </Text>
-                    <Text>{formatDate(clientData?.date_of_birth)}</Text>
+                    <Text>
+                      {clientData?.date_of_birth
+                        ? formatDate(clientData.date_of_birth)
+                        : "N/A"}
+                    </Text>
                   </div>
                 </div>
               </div>
@@ -912,6 +925,22 @@ const ClientDetailPage = () => {
               //rules={[{ required: true, message: "Please enter address" }]}
             >
               <Input.TextArea rows={3} placeholder="Enter full address" />
+            </Form.Item>
+
+            <Form.Item name="state" label="State">
+              <Select
+                placeholder="Select state"
+                showSearch
+                // defaultValue={defaultState}
+              >
+                {states?.map((s) => {
+                  return (
+                    <Option key={s.value} value={s.value}>
+                      {s.label}
+                    </Option>
+                  );
+                })}
+              </Select>
             </Form.Item>
 
             <div className="flex justify-end gap-3 pt-4 border-t">

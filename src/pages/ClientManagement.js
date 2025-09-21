@@ -48,6 +48,20 @@ const ClientManagement = () => {
   const orgId = localStorage.getItem("selectedOrgId");
   const token = localStorage.getItem("token");
 
+  const [defaultState, setDefaultState] = useState(null);
+
+  useEffect(() => {
+    const organizations = JSON.parse(localStorage.getItem("organizations"));
+    const selectedOrg = localStorage.getItem("selectedOrgId");
+
+    const defaultState = organizations.find(
+      (org) => org.organizationId === selectedOrg
+    )?.state;
+
+    console.log("defaultState>>> ", defaultState);
+    setDefaultState(defaultState);
+  }, []);
+
   useEffect(() => {
     const initialize = async () => {
       await fetchRoleId();
@@ -576,7 +590,11 @@ const ClientManagement = () => {
                   name="state"
                   rules={[{ required: true, message: "Please select State." }]}
                 >
-                  <Select placeholder="Select state" showSearch>
+                  <Select
+                    placeholder="Select state"
+                    showSearch
+                    defaultValue={defaultState}
+                  >
                     {states?.map((s) => {
                       return (
                         <Option key={s.value} value={s.value}>

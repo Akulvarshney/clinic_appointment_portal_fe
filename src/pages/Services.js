@@ -105,6 +105,7 @@ const Services = () => {
       name: service.name,
       description: service.description,
       price: service.price,
+      tax_percentage: service.tax_percentage,
     });
     setIsModalVisible(true);
     setErrorMsg("");
@@ -123,10 +124,8 @@ const Services = () => {
     setErrorMsg("");
     setSuccessMsg("");
     setLoading(true);
-
     try {
       if (editingService) {
-        // Update existing service
         await axios.put(
           `${BACKEND_URL}/clientadmin/serviceManagement/updateService`,
           {
@@ -135,13 +134,13 @@ const Services = () => {
             desc: values.description,
             price: values.price,
             orgId: orgId,
+            tax_percentage: parseFloat(values.tax_percentage),
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         message.success("Service updated successfully");
         setSuccessMsg("Service updated successfully");
       } else {
-        // Create new service
         await axios.post(
           `${BACKEND_URL}/clientadmin/serviceManagement/createService`,
           {
@@ -149,6 +148,7 @@ const Services = () => {
             desc: values.description,
             price: values.price,
             orgId: orgId,
+            tax_percentage: parseFloat(values.tax_percentage),
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -171,6 +171,7 @@ const Services = () => {
       setLoading(false);
     }
   };
+
   const handleStatusChange = async (id, newStatus) => {
     try {
       setLoadingServiceId(id);
@@ -201,6 +202,7 @@ const Services = () => {
     { title: "ID", dataIndex: "portal_id", key: "portal_id" },
     { title: "Service Name", dataIndex: "name", key: "name" },
     { title: "Price", dataIndex: "price", key: "price" },
+    { title: "GST", dataIndex: "tax_percentage", key: "tax_percentage" },
     {
       title: "Description",
       dataIndex: "description",
@@ -399,6 +401,10 @@ const Services = () => {
                   step="0.01"
                   addonBefore="₹"
                 />
+              </Form.Item>
+
+              <Form.Item label="GST" name="tax_percentage">
+                <Input placeholder="Enter GST" />
               </Form.Item>
 
               {errorMsg && (

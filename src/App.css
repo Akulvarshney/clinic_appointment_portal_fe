@@ -12,6 +12,10 @@ body {
   margin-bottom: 5px !important;
 }
 
+.ant-select-dropdown{
+  z-index: 99999999 !important;
+}
+
 * {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
