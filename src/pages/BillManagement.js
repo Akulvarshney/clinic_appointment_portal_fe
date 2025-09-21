@@ -3,6 +3,7 @@ import { Table, Button, Radio, message } from "antd";
 import GenerateInvoiceModal from "./GenerateInvoiceModal";
 import { fetchServices } from "../services/OrgServices.js";
 import { fetchClients } from "../services/clientServices.js";
+import { fetchInvoices } from "../services/invoicesServices.js";
 
 const BillManagement = () => {
   const orgId = localStorage.getItem("selectedOrgId");
@@ -14,10 +15,17 @@ const BillManagement = () => {
   });
   const [modalType, setModalType] = useState(null);
   const [viewData, setViewData] = useState(null);
+  const [invoices, setInvoice] = useState([]);
 
   useEffect(() => {
     fetchServices();
   }, [orgId]);
+
+  useEffect(() => {
+    if (activeTab === "invoices") {
+      fetchInvoices();
+    }
+  }, [activeTab]);
 
   const handleTabChange = (e) => setActiveTab(e.target.value);
   const handleCreate = (type) => {
