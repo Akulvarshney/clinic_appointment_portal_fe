@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
-import { Modal, Button, Input, Form, Select } from "antd";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Modal, Button, Input, Form, Select, message } from "antd";
 
 import { fetchServices } from "../services/OrgServices.js";
 import { fetchClients } from "../services/clientServices.js";
+import debounce from "lodash/debounce";
 
 export default function GenerateInvoiceModal({
   visible,
@@ -10,396 +11,399 @@ export default function GenerateInvoiceModal({
   onClose,
   onSuccess,
 }) {
-  const orgId = localStorage.getItem("selectedOrgId");
-
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [billTo, setBillTo] = useState("");
-  const [items, setItems] = useState([
-    { serviceId: "", serviceName: "", qty: "1", amount: "", gst: "" },
-  ]);
-  const [preview, setPreview] = useState(false);
-
-  // Discount values
-  const [discountPercent, setDiscountPercent] = useState("");
-  const [discountAmount, setDiscountAmount] = useState("");
-  const [grandTotal, setGrandTotal] = useState("");
-  const [error, setError] = useState("");
-
-  const [clientOptions, setClientOptions] = useState([]);
-  const [clientLoading, setClientLoading] = useState(false);
-  const [clientSearchValue, setClientSearchValue] = useState("");
-
+  const [form] = Form.useForm();
   const [services, setServices] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [billTo, setBillTo] = useState(null);
+  const [invoiceItems, setInvoiceItems] = useState([]);
+  const [clientSearchValue, setClientSearchValue] = useState("");
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [manualGrandTotal, setManualGrandTotal] = useState(0);
 
-  useEffect(() => {
-    if (!visible) {
-      setSelectedClient(null);
-      setBillTo("");
-      setItems([{ description: "", qty: "1", amount: "", gst: "" }]);
-      setPreview(false);
-      setDiscountPercent("");
-      setDiscountAmount("");
-      setGrandTotal("");
-      setError("");
+  const orgState = "HARYANA";
+
+  const debouncedFetchClients = useMemo(() => debounce(fetchClients, 300), []);
+  const handleClientSearch = async (value) => {
+    setClientSearchValue(value);
+
+    try {
+      const results = await debouncedFetchClients(value);
+      setClients(results || []);
+    } catch (err) {
+      console.error(err);
     }
-  }, [visible]);
-
-  useEffect(() => {
-    const loadClients = async () => {
-      if (!orgId) return;
-      setClientLoading(true);
-      try {
-        const data = await fetchClients(clientSearchValue, 1, 10, orgId);
-        setClientOptions(data || []);
-      } catch (err) {
-        console.error("Failed to load clients:", err);
-      } finally {
-        setClientLoading(false);
-      }
-    };
-
-    loadClients();
-  }, [orgId, clientSearchValue]);
-
-  useEffect(() => {
-    const loadServices = async () => {
-      if (!orgId) return;
-      setClientLoading(true);
-      try {
-        const data = await fetchServices();
-        console.log("data>> ", data);
-        setServices(data || []);
-      } catch (err) {
-        console.error("Failed to load clients:", err);
-      } finally {
-        setClientLoading(false);
-      }
-    };
-    loadServices();
-  }, [orgId]);
-
-  // Auto-fill Bill To when selecting client
-  const handleClientChange = (id) => {
-    const client = clientOptions.find((c) => c.id === id);
-    setSelectedClient(client);
-    if (client)
-      setBillTo(`${client.first_name || ""} ${client.last_name || ""}`.trim());
   };
 
-  // Compute total for a single item
-  const computeItemFinal = (item) => {
-    const gross = (parseFloat(item.amount) || 0) * (parseFloat(item.qty) || 0);
-    const gstAmt = gross * ((parseFloat(item.gst) || 0) / 100);
-    return Number(gross + gstAmt) || 0;
+  useEffect(() => {
+    if (visible) {
+      form.resetFields();
+      setBillTo(null);
+      setInvoiceItems([]);
+      setDiscountPercent(0);
+    }
+  }, [visible, form]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const servicesData = await fetchServices();
+      const clientsData = await fetchClients();
+      setServices(servicesData || []);
+      setClients(clientsData || []);
+    };
+    loadData();
+  }, []);
+
+  const handleClientChange = (value) => {
+    const client = clients.find((c) => c.id === value);
+    if (client) setBillTo(client);
   };
 
-  // Compute subtotal
-  const computeSubtotal = (items) =>
-    items.reduce((sum, item) => sum + computeItemFinal(item), 0);
+  const handleServiceChange = (index, serviceId) => {
+    const service = services.find((s) => s.id === serviceId);
+    if (!service) return;
 
-  const subtotal = computeSubtotal(items);
+    setInvoiceItems((prev) =>
+      prev.map((item, i) =>
+        i === index
+          ? {
+              ...item,
+              serviceId,
+              amount: Number(service.price) || 0,
+              gst: Number(service.tax) || 0,
+            }
+          : item
+      )
+    );
+  };
 
-  // Handle changes to item fields
+  const addItem = () => {
+    setInvoiceItems((prev) => [
+      ...prev,
+      { serviceId: undefined, qty: 1, amount: 0, gst: 0 },
+    ]);
+  };
+
   const handleItemChange = (index, field, value) => {
-    const newItems = [...items];
-    newItems[index][field] = value;
-    setItems(newItems);
-
-    recalcTotals(subtotal, discountPercent, discountAmount);
+    const updatedItems = [...invoiceItems];
+    updatedItems[index][field] = Number(value) || 0;
+    setInvoiceItems(updatedItems);
   };
 
-  const addItem = () =>
-    setItems([...items, { description: "", qty: "1", amount: "", gst: "" }]);
+  const taxablePerRow = (item) => item.qty * item.amount;
 
-  // Recalculate totals whenever discount changes
-  const recalcTotals = (subtotal, percent, amount) => {
-    let finalDiscountPercent = parseFloat(percent) || 0;
-    let finalDiscountAmount = parseFloat(amount) || 0;
+  const gstSplitPerRow = (item) => {
+    const taxable = taxablePerRow(item);
+    const gstRate = item.gst || 0;
+    let cgst = 0,
+      sgst = 0,
+      igst = 0;
 
-    // Keep both in sync
-    if (amount !== "" && percent === "") {
-      finalDiscountPercent = subtotal
-        ? (finalDiscountAmount / subtotal) * 100
-        : 0;
-      setDiscountPercent(finalDiscountPercent.toFixed(2));
-    } else if (percent !== "" && amount === "") {
-      finalDiscountAmount = (subtotal * finalDiscountPercent) / 100;
-      setDiscountAmount(finalDiscountAmount.toFixed(2));
+    if (billTo?.state && orgState) {
+      if (billTo.state.toUpperCase() === orgState.toUpperCase()) {
+        cgst = (taxable * gstRate) / 200;
+        sgst = (taxable * gstRate) / 200;
+      } else {
+        igst = (taxable * gstRate) / 100;
+      }
     }
+    return { cgst, sgst, igst };
+  };
 
-    // Ensure discount not more than subtotal
-    if (finalDiscountAmount > subtotal) {
-      finalDiscountAmount = subtotal;
-      finalDiscountPercent = 100;
-      setDiscountAmount(finalDiscountAmount.toFixed(2));
-      setDiscountPercent(finalDiscountPercent.toFixed(2));
+  const taxableTotal = invoiceItems.reduce(
+    (sum, item) => sum + taxablePerRow(item),
+    0
+  );
+  const discountAmount = (taxableTotal * discountPercent) / 100;
+  const taxableAfterDiscount = taxableTotal - discountAmount;
+
+  const totalCGST = invoiceItems.reduce((sum, item) => {
+    const lineAmount = item.qty * Number(item.amount || 0);
+    const lineShare = taxableTotal > 0 ? lineAmount / taxableTotal : 0;
+    const discountedLineAmount = lineAmount - discountAmount * lineShare;
+    const gstRate = item.gst || 0;
+
+    if (
+      billTo?.state &&
+      orgState &&
+      billTo.state.toUpperCase() === orgState.toUpperCase()
+    ) {
+      return sum + (discountedLineAmount * gstRate) / 200;
     }
+    return sum;
+  }, 0);
 
-    const newGrand = subtotal - finalDiscountAmount;
-    setGrandTotal(newGrand.toFixed(2));
-  };
+  const totalSGST = invoiceItems.reduce((sum, item) => {
+    const lineAmount = item.qty * Number(item.amount || 0);
+    const lineShare = taxableTotal > 0 ? lineAmount / taxableTotal : 0;
+    const discountedLineAmount = lineAmount - discountAmount * lineShare;
+    const gstRate = item.gst || 0;
 
-  // Handle discount percent edit
-  const handleDiscountPercentChange = (value) => {
-    setDiscountPercent(value);
-    recalcTotals(subtotal, value, "");
-  };
+    if (
+      billTo?.state &&
+      orgState &&
+      billTo.state.toUpperCase() === orgState.toUpperCase()
+    ) {
+      return sum + (discountedLineAmount * gstRate) / 200;
+    }
+    return sum;
+  }, 0);
 
-  // Handle discount amount edit
-  const handleDiscountAmountChange = (value) => {
-    setDiscountAmount(value);
-    recalcTotals(subtotal, "", value);
-  };
+  const totalIGST = invoiceItems.reduce((sum, item) => {
+    const lineAmount = item.qty * Number(item.amount || 0);
+    const lineShare = taxableTotal > 0 ? lineAmount / taxableTotal : 0;
+    const discountedLineAmount = lineAmount - discountAmount * lineShare;
+    const gstRate = item.gst || 0;
 
-  // Handle grand total edit
+    if (
+      billTo?.state &&
+      orgState &&
+      billTo.state.toUpperCase() !== orgState.toUpperCase()
+    ) {
+      return sum + (discountedLineAmount * gstRate) / 100;
+    }
+    return sum;
+  }, 0);
+
+  const grandTotal = taxableAfterDiscount + totalCGST + totalSGST + totalIGST;
+
+  // Track typing state to avoid overwriting input mid-typing
+  const typingRef = useRef(false);
+
   const handleGrandTotalChange = (value) => {
-    let val = parseFloat(value) || 0;
-    if (val > subtotal) val = subtotal;
+    const desiredTotal = Number(value) || 0;
 
-    setGrandTotal(val.toFixed(2));
+    const totalTax = totalCGST + totalSGST + totalIGST;
+    let newDiscount = taxableTotal + totalTax - desiredTotal;
+    let newDiscountPercent =
+      taxableTotal > 0 ? (newDiscount / taxableTotal) * 100 : 0;
+    if (newDiscountPercent < 0) newDiscountPercent = 0;
 
-    const discountAmt = subtotal - val;
-    setDiscountAmount(discountAmt.toFixed(2));
-
-    const discountPct = subtotal ? (discountAmt / subtotal) * 100 : 0;
-    setDiscountPercent(discountPct.toFixed(2));
+    setDiscountPercent(newDiscountPercent);
   };
 
-  const validate = () => {
-    if (!selectedClient) {
-      setError("Please select a client.");
-      return false;
-    }
-    if (!billTo) {
-      setError("Please enter the Bill to Name");
-      return false;
-    }
-    console.log("items.length", items);
-    if (items.length === 0) {
-      setError("Please add at least one item.");
-      return false;
-    }
+  const debouncedGrandTotalChange = useMemo(
+    () =>
+      debounce((value) => {
+        handleGrandTotalChange(value);
+        typingRef.current = false; // finished typing
+      }, 500),
+    [taxableTotal, totalCGST, totalSGST, totalIGST]
+  );
 
-    if (!(parseFloat(grandTotal) > 0)) {
-      setError("Grand Total must be > 0.");
-      return false;
+  // Keep manualGrandTotal in sync only when not typing
+  useEffect(() => {
+    if (!typingRef.current) {
+      setManualGrandTotal(grandTotal.toFixed(2));
     }
-    setError("");
-    return true;
-  };
+  }, [grandTotal]);
 
-  const handleGenerate = async () => {
-    if (!validate()) return;
-
+  const handleSubmit = async () => {
     const payload = {
-      client: selectedClient,
-      billTo,
-      items,
+      items: invoiceItems,
       discountPercent,
-      discountAmount,
-      grandTotal,
-      type,
+      totals: {
+        taxableTotal,
+        discountAmount,
+        taxableAfterDiscount,
+        totalCGST,
+        totalSGST,
+        totalIGST,
+        grandTotal,
+      },
+      billTo,
     };
 
     try {
-      const response = await fetch("/api/invoices", {
+      await fetch(`/api/${type === "invoice" ? "invoices" : "quotations"}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!response.ok) throw new Error("Failed to create entry");
-      const result = await response.json();
-      setPreview(true);
-      if (onSuccess) onSuccess(result);
+      message.success(`${type} saved successfully!`);
+      onSuccess(payload);
+      onClose();
     } catch (err) {
-      setError(err.message || "Error generating entry");
+      console.error(err);
+      message.error("Failed to save");
     }
   };
 
-  const modalTitle = preview
-    ? `${type ? type.charAt(0).toUpperCase() + type.slice(1) : ""} Preview`
-    : `Create ${type ? type.charAt(0).toUpperCase() + type.slice(1) : ""}`;
-
-  const submitButtonText =
-    type === "invoice"
-      ? "Generate Invoice"
-      : type === "quotation"
-      ? "Generate Quotation"
-      : "Submit";
-
   return (
     <Modal
-      title={modalTitle}
       open={visible}
       onCancel={onClose}
-      footer={null}
-      width={1000}
-      style={{ top: 25 }}
+      onOk={handleSubmit}
+      width={800}
+      title={`Generate ${type === "invoice" ? "Invoice" : "Quotation"}`}
+      okText={`Save ${type === "invoice" ? "Invoice" : "Quotation"}`}
     >
-      {preview ? (
-        <>
-          <Form layout="vertical">
-            <Form.Item label="Bill To">
-              <p>{billTo || "-"}</p>
-            </Form.Item>
+      <Form form={form} layout="vertical">
+        {/* Bill To */}
+        <Form.Item label="Bill To">
+          <Select
+            showSearch
+            placeholder="Select client"
+            onChange={handleClientChange}
+            onSearch={handleClientSearch}
+            allowClear
+            filterOption={false}
+            value={billTo?.id || undefined}
+          >
+            {clients.map((c) => (
+              <Select.Option key={c.id} value={c.id}>
+                {c.first_name}
+              </Select.Option>
+            ))}
+          </Select>
 
-            <Form.Item label="Items">
-              <div className="grid grid-cols-5 font-semibold gap-2">
-                <span>Services</span>
-                <span>Qty</span>
-                <span>Amount</span>
-                <span>GST %</span>
-                <span>Final</span>
-              </div>
-              {items.map((item, i) => (
-                <div key={i} className="grid grid-cols-5 gap-2">
-                  <span>{item.description || "-"}</span>
-                  <span>{item.qty}</span>
-                  <span>{item.amount || 0}</span>
-                  <span>{item.gst || 0}%</span>
-                  <span>{computeItemFinal(item).toFixed(2)}</span>
-                </div>
-              ))}
-            </Form.Item>
+          <Input
+            style={{ marginTop: 8 }}
+            placeholder="Bill To"
+            value={billTo ? billTo.first_name : ""}
+            readOnly
+          />
+        </Form.Item>
 
-            <Form.Item rules={[{ required: false }]}>
-              <div className="flex flex-col items-end space-y-2">
-                <div className="flex justify-between w-64">
-                  <span>Discount %:</span>
-                  <span>{discountPercent || 0}%</span>
-                </div>
-                <div className="flex justify-between w-64">
-                  <span>Discount Amount:</span>
-                  <span>{discountAmount || 0}</span>
-                </div>
-                <div className="flex justify-between w-64 font-bold">
-                  <span>Grand Total:</span>
-                  <span>{grandTotal}</span>
-                </div>
-              </div>
-            </Form.Item>
-          </Form>
+        {/* Items Table */}
+        <div className="grid grid-cols-5 gap-2 font-bold mb-2">
+          <div>Service</div>
+          <div>Qty</div>
+          <div>Amount</div>
+          <div>GST%</div>
+          <div>Taxable</div>
+        </div>
 
-          <Button type="primary" onClick={() => setPreview(false)}>
-            Back to Edit
-          </Button>
-        </>
-      ) : (
-        <Form layout="vertical">
-          <Form.Item label="Client" rules={[{ required: true }]}>
+        {invoiceItems.map((item, index) => (
+          <div key={index} className="grid grid-cols-5 gap-2 mb-2">
             <Select
-              value={selectedClient?.id || ""}
-              onChange={(val) => handleClientChange(val)}
-              placeholder="Select Client"
+              value={item.serviceId ?? null}
+              placeholder="Select Service"
+              onChange={(val) => handleServiceChange(index, val)}
             >
-              {clientOptions.map((c) => (
-                <Select.Option key={c.first_name} value={c.id}>
-                  {c.first_name} ({c.client_organization_category[0].portal_id}{" "}
-                  )
+              {services.map((s) => (
+                <Select.Option key={s.id} value={s.id}>
+                  {s.name}
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>
 
-          <Form.Item label="Bill To">
-            <Input.TextArea
-              value={billTo}
-              onChange={(e) => setBillTo(e.target.value)}
+            <Input
+              type="number"
+              value={item.qty}
+              onChange={(e) => handleItemChange(index, "qty", e.target.value)}
             />
-          </Form.Item>
-
-          <Form.Item label="Items" rules={[{ required: true }]}>
-            <div className="grid grid-cols-5 gap-2 items-center font-semibold">
-              <span>Services</span>
-              <span>Qty</span>
-              <span>Amount</span>
-              <span>GST %</span>
-              <span>Final</span>
+            <Input
+              type="number"
+              value={item.amount}
+              onChange={(e) =>
+                handleItemChange(index, "amount", e.target.value)
+              }
+            />
+            <div className="flex items-center">{item.gst || 0}%</div>
+            <div className="flex items-center">
+              {taxablePerRow(item).toFixed(2)}
             </div>
-            {items.map((item, i) => (
-              <div key={i} className="grid grid-cols-5 gap-2 mt-2">
-                {/* Service Dropdown */}
-                <Select
-                  placeholder="Select Service"
-                  value={item.serviceId || undefined}
-                  onChange={(serviceId) => {
-                    const service = services.find((s) => s.id === serviceId);
-                    if (service) {
-                      handleItemChange(i, "serviceId", service.id);
-                      handleItemChange(i, "serviceName", service.name);
-                      handleItemChange(i, "amount", service.price);
-                      handleItemChange(i, "gst", service.tax);
-                    }
-                  }}
-                >
-                  {services.map((s) => (
-                    <Select.Option key={s.id} value={s.id}>
-                      {s.name}
-                    </Select.Option>
-                  ))}
-                </Select>
+          </div>
+        ))}
 
-                {/* Qty */}
-                <Input
-                  placeholder="Qty"
-                  value={item.qty}
-                  onChange={(e) => handleItemChange(i, "qty", e.target.value)}
-                />
+        <Button onClick={addItem} style={{ marginTop: 8 }}>
+          + Add Item
+        </Button>
 
-                {/* Amount (auto-filled) */}
-                <Input
-                  placeholder="Amount"
-                  value={item.amount}
-                  onChange={(e) =>
-                    handleItemChange(i, "amount", e.target.value)
-                  }
-                />
-
-                {/* GST (auto-filled) */}
-                <Input
-                  placeholder="GST %"
-                  value={item.gst}
-                  onChange={(e) => handleItemChange(i, "gst", e.target.value)}
-                />
-
-                {/* Final (calculated) */}
-                <Input value={computeItemFinal(item).toFixed(2)} readOnly />
-              </div>
-            ))}
-
-            <Button type="dashed" onClick={addItem} className="mt-2">
-              + Add Item
-            </Button>
-          </Form.Item>
-
-          <Form.Item label="Discount %">
+        {/* Summary */}
+        <div className="mt-6 space-y-2">
+          <div>Taxable Total: {taxableTotal.toFixed(2)}</div>
+          <div>
+            Discount (%):{" "}
             <Input
+              type="number"
               value={discountPercent}
-              onChange={(e) => handleDiscountPercentChange(e.target.value)}
-            />
-          </Form.Item>
+              onChange={(e) => setDiscountPercent(Number(e.target.value) || 0)}
+              style={{ width: 100, marginLeft: 8 }}
+            />{" "}
+            → {discountAmount.toFixed(2)}
+          </div>
+          <div>Taxable after Discount: {taxableAfterDiscount.toFixed(2)}</div>
 
-          <Form.Item label="Discount Amount">
+          <table
+            style={{
+              width: "100%",
+              marginTop: "10px",
+              borderCollapse: "collapse",
+            }}
+          >
+            <thead>
+              <tr>
+                <th
+                  style={{ borderBottom: "1px solid #ddd", textAlign: "left" }}
+                >
+                  Service
+                </th>
+                <th
+                  style={{ borderBottom: "1px solid #ddd", textAlign: "right" }}
+                >
+                  GST %
+                </th>
+                <th
+                  style={{ borderBottom: "1px solid #ddd", textAlign: "right" }}
+                >
+                  Taxable Amt
+                </th>
+                <th
+                  style={{ borderBottom: "1px solid #ddd", textAlign: "right" }}
+                >
+                  Tax Amt
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {invoiceItems.map((item, idx) => {
+                const service = services.find((s) => s.id === item.serviceId);
+                if (!service) return null;
+
+                const lineAmount = item.qty * Number(item.amount || 0);
+                const lineShare =
+                  taxableTotal > 0 ? lineAmount / taxableTotal : 0;
+                const discountedLineAmount =
+                  lineAmount - discountAmount * lineShare;
+                const taxRate = item.gst || 0;
+                const taxAmount = (discountedLineAmount * taxRate) / 100;
+
+                return (
+                  <tr key={idx}>
+                    <td>{service.name}</td>
+                    <td style={{ textAlign: "right" }}>{taxRate}%</td>
+                    <td style={{ textAlign: "right" }}>
+                      {discountedLineAmount.toFixed(2)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {taxAmount.toFixed(2)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div>CGST: {totalCGST.toFixed(2)}</div>
+          <div>SGST: {totalSGST.toFixed(2)}</div>
+          <div>IGST: {totalIGST.toFixed(2)}</div>
+
+          <div className="font-bold">
+            Grand Total:{" "}
             <Input
-              value={discountAmount}
-              onChange={(e) => handleDiscountAmountChange(e.target.value)}
+              value={manualGrandTotal}
+              onChange={(e) => {
+                const val = e.target.value;
+                typingRef.current = true;
+                setManualGrandTotal(val);
+                debouncedGrandTotalChange(val);
+              }}
+              style={{ width: 150, marginLeft: 8 }}
             />
-          </Form.Item>
-
-          <Form.Item label="Grand Total">
-            <Input
-              value={grandTotal || subtotal.toFixed(2)}
-              onChange={(e) => handleGrandTotalChange(e.target.value)}
-            />
-          </Form.Item>
-
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
-          <Button type="primary" className="mt-4" onClick={handleGenerate}>
-            {submitButtonText}
-          </Button>
-        </Form>
-      )}
+          </div>
+        </div>
+      </Form>
     </Modal>
   );
 }
