@@ -596,16 +596,17 @@ export default function GenerateInvoiceModal({
 
       const token = localStorage.getItem("token");
 
-      const response = await axios.post(
-        `${BACKEND_URL}/clientadmin/invoices/create`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const endpoint =
+        type === "invoice"
+          ? "/clientadmin/invoices/create"
+          : "/clientadmin/invoices/quotation/create";
+
+      const response = await axios.post(`${BACKEND_URL}${endpoint}`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const result = response.data;
 
