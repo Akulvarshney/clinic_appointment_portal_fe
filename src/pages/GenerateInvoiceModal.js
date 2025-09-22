@@ -911,7 +911,7 @@ export default function GenerateInvoiceModal({
         </Button>,
       ]}
       width="90%"
-      style={{ maxWidth: "1200px", top: 20 }}
+      style={{ maxWidth: "1400px", top: 2 }}
       centered
       title={
         <Space>

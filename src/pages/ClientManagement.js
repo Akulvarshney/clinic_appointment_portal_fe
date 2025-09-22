@@ -295,6 +295,7 @@ const ClientManagement = () => {
       title: "Name",
       dataIndex: "first_name",
       key: "name",
+      width: "22%",
 
       render: (firstName, record) => {
         const fullName =
@@ -322,6 +323,7 @@ const ClientManagement = () => {
         </p>
       ),
       key: "portalid",
+      width: "14%",
       // sorter: true,
 
       render: (_, record) =>
@@ -333,6 +335,7 @@ const ClientManagement = () => {
             title: "Mobile",
             dataIndex: "phone",
             key: "phone",
+            width: "18%",
           },
         ]
       : []),
@@ -342,6 +345,7 @@ const ClientManagement = () => {
       dataIndex: "state",
       key: "state",
       ellipsis: true,
+      width: "10%",
     },
     // {
     //   title: "Date of Birth",
@@ -356,20 +360,21 @@ const ClientManagement = () => {
     //         })
     //       : "-",
     // },
-    {
-      title: "Gender",
-      dataIndex: "gender",
-      key: "gender",
-    },
-    {
-      title: "Occupation",
-      dataIndex: "occupation",
-      key: "occupation",
-      ellipsis: true,
-    },
+    // {
+    //   title: "Gender",
+    //   dataIndex: "gender",
+    //   key: "gender",
+    // },
+    // {
+    //   title: "Occupation",
+    //   dataIndex: "occupation",
+    //   key: "occupation",
+    //   ellipsis: true,
+    // },
     {
       title: "Category",
       key: "category",
+      width: "18%",
       dataIndex: ["categories", "category_name"],
       filterDropdown: ({
         setSelectedKeys,
@@ -404,6 +409,7 @@ const ClientManagement = () => {
       dataIndex: "email",
       key: "email",
       ellipsis: true,
+      width: "18%",
     },
   ];
 
