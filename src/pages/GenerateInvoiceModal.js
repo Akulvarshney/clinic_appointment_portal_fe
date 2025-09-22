@@ -5,8 +5,6 @@ import {
   Input,
   Form,
   Select,
-  message,
-  DatePicker,
   Card,
   Divider,
   Space,
@@ -33,6 +31,7 @@ import { fetchServices } from "../services/OrgServices.js";
 import { fetchClients } from "../services/clientServices.js";
 import { BACKEND_URL } from "../assets/constants/index.js";
 import axios from "axios";
+import { useNotification } from "../utils/messageWrapper.js";
 
 const { TextArea } = Input;
 const { Text, Title } = Typography;
@@ -54,7 +53,6 @@ export default function GenerateInvoiceModal({
   const [discountPercent, setDiscountPercent] = useState(0);
   const [manualGrandTotal, setManualGrandTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [invoiceNumber, setInvoiceNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("Payment due within 30 days");
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -63,17 +61,16 @@ export default function GenerateInvoiceModal({
   const [billToText, setBillToText] = useState("");
   const [billFromOrg, setBillFromOrg] = useState(null);
   const [billFromText, setBillFromText] = useState("");
+  const [orgState, setOrgState] = useState("");
 
-  const orgState = "HARYANA";
+  const notification = useNotification();
+
   const currentDate = dayjs();
   const dueDate = currentDate.add(30, "day");
   const typingRef = useRef(false);
 
-  // Generate invoice number
-  const generateInvoiceNumber = () => {
-    const prefix = type === "invoice" ? "INV" : "QUO";
-    const timestamp = Date.now().toString().slice(-6);
-    return `${prefix}-${currentDate.format("YYYY")}-${timestamp}`;
+  const roundTo2Decimals = (num) => {
+    return Math.round((num + Number.EPSILON) * 100) / 100;
   };
 
   const debouncedFetchClients = useMemo(() => debounce(fetchClients, 300), []);
@@ -120,6 +117,7 @@ export default function GenerateInvoiceModal({
 
             // console.log("Generated orgText:", orgText); // Debug log
             setBillFromText(orgText);
+            setOrgState(selectedOrg?.state);
           } else {
             // console.log("No matching org found"); // Debug log
             setBillFromOrg(null);
@@ -163,9 +161,9 @@ export default function GenerateInvoiceModal({
         setBillFromText(editData.billFromText || "");
       } else {
         form.resetFields();
-        const newInvoiceNumber = generateInvoiceNumber();
+        // const newInvoiceNumber = generateInvoiceNumber();
         form.setFieldsValue({
-          invoiceNumber: newInvoiceNumber,
+          // invoiceNumber: newInvoiceNumber,
           invoiceDate: currentDate,
           dueDate: dueDate,
           terms: "Payment due within 30 days",
@@ -176,7 +174,7 @@ export default function GenerateInvoiceModal({
         setNotes("");
         setTerms("Payment due within 30 days");
         setShippingCharges(0);
-        setInvoiceNumber(newInvoiceNumber);
+        // setInvoiceNumber(newInvoiceNumber);
         setBillToText("");
         // Don't reset billFromText here - let it be set by the loadOrgData effect
       }
@@ -194,7 +192,9 @@ export default function GenerateInvoiceModal({
         setServices(servicesData || []);
         setClients(clientsData || []);
       } catch (error) {
-        message.error("Failed to load data");
+        notification.error({
+          message: "Failed to Load Data",
+        });
         console.error(error);
       } finally {
         setLoading(false);
@@ -296,10 +296,12 @@ export default function GenerateInvoiceModal({
       calculations.subTotal > 0 ? lineAmount / calculations.subTotal : 0;
 
     // This line's share of total discount
-    const lineDiscountShare = lineShareOfTotal * calculations.discountAmount;
+    const lineDiscountShare = roundTo2Decimals(
+      lineShareOfTotal * calculations.discountAmount
+    );
 
     // Taxable amount for this line after discount
-    const taxableLineAmount = lineAmount - lineDiscountShare;
+    const taxableLineAmount = roundTo2Decimals(lineAmount - lineDiscountShare);
 
     // Calculate tax for this line
     let cgst = 0,
@@ -339,7 +341,8 @@ export default function GenerateInvoiceModal({
     }, 0);
 
     // 2. Calculate discount amount
-    const discountAmount = (subTotal * discountPercent) / 100;
+    // const discountAmount = (subTotal * discountPercent) / 100;
+    const discountAmount = roundTo2Decimals((subTotal * discountPercent) / 100);
 
     // 3. Taxable amount after discount
     const taxableAfterDiscount = subTotal - discountAmount;
@@ -408,7 +411,7 @@ export default function GenerateInvoiceModal({
       grandTotalBeforeRounding,
       grandTotal,
       roundOffAmount,
-      gstGroups, // For line item display
+      gstGroups,
     };
   }, [
     invoiceItems,
@@ -444,7 +447,9 @@ export default function GenerateInvoiceModal({
     // Iterate to find the discount that gets closest to desired total
     for (let iteration = 0; iteration < 20; iteration++) {
       const testDiscount = (lowDiscount + highDiscount) / 2;
-      const testDiscountAmount = (subTotal * testDiscount) / 100;
+      const testDiscountAmount = roundTo2Decimals(
+        (subTotal * testDiscount) / 100
+      );
       const testTaxableAmount = subTotal - testDiscountAmount;
 
       // Calculate tax with this discount
@@ -452,8 +457,9 @@ export default function GenerateInvoiceModal({
       Object.keys(calculations.gstGroups || {}).forEach((gstRate) => {
         const gstRateNum = Number(gstRate);
         const groupAmount = calculations.gstGroups[gstRate];
-        const groupDiscountShare =
-          subTotal > 0 ? (groupAmount / subTotal) * testDiscountAmount : 0;
+        const groupDiscountShare = roundTo2Decimals(
+          subTotal > 0 ? (groupAmount / subTotal) * testDiscountAmount : 0
+        );
         const groupTaxableAmount = groupAmount - groupDiscountShare;
 
         if (billTo?.state && orgState) {
@@ -482,7 +488,9 @@ export default function GenerateInvoiceModal({
     }
 
     // Ensure discount doesn't exceed 100%
-    setDiscountPercent(Math.min(Math.max(bestDiscount, 0), 100));
+    setDiscountPercent(
+      roundTo2Decimals(Math.min(Math.max(bestDiscount, 0), 100))
+    );
   };
 
   const debouncedGrandTotalChange = useMemo(
@@ -502,11 +510,15 @@ export default function GenerateInvoiceModal({
 
   const validateForm = () => {
     if (!billTo) {
-      message.error("Please select a client");
+      notification.error({
+        message: "Please select a client",
+      });
       return false;
     }
     if (invoiceItems.length === 0) {
-      message.error("Please add at least one item");
+      notification.error({
+        message: "Please add at least one item",
+      });
       return false;
     }
 
@@ -514,15 +526,21 @@ export default function GenerateInvoiceModal({
     for (let i = 0; i < invoiceItems.length; i++) {
       const item = invoiceItems[i];
       if (!item.serviceId) {
-        message.error(`Please select a service for item ${i + 1}`);
+        notification.error({
+          message: `Please select a service for item ${i + 1}`,
+        });
         return false;
       }
       if (!item.qty || item.qty <= 0) {
-        message.error(`Please enter a valid quantity for item ${i + 1}`);
+        notification.error({
+          message: `Please enter a valid quantity for item ${i + 1}`,
+        });
         return false;
       }
       if (item.rate === undefined || item.rate < 0) {
-        message.error(`Please enter a valid rate for item ${i + 1}`);
+        notification.error({
+          message: `Please enter a valid rate for item ${i + 1}`,
+        });
         return false;
       }
     }
@@ -535,24 +553,78 @@ export default function GenerateInvoiceModal({
 
     try {
       setLoading(true);
-      const formValues = await form.validateFields();
 
+      // Basic validations
       const selectedOrgId = localStorage.getItem("selectedOrgId");
       if (!selectedOrgId) {
-        message.error("Organization not selected");
+        notification.error({
+          message: "Organization not selected",
+        });
+        setLoading(false);
         return;
       }
+
+      // Client selection validation
+      if (!billTo || !billTo.id) {
+        notification.error({
+          message: "Client selection is mandatory",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Minimum one service validation
+      if (!invoiceItems || invoiceItems.length === 0) {
+        notification.error({
+          message: "At least one service must be added",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Check if any service has valid data
+      const hasValidService = invoiceItems.some(
+        (item) =>
+          item.serviceId &&
+          (Number(item.qty) > 0 || item.qty === 0) &&
+          Number(item.rate) > 0
+      );
+
+      if (!hasValidService) {
+        notification.error({
+          message:
+            "At least one service with valid quantity and rate is required",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Grand total validation
+      if (!calculations.grandTotal || Number(calculations.grandTotal) <= 0) {
+        notification.error({
+          message: "Grand total cannot be zero or negative",
+        });
+        setLoading(false);
+        return;
+      }
+
+      const formValues = await form.validateFields();
 
       // Debug log to check billFromText value before sending
       console.log("Submitting with billFromText:", billFromText);
 
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+
+      const formattedDate = `${year}-${month}-${day}`;
+
       const payload = {
         organization_id: selectedOrgId,
         client_id: billTo.id,
-        invoice_date: formValues.invoiceDate.format("YYYY-MM-DD"),
-        due_date: formValues.dueDate
-          ? formValues.dueDate.format("YYYY-MM-DD")
-          : null,
+        invoice_date: formattedDate,
+        due_date: null,
         sub_total: calculations.subTotal,
         discount_amount: calculations.discountAmount,
         discount_percentage: discountPercent,
@@ -610,18 +682,20 @@ export default function GenerateInvoiceModal({
 
       const result = response.data;
 
-      message.success(
-        `${type} ${result.data?.invoice_number || ""} ${
+      notification.success({
+        message: `${type} ${result.data?.invoice_number || ""} ${
           editData ? "updated" : "created"
-        } successfully!`
-      );
+        } successfully!`,
+      });
 
       onClose(); // keep this if you still want the modal to close
     } catch (error) {
       console.error("Error submitting invoice:", error);
-      message.error(
-        error.message || `Failed to ${editData ? "update" : "create"} ${type}`
-      );
+      notification.error({
+        message:
+          error.message ||
+          `Failed to ${editData ? "update" : "create"} ${type}`,
+      });
     } finally {
       setLoading(false);
     }
@@ -655,20 +729,7 @@ export default function GenerateInvoiceModal({
         </Select>
       ),
     },
-    {
-      title: "Description",
-      dataIndex: "description",
-      render: (description, record, index) => (
-        <TextArea
-          value={description}
-          onChange={(e) =>
-            handleItemChange(index, "description", e.target.value)
-          }
-          placeholder="Item description"
-          autoSize={{ minRows: 1, maxRows: 3 }}
-        />
-      ),
-    },
+
     {
       title: "Qty",
       dataIndex: "qty",
@@ -721,7 +782,7 @@ export default function GenerateInvoiceModal({
       ),
     },
     {
-      title: "Amount After Discount",
+      title: "Discounted Amt.",
       dataIndex: "amount_after_discount",
       width: 140,
       render: (_, record, index) => {
@@ -849,7 +910,8 @@ export default function GenerateInvoiceModal({
           {type === "invoice" ? "Invoice" : "Quotation"}
         </Button>,
       ]}
-      width={1400}
+      width="90%"
+      style={{ maxWidth: "1200px", top: 20 }}
       centered
       title={
         <Space>
@@ -859,316 +921,346 @@ export default function GenerateInvoiceModal({
         </Space>
       }
       destroyOnClose
+      bodyStyle={{
+        padding: 0,
+        maxHeight: "calc(100vh - 200px)",
+        overflow: "hidden",
+      }}
     >
-      <Form form={form} layout="vertical" size="large">
-        {/* Header Section - Basic Information */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          <Form.Item
-            name="invoiceDate"
-            label={`${type === "invoice" ? "Invoice" : "Quotation"} Date`}
-            rules={[{ required: true, message: "Please select date" }]}
-          >
-            <DatePicker
-              style={{ width: "100%" }}
-              format="DD/MM/YYYY"
-              prefix={<CalendarOutlined />}
-            />
-          </Form.Item>
-        </div>
-
-        {/* Header Section - Organization and Client Details in One Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Bill From - Organization Information */}
-          <Card
-            title={
-              <Space>
-                <UserOutlined />
-                Bill From
-              </Space>
-            }
-            size="small"
-          >
-            {billFromText ? (
-              <div className="whitespace-pre-line text-sm">{billFromText}</div>
-            ) : (
-              <div className="text-gray-400 italic">
-                Organization information will appear here
-              </div>
-            )}
-          </Card>
-
-          {/* Client Information */}
-          <Card
-            title={
-              <Space>
-                <UserOutlined />
-                Bill To
-              </Space>
-            }
-            size="small"
-          >
-            <Form.Item
-              name="billTo"
-              label="Select Client"
-              rules={[{ required: true, message: "Please select a client" }]}
-            >
-              <Select
-                showSearch
-                placeholder="Search and select client"
-                onChange={handleClientChange}
-                onSearch={handleClientSearch}
-                allowClear
-                filterOption={false}
-                loading={loading}
-                notFoundContent="No clients found"
-              >
-                {clients.map((c) => (
-                  <Option key={c.id} value={c.id}>
-                    <div>
-                      <strong>
-                        {c.first_name} {c.last_name}
-                      </strong>{" "}
-                      || {c.phone}
-                    </div>
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            {billTo && (
-              <Form.Item label="Client Information">
-                <TextArea
-                  value={billToText}
-                  onChange={(e) => setBillToText(e.target.value)}
-                  placeholder="Client information will appear here. You can edit it as needed."
-                  rows={5}
-                  className="text-sm"
-                />
-              </Form.Item>
-            )}
-          </Card>
-        </div>
-
-        <Divider />
-
-        {/* Items Section */}
-        <Card
-          title={
-            <Space>
-              <DollarOutlined />
-              Items & Services
-            </Space>
-          }
-          extra={
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={addItem}
+      <div
+        style={{
+          maxHeight: "calc(100vh - 200px)",
+          overflowY: "auto",
+          padding: "24px",
+        }}
+      >
+        <Form form={form} layout="vertical" size="large">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+            {/* Bill From - Organization Information */}
+            <Card
+              title={
+                <Space>
+                  <UserOutlined />
+                  Bill From
+                </Space>
+              }
               size="small"
+              bodyStyle={{ padding: "12px" }}
             >
-              Add Item
-            </Button>
-          }
-          className="mb-6"
-        >
-          <Table
-            columns={itemColumns}
-            dataSource={invoiceItems}
-            pagination={false}
-            rowKey={(record, index) => record.id || index}
-            size="middle"
-            scroll={{ x: 1200 }}
-          />
-        </Card>
-
-        <Divider />
-
-        {/* Bottom Section - Notes and Summary */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Additional Information */}
-          <Card title="Additional Information" size="small">
-            <Form.Item name="notes" label="Notes">
-              <TextArea
-                rows={3}
-                placeholder="Add any additional notes here..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </Form.Item>
-
-            <Form.Item name="terms" label="Terms & Conditions">
-              <TextArea
-                rows={2}
-                placeholder="Payment terms and conditions..."
-                value={terms}
-                onChange={(e) => setTerms(e.target.value)}
-              />
-            </Form.Item>
-
-            <Form.Item label="Advanced Options">
-              <Switch
-                checked={showAdvanced}
-                onChange={setShowAdvanced}
-                checkedChildren="Show"
-                unCheckedChildren="Hide"
-              />
-            </Form.Item>
-
-            {showAdvanced && (
-              <div className="space-y-4">
-                <Form.Item label="Shipping Charges">
-                  <InputNumber
-                    value={shippingCharges}
-                    onChange={(value) => setShippingCharges(value || 0)}
-                    min={0}
-                    formatter={(value) =>
-                      `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    }
-                    parser={(value) => value.replace(/₹\s?|(,*)/g, "")}
-                    className="w-full"
-                  />
-                </Form.Item>
-
-                <Form.Item label="Round Off">
-                  <Switch
-                    checked={roundOff}
-                    onChange={setRoundOff}
-                    checkedChildren="Yes"
-                    unCheckedChildren="No"
-                  />
-                </Form.Item>
-              </div>
-            )}
-          </Card>
-
-          {/* Summary */}
-          <Card title="Summary" size="small">
-            <div className="text-sm space-y-2">
-              <div className="flex justify-between items-center">
-                <span>Sub Total:</span>
-                <Text strong>
-                  ₹
-                  {calculations.subTotal.toLocaleString("en-IN", {
-                    maximumFractionDigits: 2,
-                  })}
-                </Text>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
-                  <span>Discount:</span>
-                  <InputNumber
-                    value={discountPercent}
-                    onChange={(value) => setDiscountPercent(value || 0)}
-                    min={0}
-                    max={100}
-                    formatter={(value) => `${value}%`}
-                    parser={(value) => value.replace("%", "")}
-                    size="small"
-                    className="w-16"
-                  />
-                </div>
-                <Text type="danger">
-                  -₹
-                  {calculations.discountAmount.toLocaleString("en-IN", {
-                    maximumFractionDigits: 2,
-                  })}
-                </Text>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Taxable Amount:</span>
-                <span>
-                  ₹
-                  {calculations.taxableAfterDiscount.toLocaleString("en-IN", {
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-
-              {billTo?.state &&
-              orgState &&
-              billTo.state.toUpperCase() === orgState.toUpperCase() ? (
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span>CGST:</span>
-                    <span>
-                      ₹
-                      {calculations.totalCGST.toLocaleString("en-IN", {
-                        maximumFractionDigits: 2,
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>SGST:</span>
-                    <span>
-                      ₹
-                      {calculations.totalSGST.toLocaleString("en-IN", {
-                        maximumFractionDigits: 2,
-                      })}
-                    </span>
-                  </div>
+              {billFromText ? (
+                <div className="whitespace-pre-line text-sm">
+                  {billFromText}
                 </div>
               ) : (
-                <div className="flex justify-between items-center">
-                  <span>IGST:</span>
-                  <span>
-                    ₹
-                    {calculations.totalIGST.toLocaleString("en-IN", {
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
+                <div className="text-gray-400 italic">
+                  Organization information will appear here
                 </div>
               )}
+            </Card>
 
-              {showAdvanced && shippingCharges > 0 && (
-                <div className="flex justify-between items-center">
-                  <span>Shipping:</span>
-                  <span>
-                    ₹
-                    {shippingCharges.toLocaleString("en-IN", {
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
-              )}
+            <Card
+              title={
+                <Space>
+                  <UserOutlined />
+                  Bill To
+                </Space>
+              }
+              size="small"
+              bodyStyle={{ padding: "12px" }}
+            >
+              <Form.Item
+                name="billTo"
+                label="Select Client"
+                rules={[{ required: true, message: "Please select a client" }]}
+                style={{ marginBottom: "12px" }}
+              >
+                <Select
+                  showSearch
+                  placeholder="Search and select client"
+                  onChange={handleClientChange}
+                  onSearch={handleClientSearch}
+                  allowClear
+                  filterOption={false}
+                  loading={loading}
+                  notFoundContent="No clients found"
+                >
+                  {clients.map((c) => (
+                    <Option key={c.id} value={c.id}>
+                      <div>
+                        <strong>
+                          {c.first_name} {c.last_name}
+                        </strong>{" "}
+                        || {c.phone}
+                      </div>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
 
-              {roundOff && calculations.roundOffAmount !== 0 && (
-                <div className="flex justify-between items-center">
-                  <span>Round Off:</span>
-                  <span>
-                    {calculations.roundOffAmount > 0 ? "+" : ""}₹
-                    {calculations.roundOffAmount.toLocaleString("en-IN", {
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
-              )}
-
-              <Divider className="my-3" />
-
-              <div className="flex justify-between items-center text-base font-bold">
-                <span>Grand Total:</span>
-                <Tooltip title="Click to manually adjust total">
-                  <InputNumber
-                    value={manualGrandTotal}
-                    onChange={(value) => {
-                      typingRef.current = true;
-                      setManualGrandTotal(value);
-                      debouncedGrandTotalChange(value);
-                    }}
-                    formatter={(value) =>
-                      `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    }
-                    parser={(value) => value.replace(/₹\s?|(,*)/g, "")}
-                    className="w-36 font-bold"
+              {billTo && (
+                <Form.Item
+                  label="Client Information"
+                  style={{ marginBottom: 0 }}
+                >
+                  <TextArea
+                    value={billToText}
+                    onChange={(e) => setBillToText(e.target.value)}
+                    placeholder="Client information will appear here. You can edit it as needed."
+                    rows={4}
+                    className="text-sm"
                   />
-                </Tooltip>
-              </div>
+                </Form.Item>
+              )}
+            </Card>
+          </div>
+
+          <Divider style={{ margin: "16px 0" }} />
+
+          {/* Items Section */}
+          <Card
+            title={
+              <Space>
+                <DollarOutlined />
+                Items & Services
+              </Space>
+            }
+            extra={
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={addItem}
+                size="small"
+              >
+                Add Item
+              </Button>
+            }
+            className="mb-4"
+            bodyStyle={{ padding: "12px" }}
+          >
+            <div style={{ overflowX: "auto" }}>
+              <Table
+                columns={itemColumns}
+                dataSource={invoiceItems}
+                pagination={false}
+                rowKey={(record, index) => record.id || index}
+                size="small"
+                scroll={{ x: "max-content" }}
+                style={{ minWidth: "800px" }}
+              />
             </div>
           </Card>
-        </div>
-      </Form>
+
+          <Divider style={{ margin: "16px 0" }} />
+
+          {/* Bottom Section - Notes and Summary */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Additional Information */}
+            <Card
+              title="Additional Information"
+              size="small"
+              bodyStyle={{ padding: "12px" }}
+            >
+              <Form.Item
+                name="notes"
+                label="Notes"
+                style={{ marginBottom: "12px" }}
+              >
+                <TextArea
+                  rows={3}
+                  placeholder="Add any additional notes here..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="terms"
+                label="Terms & Conditions"
+                style={{ marginBottom: "12px" }}
+              >
+                <TextArea
+                  rows={2}
+                  placeholder="Payment terms and conditions..."
+                  value={terms}
+                  onChange={(e) => setTerms(e.target.value)}
+                />
+              </Form.Item>
+
+              <Form.Item
+                label="Advanced Options"
+                style={{ marginBottom: "12px" }}
+              >
+                <Switch
+                  checked={showAdvanced}
+                  onChange={setShowAdvanced}
+                  checkedChildren="Show"
+                  unCheckedChildren="Hide"
+                />
+              </Form.Item>
+
+              {showAdvanced && (
+                <div className="space-y-3">
+                  <Form.Item
+                    label="Shipping Charges"
+                    style={{ marginBottom: "12px" }}
+                  >
+                    <InputNumber
+                      value={shippingCharges}
+                      onChange={(value) => setShippingCharges(value || 0)}
+                      min={0}
+                      formatter={(value) =>
+                        `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      }
+                      parser={(value) => value.replace(/₹\s?|(,*)/g, "")}
+                      className="w-full"
+                    />
+                  </Form.Item>
+
+                  <Form.Item label="Round Off" style={{ marginBottom: 0 }}>
+                    <Switch
+                      checked={roundOff}
+                      onChange={setRoundOff}
+                      checkedChildren="Yes"
+                      unCheckedChildren="No"
+                    />
+                  </Form.Item>
+                </div>
+              )}
+            </Card>
+
+            {/* Summary */}
+            <Card title="Summary" size="small" bodyStyle={{ padding: "12px" }}>
+              <div className="text-sm space-y-2">
+                <div className="flex justify-between items-center">
+                  <span>Sub Total:</span>
+                  <Text strong>
+                    ₹
+                    {calculations.subTotal.toLocaleString("en-IN", {
+                      maximumFractionDigits: 2,
+                    })}
+                  </Text>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-2">
+                    <span>Discount:</span>
+                    <InputNumber
+                      value={discountPercent}
+                      onChange={(value) =>
+                        setDiscountPercent(roundTo2Decimals(value || 0))
+                      }
+                      min={0}
+                      max={100}
+                      precision={2}
+                      formatter={(value) => `${value}%`}
+                      parser={(value) => value.replace("%", "")}
+                      size="small"
+                      className="w-16"
+                    />
+                  </div>
+                  <Text type="danger">
+                    -₹
+                    {calculations.discountAmount.toLocaleString("en-IN", {
+                      maximumFractionDigits: 2,
+                    })}
+                  </Text>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span>Taxable Amount:</span>
+                  <span>
+                    ₹
+                    {calculations.taxableAfterDiscount.toLocaleString("en-IN", {
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+
+                {billTo?.state &&
+                orgState &&
+                billTo.state.toUpperCase() === orgState.toUpperCase() ? (
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span>CGST:</span>
+                      <span>
+                        ₹
+                        {calculations.totalCGST.toLocaleString("en-IN", {
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>SGST:</span>
+                      <span>
+                        ₹
+                        {calculations.totalSGST.toLocaleString("en-IN", {
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <span>IGST:</span>
+                    <span>
+                      ₹
+                      {calculations.totalIGST.toLocaleString("en-IN", {
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </div>
+                )}
+
+                {showAdvanced && shippingCharges > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span>Shipping:</span>
+                    <span>
+                      ₹
+                      {shippingCharges.toLocaleString("en-IN", {
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </div>
+                )}
+
+                {roundOff && calculations.roundOffAmount !== 0 && (
+                  <div className="flex justify-between items-center">
+                    <span>Round Off:</span>
+                    <span>
+                      {calculations.roundOffAmount > 0 ? "+" : ""}₹
+                      {calculations.roundOffAmount.toLocaleString("en-IN", {
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </div>
+                )}
+
+                <Divider className="my-3" />
+
+                <div className="flex justify-between items-center text-base font-bold">
+                  <span>Grand Total:</span>
+                  <Tooltip title="Click to manually adjust total">
+                    <InputNumber
+                      value={manualGrandTotal}
+                      onChange={(value) => {
+                        typingRef.current = true;
+                        setManualGrandTotal(value);
+                        debouncedGrandTotalChange(value);
+                      }}
+                      formatter={(value) =>
+                        `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      }
+                      parser={(value) => value.replace(/₹\s?|(,*)/g, "")}
+                      className="w-32 font-bold"
+                      size="small"
+                    />
+                  </Tooltip>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </Form>
+      </div>
     </Modal>
   );
 }
