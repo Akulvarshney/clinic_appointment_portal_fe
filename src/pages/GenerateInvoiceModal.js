@@ -849,7 +849,8 @@ export default function GenerateInvoiceModal({
           {type === "invoice" ? "Invoice" : "Quotation"}
         </Button>,
       ]}
-      width={1200}
+      width={1400}
+      centered
       title={
         <Space>
           <FileTextOutlined />
