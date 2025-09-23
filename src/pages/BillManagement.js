@@ -3,7 +3,7 @@ import { Table, Button, Radio, message } from "antd";
 import GenerateInvoiceModal from "./GenerateInvoiceModal";
 import { fetchServices } from "../services/OrgServices.js";
 import { fetchClients } from "../services/clientServices.js";
-import { fetchInvoices } from "../services/invoicesServices.js";
+import { fetchBills } from "../services/invoicesServices.js";
 
 const BillManagement = () => {
   const orgId = localStorage.getItem("selectedOrgId");
@@ -22,10 +22,40 @@ const BillManagement = () => {
   }, [orgId]);
 
   useEffect(() => {
-    if (activeTab === "invoices") {
-      fetchInvoices();
-    }
-  }, [activeTab]);
+    fetchBills().then((billsdata) => {
+      if (activeTab === "invoices") {
+        const formattedInvoices = billsdata
+          .filter((entry) => entry.bill_type === "INVOICE")
+          .map((entry) => ({
+            billId: entry.invoice_number,
+            clientName: entry.client_name || "-",
+            clientEmail: entry.client_email || "-",
+            billTo: entry.bill_to || "",
+            amount: entry.final_amount,
+            datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
+            raw: entry,
+          }));
+
+        setData((prev) => ({ ...prev, invoices: formattedInvoices }));
+      }
+
+      if (activeTab === "quotations") {
+        const formattedQuotations = billsdata
+          .filter((entry) => entry.bill_type === "QUOTATION")
+          .map((entry) => ({
+            billId: entry.invoice_number,
+            clientName: entry.client_name || "-",
+            clientEmail: entry.client_email || "-",
+            billTo: entry.bill_to || "",
+            amount: entry.final_amount,
+            datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
+            raw: entry,
+          }));
+
+        setData((prev) => ({ ...prev, quotations: formattedQuotations }));
+      }
+    });
+  }, [activeTab, orgId]);
 
   const handleTabChange = (e) => setActiveTab(e.target.value);
   const handleCreate = (type) => {
@@ -80,7 +110,7 @@ const BillManagement = () => {
       key: "amount",
       render: (val) => `₹${val}`,
     },
-    { title: "Date Printed", dataIndex: "datePrinted", key: "datePrinted" },
+    { title: "Date Generated", dataIndex: "datePrinted", key: "datePrinted" },
     {
       title: "Action",
       key: "action",

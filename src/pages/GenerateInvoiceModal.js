@@ -213,11 +213,13 @@ export default function GenerateInvoiceModal({
 
       // Generate default text for client
       const defaultText = [
-        `${client.first_name} ${client.last_name}`,
-        client.email ? client.email : "",
-        client.phone ? client.phone : "",
-        client.address ? client.address : "",
-        client.state ? client.state : "",
+        client.first_name && client.last_name
+          ? `${client.first_name} ${client.last_name}`
+          : client.first_name || client.last_name || "",
+        client.email || "",
+        client.phone || "",
+        client.address || "",
+        client.state || "",
       ]
         .filter(Boolean)
         .join("\n");

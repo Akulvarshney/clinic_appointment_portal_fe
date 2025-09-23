@@ -7,7 +7,7 @@ const basic_config = {
   headers: { Authorization: `Bearer ${token}` },
 };
 
-export const fetchInvoices = async (searchTerm = "", page = 1, limit = 10) => {
+export const fetchBills = async (searchTerm = "", page = 1, limit = 10) => {
   if (!orgId || !token) return;
 
   const selectedOrgId = localStorage.getItem("selectedOrgId");
@@ -18,13 +18,13 @@ export const fetchInvoices = async (searchTerm = "", page = 1, limit = 10) => {
 
   try {
     const response = await apiGet(
-      `/clientadmin/invoices/getInvoice?organization_id=${selectedOrg.organizationId}&search=${searchTerm}&page=1&limit=10&orgId=${orgId}`,
+      `/clientadmin/invoices/getBills?organization_id=${selectedOrg.organizationId}&search=${searchTerm}&page=1&limit=10&orgId=${orgId}`,
       basic_config
     );
-    const clients = response.data || [];
+    const billsdata = response.data || [];
 
-    console.log(clients);
-    return clients;
+    console.log(billsdata);
+    return billsdata;
   } catch (err) {
     console.error("Error fetching clients:", err);
     message.error("Failed to fetch clients");
