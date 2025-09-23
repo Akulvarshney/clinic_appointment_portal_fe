@@ -1,22 +1,25 @@
 import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
-import { message } from "antd";
+
+import toast from "react-hot-toast";
 
 // Central error handler
 function handleError(error) {
   if (error.response) {
     if (error.response.status === 401) {
+      toast.error("Unauthorized or Session Expired, please Sign In again");
       console.log("Unauthorized or Session Expired, please Sign In again");
-      message.error("Unauthorized or Session Expired, please Sign In again");
     } else if (error.response.status === 500) {
-      message.error("Internal Server Error Occurred");
+      toast.error("Internal Server Error Occurred");
+      console.log("Internal Server Error Occurred");
     } else {
-      message.error(error.response.data?.message || "Something went wrong");
+      toast.error(error.response.data?.message || "Something went wrong");
+      console.log(error.response.data?.message || "Something went wrong");
     }
   } else if (error.request) {
-    message.error("No response received from server");
+    toast.error("No response received from server");
   } else {
-    message.error("Request setup error: " + error.message);
+    toast.error("Request setup error: " + error.message);
   }
   return null; // Ensures consistent return type
 }

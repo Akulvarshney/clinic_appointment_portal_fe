@@ -21,40 +21,85 @@ const BillManagement = () => {
     fetchServices();
   }, [orgId]);
 
+  // useEffect(() => {
+  //   fetchBills().then((billsdata) => {
+  //     if (activeTab === "invoices") {
+  //       const formattedInvoices = billsdata
+  //         .filter((entry) => entry.bill_type === "INVOICE")
+  //         .map((entry) => ({
+  //           billId: entry.invoice_number,
+  //           clientName: entry.client_name || "-",
+  //           clientEmail: entry.client_email || "-",
+  //           billTo: entry.bill_to || "",
+  //           amount: entry.final_amount,
+  //           datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
+  //           raw: entry,
+  //         }));
+
+  //       setData((prev) => ({ ...prev, invoices: formattedInvoices }));
+  //     }
+
+  //     if (activeTab === "quotations") {
+  //       const formattedQuotations = billsdata
+  //         .filter((entry) => entry.bill_type === "QUOTATION")
+  //         .map((entry) => ({
+  //           billId: entry.invoice_number,
+  //           clientName: entry.client_name || "-",
+  //           clientEmail: entry.client_email || "-",
+  //           billTo: entry.bill_to || "",
+  //           amount: entry.final_amount,
+  //           datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
+  //           raw: entry,
+  //         }));
+
+  //       setData((prev) => ({ ...prev, quotations: formattedQuotations }));
+  //     }
+  //   });
+  // }, [activeTab, orgId]);
   useEffect(() => {
-    fetchBills().then((billsdata) => {
-      if (activeTab === "invoices") {
-        const formattedInvoices = billsdata
-          .filter((entry) => entry.bill_type === "INVOICE")
-          .map((entry) => ({
-            billId: entry.invoice_number,
-            clientName: entry.client_name || "-",
-            clientEmail: entry.client_email || "-",
-            billTo: entry.bill_to || "",
-            amount: entry.final_amount,
-            datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
-            raw: entry,
-          }));
+    const loadBills = async () => {
+      try {
+        const billsdata = await fetchBills();
 
-        setData((prev) => ({ ...prev, invoices: formattedInvoices }));
+        // ensure it's an array
+        const billsArray = Array.isArray(billsdata) ? billsdata : [];
+
+        if (activeTab === "invoices") {
+          const formattedInvoices = billsArray
+            .filter((entry) => entry.bill_type === "INVOICE")
+            .map((entry) => ({
+              billId: entry.invoice_number,
+              clientName: entry.client_name || "-",
+              clientEmail: entry.client_email || "-",
+              billTo: entry.bill_to || "",
+              amount: entry.final_amount,
+              datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
+              raw: entry,
+            }));
+          setData((prev) => ({ ...prev, invoices: formattedInvoices }));
+        }
+
+        if (activeTab === "quotations") {
+          const formattedQuotations = billsArray
+            .filter((entry) => entry.bill_type === "QUOTATION")
+            .map((entry) => ({
+              billId: entry.invoice_number,
+              clientName: entry.client_name || "-",
+              clientEmail: entry.client_email || "-",
+              billTo: entry.bill_to || "",
+              amount: entry.final_amount,
+              datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
+              raw: entry,
+            }));
+          setData((prev) => ({ ...prev, quotations: formattedQuotations }));
+        }
+      } catch (err) {
+        console.error("Error fetching bills:", err);
+        setData((prev) => ({ ...prev, invoices: [], quotations: [] }));
       }
+    };
 
-      if (activeTab === "quotations") {
-        const formattedQuotations = billsdata
-          .filter((entry) => entry.bill_type === "QUOTATION")
-          .map((entry) => ({
-            billId: entry.invoice_number,
-            clientName: entry.client_name || "-",
-            clientEmail: entry.client_email || "-",
-            billTo: entry.bill_to || "",
-            amount: entry.final_amount,
-            datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
-            raw: entry,
-          }));
-
-        setData((prev) => ({ ...prev, quotations: formattedQuotations }));
-      }
-    });
+    loadBills();
   }, [activeTab, orgId]);
 
   const handleTabChange = (e) => setActiveTab(e.target.value);

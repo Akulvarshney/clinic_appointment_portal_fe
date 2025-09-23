@@ -1,6 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useMemo, useEffect } from "react";
-
+import { Toaster } from "react-hot-toast";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
@@ -194,76 +194,83 @@ function App() {
   }
 
   return (
-    <Routes>
-      {isLoggedIn && role === "SUPERADMIN" ? (
-        <Route element={<SuperAdminLayout />}>
-          <Route path="/superadmin/dashboard" element={<DashboardSAPage />} />
-          <Route
-            path="/sa/organisationListing"
-            element={<OrganisationListing />}
-          />
-          <Route
-            path="/sa/NotificationManagement"
-            element={<NotificationManagement />}
-          />
-          <Route path="*" element={<Navigate to="/superadmin/dashboard" />} />
-        </Route>
-      ) : isLoggedIn && role !== "SUPERADMIN" ? (
-        <Route element={<LoggedInLayout />}>
-          {allowedRoutes.map((routePath) => {
-            const { component: Component } = ROUTE_COMPONENTS[routePath];
-
-            if (routePath === "/clients") {
-              return (
-                <Route key={routePath} path="clients">
-                  <Route index element={<ClientManagement />} />
-                  <Route
-                    path="detail/:clientId"
-                    element={<ClientDetailPage />}
-                  />
-                </Route>
-              );
-            }
-
-            return (
-              <Route key={routePath} path={routePath} element={<Component />} />
-            );
-          })}
-
-          {allowedRoutes.length === 0 && (
+    <>
+      <Toaster position="top-center" reverseOrder={false} />
+      <Routes>
+        {isLoggedIn && role === "SUPERADMIN" ? (
+          <Route element={<SuperAdminLayout />}>
+            <Route path="/superadmin/dashboard" element={<DashboardSAPage />} />
             <Route
-              path="*"
-              element={
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "100vh",
-                    flexDirection: "column",
-                  }}
-                >
-                  <h2>No Access</h2>
-                  <p>You don't have permission to access any pages.</p>
-                </div>
-              }
+              path="/sa/organisationListing"
+              element={<OrganisationListing />}
             />
-          )}
+            <Route
+              path="/sa/NotificationManagement"
+              element={<NotificationManagement />}
+            />
+            <Route path="*" element={<Navigate to="/superadmin/dashboard" />} />
+          </Route>
+        ) : isLoggedIn && role !== "SUPERADMIN" ? (
+          <Route element={<LoggedInLayout />}>
+            {allowedRoutes.map((routePath) => {
+              const { component: Component } = ROUTE_COMPONENTS[routePath];
 
-          {allowedRoutes.length > 0 && (
-            <Route path="*" element={<Navigate to={defaultRoute} />} />
-          )}
-        </Route>
-      ) : (
-        <Route element={<LoggedOutLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/superAdmin/login" element={<Login />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgetpassword" element={<ForgotPassword />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Route>
-      )}
-    </Routes>
+              if (routePath === "/clients") {
+                return (
+                  <Route key={routePath} path="clients">
+                    <Route index element={<ClientManagement />} />
+                    <Route
+                      path="detail/:clientId"
+                      element={<ClientDetailPage />}
+                    />
+                  </Route>
+                );
+              }
+
+              return (
+                <Route
+                  key={routePath}
+                  path={routePath}
+                  element={<Component />}
+                />
+              );
+            })}
+
+            {allowedRoutes.length === 0 && (
+              <Route
+                path="*"
+                element={
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      height: "100vh",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <h2>No Access</h2>
+                    <p>You don't have permission to access any pages.</p>
+                  </div>
+                }
+              />
+            )}
+
+            {allowedRoutes.length > 0 && (
+              <Route path="*" element={<Navigate to={defaultRoute} />} />
+            )}
+          </Route>
+        ) : (
+          <Route element={<LoggedOutLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/superAdmin/login" element={<Login />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgetpassword" element={<ForgotPassword />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Route>
+        )}
+      </Routes>
+    </>
   );
 }
 
