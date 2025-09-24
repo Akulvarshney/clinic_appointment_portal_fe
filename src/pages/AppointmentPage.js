@@ -6,6 +6,12 @@ import dayjs from "dayjs";
 import debounce from "lodash/debounce";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 import { Divider, Descriptions, Tag } from "antd";
+import { apiGet, apiPost, apiPut, apiPatch } from "../utils/axiosCalls";
+
+const token = localStorage.getItem("token");
+const basic_config = {
+  headers: { Authorization: `Bearer ${token}` },
+};
 
 const { Option } = Select;
 
@@ -115,7 +121,7 @@ export default function AppointmentPage() {
   const [form] = Form.useForm();
 
   const orgId = localStorage.getItem("selectedOrgId");
-  const token = localStorage.getItem("token");
+  //const token = localStorage.getItem("token");
 
   const moveDay = (delta) => {
     console.log("Moving day by:", delta);
@@ -162,15 +168,13 @@ export default function AppointmentPage() {
   useEffect(() => {
     async function fetchEmployees() {
       try {
-        const response = await axios.get(
-          `${BACKEND_URL}/clientAdmin/userMgmt/getEmployees?orgId=${orgId}&status=ENABLED`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const response = await apiGet(
+          `/clientAdmin/userMgmt/getEmployees?orgId=${orgId}&status=ENABLED`,
+          basic_config
         );
 
-        const employees = response.data.response.data || [];
-        console.log("Employeeesss ", employees);
+        const employees = response.response.data || [];
+
         const formatted = employees.map((emp) => ({
           id: emp.id,
           name: emp.first_name,
@@ -188,14 +192,13 @@ export default function AppointmentPage() {
   useEffect(() => {
     async function fetchDoctors() {
       try {
-        const response = await axios.get(
-          `${BACKEND_URL}/clientAdmin/userMgmt/getDoctors?orgId=${orgId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const response = await apiGet(
+          `/clientAdmin/userMgmt/getDoctors?orgId=${orgId}`,
+          basic_config
         );
+
         // console.log("siddhant> ", response.data);
-        const doctor = response.data.data.records || [];
+        const doctor = response.data.records || [];
         // console.log("doctor ", doctor);
         const formatted = doctor.map((doc) => ({
           id: doc.id,
@@ -215,13 +218,11 @@ export default function AppointmentPage() {
   useEffect(() => {
     async function fetchServices() {
       try {
-        const response = await axios.get(
-          `${BACKEND_URL}/clientAdmin/serviceManagement/getActiveServices?orgId=${orgId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const response = await apiGet(
+          `/clientAdmin/serviceManagement/getActiveServices?orgId=${orgId}`,
+          basic_config
         );
-        const services = response.data.data || [];
+        const services = response.data || [];
         //console.log("services "   , services)
         const formatted = services.map((service) => ({
           id: service.id,
@@ -242,14 +243,12 @@ export default function AppointmentPage() {
   useEffect(() => {
     async function fetchResources() {
       try {
-        const response = await axios.get(
-          `${BACKEND_URL}/clientAdmin/resourceManagement/getResources?orgId=${orgId}&status=ENABLED`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const response = await apiGet(
+          `/clientAdmin/resourceManagement/getResources?orgId=${orgId}&status=ENABLED`,
+          basic_config
         );
 
-        const appts = response.data.response || [];
+        const appts = response.response || [];
         const formatted = appts.map((emp) => ({
           id: emp.id,
           name: emp.name,
@@ -266,26 +265,23 @@ export default function AppointmentPage() {
     fetchResources();
   }, [orgId, token]);
 
-  // Fetch clients with search functionality
   const fetchClients = async (searchTerm = "") => {
     if (!orgId || !token) return;
 
     try {
       setClientLoading(true);
-      const response = await axios.get(
-        `${BACKEND_URL}/patient/clients/clientListing`,
-        {
-          params: {
-            search: searchTerm,
-            page: 1,
-            limit: 10,
-            orgId,
-          },
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
 
-      const clients = response.data.data || [];
+      const response = await apiGet(`/patient/clients/clientListing`, {
+        params: {
+          search: searchTerm,
+          page: 1,
+          limit: 10,
+          orgId,
+        },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const clients = response.data || [];
       setClientOptions(clients);
     } catch (err) {
       console.error("Error fetching clients:", err);
@@ -321,10 +317,16 @@ export default function AppointmentPage() {
 
   const updateAppointmentStatus = async (appId, status) => {
     try {
-      const res = await axios.patch(
-        `${BACKEND_URL}/appointments/appt/changeAppointmentStatus?id=${appId}&status=${status}`,
+      // const res = await axios.patch(
+      //   `${BACKEND_URL}/appointments/appt/changeAppointmentStatus?id=${appId}&status=${status}`,
+      //   {},
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+
+      const res = await apiPatch(
+        `/appointments/appt/changeAppointmentStatus?id=${appId}&status=${status}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        basic_config
       );
 
       setAppointments((prevAppointments) =>
@@ -349,12 +351,12 @@ export default function AppointmentPage() {
       return;
     }
     try {
-      await axios.post(
-        `${BACKEND_URL}/appointments/appt/cancelAppointment?id=${detailAppt.id}`,
+      await apiPost(
+        `/appointments/appt/cancelAppointment?id=${detailAppt.id}`,
         {
           Cancel_remarks: cancelRemarks,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        basic_config
       );
 
       setDetailAppt((prev) => ({
@@ -389,17 +391,13 @@ export default function AppointmentPage() {
         setAppointments([]);
 
         const date = dayjs(currentDate).startOf("day").toISOString();
-        //console.log("Fetching appointments for date:", date);
-        //console.log("Current date object:", currentDate);
 
-        const response = await axios.get(
-          `${BACKEND_URL}/appointments/appt/getActiveAppointments?orgId=${orgId}&date=${date}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        const response = await apiGet(
+          `/appointments/appt/getActiveAppointments?orgId=${orgId}&date=${date}`,
+          basic_config
         );
 
-        const apptsFromAPI = response.data.response || [];
+        const apptsFromAPI = response.response || [];
         //console.log("Raw appointments from API Siddhant:", apptsFromAPI);
 
         const formattedAppts = apptsFromAPI.map((appt) => ({
@@ -422,13 +420,7 @@ export default function AppointmentPage() {
           serviceId: appt.services?.id || "",
           color: getStatusColor(appt.status) || "#e2eafc",
         }));
-        //console.log("Raw appointments from API Siddhant2:", formattedAppts);
-        // console.log("Formatted appointments:", formattedAppts);
-        // console.log(
-        //   "Setting appointments state with:",
-        //   formattedAppts.length,
-        //   "appointments"
-        // );
+
         setAppointments(formattedAppts);
         setAppointmentsLoading(false);
       } catch (err) {
@@ -521,7 +513,10 @@ export default function AppointmentPage() {
     const proposed = { id, resourceId, start: finalStart, end: finalEnd };
     //console.log("Proposed>>> " , proposed);
     if (isOverlapping(proposed, appointments)) {
-      alert("Cannot move: appointment overlaps an existing appointment.");
+      messageApi.error(
+        "Cannot move: appointment overlaps an existing appointment."
+      );
+      //alert("Cannot move: appointment overlaps an existing appointment.");
       return;
     }
     // call the reschedule api here.
@@ -534,12 +529,17 @@ export default function AppointmentPage() {
   };
 
   const rescheduleAppointment = async (proposed) => {
-    const response = await axios.post(
-      `${BACKEND_URL}/appointments/appt/rescheduleAppointments`,
+    // const response = await axios.post(
+    //   `${BACKEND_URL}/appointments/appt/rescheduleAppointments`,
+    //   proposed,
+    //   {
+    //     headers: { Authorization: `Bearer ${token}` },
+    //   }
+    // );
+    const response = await apiPost(
+      `/appointments/appt/rescheduleAppointments`,
       proposed,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      basic_config
     );
     console.log(response);
   };
@@ -612,7 +612,10 @@ export default function AppointmentPage() {
       };
 
       if (isOverlapping(proposed, appointments)) {
-        alert("Cannot move: appointment overlaps an existing appointment.");
+        messageApi.error(
+          "Cannot move: appointment overlaps an existing appointment."
+        );
+        //alert("Cannot move: appointment overlaps an existing appointment.");
         return;
       }
 
@@ -767,15 +770,12 @@ export default function AppointmentPage() {
         return;
       }
 
-      // Make API call
-      const response = await axios.post(
-        `${BACKEND_URL}/appointments/appt/bookappointment`,
+      const response = await apiPost(
+        `/appointments/appt/bookappointment`,
         newAppt,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        basic_config
       );
-      setAppointments((prev) => [...prev, response.data]);
+      setAppointments((prev) => [...prev, response]);
 
       // Reset modal and selection
       setShowNewApptModal(false);
@@ -1596,12 +1596,17 @@ export default function AppointmentPage() {
                   serviceId: values.serviceId || null,
                   notes: values.notes || null,
                 };
-                await axios.patch(
-                  `${BACKEND_URL}/appointments/appt/updateAppointmentDetails`,
+                // await axios.patch(
+                //   `${BACKEND_URL}/appointments/appt/updateAppointmentDetails`,
+                //   payload,
+                //   {
+                //     headers: { Authorization: `Bearer ${token}` },
+                //   }
+                // );
+                await apiPatch(
+                  `/appointments/appt/updateAppointmentDetails`,
                   payload,
-                  {
-                    headers: { Authorization: `Bearer ${token}` },
-                  }
+                  basic_config
                 );
 
                 setDetailAppt((prev) => ({

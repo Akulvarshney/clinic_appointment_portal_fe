@@ -17,9 +17,13 @@ import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import Sidebar from "../components/SideBar";
 import { BACKEND_URL, isFeatureValid, states } from "../assets/constants";
 import { Link, useNavigate } from "react-router-dom";
-
+import { apiGet, apiPost, apiPut, apiPatch } from "../utils/axiosCalls";
 const { Option } = Select;
 const { Search } = Input;
+const token = localStorage.getItem("token");
+const basic_config = {
+  headers: { Authorization: `Bearer ${token}` },
+};
 
 const ClientManagement = () => {
   const navigate = useNavigate();
@@ -78,15 +82,19 @@ const ClientManagement = () => {
 
   const fetchRoleId = async () => {
     try {
-      const response = await axios.get(
-        `${BACKEND_URL}/clientAdmin/userMgmt/getRoles?orgId=${orgId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      // const response = await axios.get(
+      //   `${BACKEND_URL}/clientAdmin/userMgmt/getRoles?orgId=${orgId}`,
+      //   {
+      //     headers: { Authorization: `Bearer ${token}` },
+      //   }
+      // );
+      const response = await apiGet(
+        `/clientAdmin/userMgmt/getRoles?orgId=${orgId}`,
+        basic_config
       );
 
-      const roles = response.data.response || [];
-      console.log("roles>>> ", roles);
+      const roles = response.response || [];
+      //console.log("roles>>> ", roles);
       const clientRole = roles.find(
         (role) =>
           role.name === "CLIENT" &&
@@ -126,23 +134,36 @@ const ClientManagement = () => {
   const fetchClients = async () => {
     setTableLoading(true);
     try {
-      const response = await axios.get(
-        `${BACKEND_URL}/patient/clients/clientListing`,
-        {
-          params: {
-            search,
-            page: pagination.current,
-            limit: pagination.pageSize,
-            orgId,
-            categoryId: categorySelected,
-            sort,
-            sortDir,
-          },
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      console.log("clients?? ", response.data.data);
-      setClients(response.data.data || []);
+      // const response = await axios.get(
+      //   `${BACKEND_URL}/patient/clients/clientListing`,
+      //   {
+      //     params: {
+      //       search,
+      //       page: pagination.current,
+      //       limit: pagination.pageSize,
+      //       orgId,
+      //       categoryId: categorySelected,
+      //       sort,
+      //       sortDir,
+      //     },
+      //     headers: { Authorization: `Bearer ${token}` },
+      //   }
+      // );
+
+      const response = await apiGet(`/patient/clients/clientListing`, {
+        params: {
+          search,
+          page: pagination.current,
+          limit: pagination.pageSize,
+          orgId,
+          categoryId: categorySelected,
+          sort,
+          sortDir,
+        },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("clients?? ", response.data);
+      setClients(response.data || []);
 
       // Fix pagination total calculation
       setPagination((prev) => ({
@@ -163,21 +184,24 @@ const ClientManagement = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        `${BACKEND_URL}/clientadmin/userMgmt/category?organization_id=${localStorage.getItem(
+      // const res = await axios.get(
+      //   `${BACKEND_URL}/clientadmin/userMgmt/category?organization_id=${localStorage.getItem(
+      //     "selectedOrgId"
+      //   )}&is_valid=true`,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
+      //     },
+      //   }
+      // );
+      const res = await apiGet(
+        `/clientadmin/userMgmt/category?organization_id=${localStorage.getItem(
           "selectedOrgId"
         )}&is_valid=true`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        basic_config
       );
-      if (res.status !== 200) {
-        throw new Error("Failed to fetch categories");
-      }
-      console.log("Categories fetched:", res.data.categories);
-      setCategories(res.data.categories || []);
+      console.log("Categories fetched:", res.categories);
+      setCategories(res.categories || []);
     } catch (err) {
       message.error("Failed to fetch categories");
       console.error(err);
