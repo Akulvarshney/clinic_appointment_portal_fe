@@ -3,7 +3,6 @@ import { BACKEND_URL } from "../assets/constants";
 
 import toast from "react-hot-toast";
 
-// Central error handler
 function handleError(error) {
   if (error.response) {
     if (error.response.status === 401) {
@@ -12,6 +11,9 @@ function handleError(error) {
     } else if (error.response.status === 500) {
       toast.error("Internal Server Error Occurred");
       console.log("Internal Server Error Occurred");
+    } else if (error.response.status === 404) {
+      toast.error("Internal Server Error Occurred : Not Found");
+      console.log("Internal Server Error Occurred : Not Found");
     } else {
       toast.error(error.response.data?.message || "Something went wrong");
       console.log(error.response.data?.message || "Something went wrong");
@@ -21,7 +23,7 @@ function handleError(error) {
   } else {
     toast.error("Request setup error: " + error.message);
   }
-  return null; // Ensures consistent return type
+  return null;
 }
 
 // GET request
