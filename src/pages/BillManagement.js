@@ -3,7 +3,7 @@ import { Table, Button, Radio, message } from "antd";
 import GenerateInvoiceModal from "./GenerateInvoiceModal";
 import { fetchServices } from "../services/OrgServices.js";
 import { fetchClients } from "../services/clientServices.js";
-import { fetchBills } from "../services/invoicesServices.js";
+import { fetchBills, saveAsInvoice } from "../services/invoicesServices.js";
 
 const BillManagement = () => {
   const orgId = localStorage.getItem("selectedOrgId");
@@ -63,17 +63,20 @@ const BillManagement = () => {
 
         // ensure it's an array
         const billsArray = Array.isArray(billsdata) ? billsdata : [];
+        console.log("bills data ", billsdata);
 
         if (activeTab === "invoices") {
           const formattedInvoices = billsArray
             .filter((entry) => entry.bill_type === "INVOICE")
             .map((entry) => ({
+              id: entry.invoice_id,
               billId: entry.invoice_number,
               clientName: entry.client_name || "-",
               clientEmail: entry.client_email || "-",
               billTo: entry.bill_to || "",
               amount: entry.final_amount,
               datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
+              invoiceReference: entry.invoice_reference || "-",
               raw: entry,
             }));
           setData((prev) => ({ ...prev, invoices: formattedInvoices }));
@@ -83,12 +86,14 @@ const BillManagement = () => {
           const formattedQuotations = billsArray
             .filter((entry) => entry.bill_type === "QUOTATION")
             .map((entry) => ({
+              id: entry.invoice_id,
               billId: entry.invoice_number,
               clientName: entry.client_name || "-",
               clientEmail: entry.client_email || "-",
               billTo: entry.bill_to || "",
               amount: entry.final_amount,
               datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
+              invoiceReference: entry.invoice_reference,
               raw: entry,
             }));
           setData((prev) => ({ ...prev, quotations: formattedQuotations }));
@@ -106,6 +111,25 @@ const BillManagement = () => {
   const handleCreate = (type) => {
     setViewData(null);
     setModalType(type);
+  };
+
+  const handleConvert = async (record) => {
+    try {
+      console.log("save as invoice ", record);
+      saveAsInvoice(record);
+
+      // if (!res.ok) throw new Error("Failed to convert quotation");
+
+      // message.success("Quotation converted to Invoice");
+
+      // // Refresh bills
+      // const updatedBills = await fetchBills();
+      // re-trigger the useEffect logic
+      setActiveTab("invoices"); // optional: directly switch to invoices tab
+    } catch (err) {
+      console.error(err);
+      message.error("Error converting quotation");
+    }
   };
 
   const saveEntry = (entry, typeKey) => {
@@ -155,6 +179,15 @@ const BillManagement = () => {
       key: "amount",
       render: (val) => `₹${val}`,
     },
+    ...(activeTab === "quotations"
+      ? [
+          {
+            title: "Invoice Id",
+            dataIndex: "invoiceReference",
+            key: "invoiceReference",
+          },
+        ]
+      : []),
     { title: "Date Generated", dataIndex: "datePrinted", key: "datePrinted" },
     {
       title: "Action",
@@ -175,6 +208,15 @@ const BillManagement = () => {
           >
             Print
           </Button>
+          {activeTab === "quotations" && !record.invoiceReference && (
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => handleConvert(record)}
+            >
+              Save as Invoice
+            </Button>
+          )}
         </div>
       ),
     },

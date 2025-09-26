@@ -1,6 +1,6 @@
 import { message } from "antd";
 import { apiGet, apiPost, apiPut } from "../utils/axiosCalls";
-
+import { useNotification } from "../utils/messageWrapper.js";
 const orgId = localStorage.getItem("selectedOrgId");
 const token = localStorage.getItem("token");
 const basic_config = {
@@ -23,11 +23,26 @@ export const fetchBills = async (searchTerm = "", page = 1, limit = 10) => {
     );
     const billsdata = response.data || [];
 
-    console.log(billsdata);
+    console.log("Sidd", billsdata);
     return billsdata;
   } catch (err) {
     console.error("Error fetching clients:", err);
     message.error("Failed to fetch clients");
   } finally {
+  }
+};
+
+export const saveAsInvoice = async (record) => {
+  console.log("record ", record);
+  var recordId = record.id;
+  try {
+    const response = await apiPost(
+      `/clientadmin/invoices/saveAsInvoices?orgId=${orgId}&id=${recordId}`,
+      {},
+      basic_config
+    );
+    console.log(response);
+  } catch (err) {
+    console.log(err);
   }
 };
