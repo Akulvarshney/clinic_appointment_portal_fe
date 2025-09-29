@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Radio, message } from "antd";
 import GenerateInvoiceModal from "./GenerateInvoiceModal";
+import ReceiptModal from "./ReceiptModal.js";
 import { fetchServices } from "../services/OrgServices.js";
 import { fetchClients } from "../services/clientServices.js";
 import { fetchBills, saveAsInvoice } from "../services/invoicesServices.js";
@@ -169,6 +170,11 @@ const BillManagement = () => {
     printWindow.print();
   };
 
+  const ReceiptColumns = [
+    { title: "Receipt ID", dataIndex: "billId", key: "billId" },
+    { title: "Client Name", dataIndex: "clientName", key: "clientName" },
+    { title: "Bill To", dataIndex: "billTo", key: "billTo" },
+  ];
   const columns = [
     { title: "Bill ID", dataIndex: "billId", key: "billId" },
     { title: "Client Name", dataIndex: "clientName", key: "clientName" },
@@ -257,24 +263,48 @@ const BillManagement = () => {
         )}
       </div>
 
-      <Table
-        dataSource={data[activeTab]}
-        columns={columns}
-        rowKey="billId"
-        bordered
-      />
+      {activeTab === "receipts" ? (
+        <Table
+          //dataSource={receiptData} // separate receipt data
+          columns={ReceiptColumns} // separate receipt columns
+          rowKey="receiptId"
+          bordered
+        />
+      ) : (
+        <Table
+          dataSource={data[activeTab]} // invoices or quotations
+          columns={columns}
+          rowKey="billId"
+          bordered
+        />
+      )}
 
-      <GenerateInvoiceModal
-        visible={!!modalType}
-        type={modalType}
-        initialData={viewData}
-        onClose={() => setModalType(null)}
-        onSuccess={(entry) => {
-          if (!modalType) return;
-          saveEntry(entry, modalType + "s");
-          setModalType(null);
-        }}
-      />
+      {activeTab === "receipts" ? (
+        <ReceiptModal
+          visible={!!modalType && modalType === "receipt"}
+          initialData={viewData}
+          onClose={() => setModalType(null)}
+          onSuccess={(entry) => {
+            saveEntry(entry, "receipts");
+            setModalType(null);
+          }}
+        />
+      ) : (
+        <GenerateInvoiceModal
+          visible={
+            !!modalType &&
+            (modalType === "invoice" || modalType === "quotation")
+          }
+          type={modalType}
+          initialData={viewData}
+          onClose={() => setModalType(null)}
+          onSuccess={(entry) => {
+            if (!modalType) return;
+            saveEntry(entry, modalType + "s");
+            setModalType(null);
+          }}
+        />
+      )}
     </div>
   );
 };
