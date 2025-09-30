@@ -10,6 +10,7 @@ import {
   message,
 } from "antd";
 import debounce from "lodash/debounce";
+import toast from "react-hot-toast";
 import { fetchServices } from "../services/OrgServices.js";
 import { fetchClients } from "../services/clientServices.js";
 import { saveReceipt } from "../services/invoicesServices.js";
@@ -104,7 +105,8 @@ export default function ReceiptModal({
             qty: s.qty,
           })),
         });
-        message.success("Receipt saved successfully!");
+        toast.success("Receipt Generated Successfully");
+        //message.success("Receipt saved successfully!");
         onSaved(response.data);
         form.resetFields();
         onCancel(); // ✅ closes modal
