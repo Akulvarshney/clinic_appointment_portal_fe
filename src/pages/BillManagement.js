@@ -4,7 +4,11 @@ import GenerateInvoiceModal from "./GenerateInvoiceModal";
 import ReceiptModal from "./ReceiptModal.js";
 import { fetchServices } from "../services/OrgServices.js";
 import { fetchClients } from "../services/clientServices.js";
-import { fetchBills, saveAsInvoice } from "../services/invoicesServices.js";
+import {
+  fetchBills,
+  saveAsInvoice,
+  fetchReceipts,
+} from "../services/invoicesServices.js";
 
 const BillManagement = () => {
   const orgId = localStorage.getItem("selectedOrgId");
@@ -17,87 +21,65 @@ const BillManagement = () => {
   const [modalType, setModalType] = useState(null);
   const [viewData, setViewData] = useState(null);
   const [invoices, setInvoice] = useState([]);
+  const [receiptData, setreceiptData] = useState([]);
 
   useEffect(() => {
     fetchServices();
   }, [orgId]);
 
-  // useEffect(() => {
-  //   fetchBills().then((billsdata) => {
-  //     if (activeTab === "invoices") {
-  //       const formattedInvoices = billsdata
-  //         .filter((entry) => entry.bill_type === "INVOICE")
-  //         .map((entry) => ({
-  //           billId: entry.invoice_number,
-  //           clientName: entry.client_name || "-",
-  //           clientEmail: entry.client_email || "-",
-  //           billTo: entry.bill_to || "",
-  //           amount: entry.final_amount,
-  //           datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
-  //           raw: entry,
-  //         }));
-
-  //       setData((prev) => ({ ...prev, invoices: formattedInvoices }));
-  //     }
-
-  //     if (activeTab === "quotations") {
-  //       const formattedQuotations = billsdata
-  //         .filter((entry) => entry.bill_type === "QUOTATION")
-  //         .map((entry) => ({
-  //           billId: entry.invoice_number,
-  //           clientName: entry.client_name || "-",
-  //           clientEmail: entry.client_email || "-",
-  //           billTo: entry.bill_to || "",
-  //           amount: entry.final_amount,
-  //           datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
-  //           raw: entry,
-  //         }));
-
-  //       setData((prev) => ({ ...prev, quotations: formattedQuotations }));
-  //     }
-  //   });
-  // }, [activeTab, orgId]);
   useEffect(() => {
     const loadBills = async () => {
       try {
-        const billsdata = await fetchBills();
+        if (activeTab === "receipts") {
+          const receiptsData = await fetchReceipts();
+          const formattedReceipts = receiptsData.map((entry) => ({
+            receiptId: entry.receipt_id,
+            clientName: entry.clients.first_name || "-",
+            amount: entry.amount,
+            datePrinted: new Date(entry.created_at).toLocaleDateString(),
+            raw: entry,
+          }));
+          setreceiptData(formattedReceipts);
+        } else {
+          const billsdata = await fetchBills();
 
-        // ensure it's an array
-        const billsArray = Array.isArray(billsdata) ? billsdata : [];
-        console.log("bills data ", billsdata);
+          // ensure it's an array
+          const billsArray = Array.isArray(billsdata) ? billsdata : [];
+          console.log("bills data ", billsdata);
 
-        if (activeTab === "invoices") {
-          const formattedInvoices = billsArray
-            .filter((entry) => entry.bill_type === "INVOICE")
-            .map((entry) => ({
-              id: entry.invoice_id,
-              billId: entry.invoice_number,
-              clientName: entry.client_name || "-",
-              clientEmail: entry.client_email || "-",
-              billTo: entry.bill_to || "",
-              amount: entry.final_amount,
-              datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
-              invoiceReference: entry.invoice_reference || "-",
-              raw: entry,
-            }));
-          setData((prev) => ({ ...prev, invoices: formattedInvoices }));
-        }
+          if (activeTab === "invoices") {
+            const formattedInvoices = billsArray
+              .filter((entry) => entry.bill_type === "INVOICE")
+              .map((entry) => ({
+                id: entry.invoice_id,
+                billId: entry.invoice_number,
+                clientName: entry.client_name || "-",
+                clientEmail: entry.client_email || "-",
+                billTo: entry.bill_to || "",
+                amount: entry.final_amount,
+                datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
+                invoiceReference: entry.invoice_reference || "-",
+                raw: entry,
+              }));
+            setData((prev) => ({ ...prev, invoices: formattedInvoices }));
+          }
 
-        if (activeTab === "quotations") {
-          const formattedQuotations = billsArray
-            .filter((entry) => entry.bill_type === "QUOTATION")
-            .map((entry) => ({
-              id: entry.invoice_id,
-              billId: entry.invoice_number,
-              clientName: entry.client_name || "-",
-              clientEmail: entry.client_email || "-",
-              billTo: entry.bill_to || "",
-              amount: entry.final_amount,
-              datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
-              invoiceReference: entry.invoice_reference,
-              raw: entry,
-            }));
-          setData((prev) => ({ ...prev, quotations: formattedQuotations }));
+          if (activeTab === "quotations") {
+            const formattedQuotations = billsArray
+              .filter((entry) => entry.bill_type === "QUOTATION")
+              .map((entry) => ({
+                id: entry.invoice_id,
+                billId: entry.invoice_number,
+                clientName: entry.client_name || "-",
+                clientEmail: entry.client_email || "-",
+                billTo: entry.bill_to || "",
+                amount: entry.final_amount,
+                datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
+                invoiceReference: entry.invoice_reference,
+                raw: entry,
+              }));
+            setData((prev) => ({ ...prev, quotations: formattedQuotations }));
+          }
         }
       } catch (err) {
         console.error("Error fetching bills:", err);
@@ -171,9 +153,9 @@ const BillManagement = () => {
   };
 
   const ReceiptColumns = [
-    { title: "Receipt ID", dataIndex: "billId", key: "billId" },
+    { title: "Receipt ID", dataIndex: "receiptId", key: "receiptId" },
     { title: "Client Name", dataIndex: "clientName", key: "clientName" },
-    { title: "Bill To", dataIndex: "billTo", key: "billTo" },
+    { title: "Amount", dataIndex: "amount", key: "amount" },
   ];
   const columns = [
     { title: "Bill ID", dataIndex: "billId", key: "billId" },
@@ -265,7 +247,7 @@ const BillManagement = () => {
 
       {activeTab === "receipts" ? (
         <Table
-          //dataSource={receiptData} // separate receipt data
+          dataSource={receiptData} // separate receipt data
           columns={ReceiptColumns} // separate receipt columns
           rowKey="receiptId"
           bordered
@@ -283,7 +265,11 @@ const BillManagement = () => {
         <ReceiptModal
           visible={!!modalType && modalType === "receipt"}
           initialData={viewData}
-          onClose={() => setModalType(null)}
+          //onClose={() => setModalType(null)}
+          onCancel={() => {
+            console.log("Closing modal");
+            setModalType(null);
+          }}
           onSuccess={(entry) => {
             saveEntry(entry, "receipts");
             setModalType(null);

@@ -7,6 +7,41 @@ const basic_config = {
   headers: { Authorization: `Bearer ${token}` },
 };
 
+export const saveReceipt = async ({ clientId, total, services }) => {
+  try {
+    // Transform services to match backend line_items structure
+    const line_items = services.map((s) => {
+      return {
+        service_id: s.id,
+        service_name: s.name, // make sure `name` is available in your selected service
+        quantity: s.qty || 1,
+      };
+    });
+    console.log("line_items__ ", clientId, total, line_items);
+    const response = await apiPost(
+      `/clientadmin/receipts/createReceipt`,
+      {
+        organization_id: orgId,
+        client_id: clientId,
+        amount: total,
+        line_items,
+      },
+      basic_config
+    );
+    // const response = await axios.post(`${API_BASE_URL}/receipts/save`, {
+    //   organization_id: organizationId,
+    //   client_id: clientId,
+    //   amount: total,
+    //   line_items,
+    // });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error saving receipt:", error);
+    throw error;
+  }
+};
+
 export const fetchBills = async (searchTerm = "", page = 1, limit = 10) => {
   if (!orgId || !token) return;
 
@@ -18,7 +53,7 @@ export const fetchBills = async (searchTerm = "", page = 1, limit = 10) => {
 
   try {
     const response = await apiGet(
-      `/clientadmin/invoices/getBills?organization_id=${selectedOrg.organizationId}&search=${searchTerm}&page=1&limit=10&orgId=${orgId}`,
+      `/clientadmin/invoices/getBills?organization_id=${selectedOrg.organizationId}&search=${searchTerm}&page=${page}&limit=10&orgId=${orgId}`,
       basic_config
     );
     const billsdata = response.data || [];
@@ -44,5 +79,32 @@ export const saveAsInvoice = async (record) => {
     console.log(response);
   } catch (err) {
     console.log(err);
+  }
+};
+
+//save Receipt
+
+export const fetchReceipts = async (
+  searchTerm = "",
+  page = 1,
+  limit = 10,
+  id
+) => {
+  if (!orgId || !token) return;
+
+  try {
+    let url = `/clientadmin/receipts/getReceiptDetails?search=${searchTerm}&page=${page}&limit=10&orgId=${orgId}`;
+    if (id) {
+      url += `&receiptId=${id}`;
+    }
+    const response = await apiGet(url, basic_config);
+    const receiptsData = response.data || [];
+
+    //console.log("Sidd", receiptsData);
+    return receiptsData;
+  } catch (err) {
+    console.error("Error fetching clients:", err);
+    message.error("Failed to fetch clients");
+  } finally {
   }
 };

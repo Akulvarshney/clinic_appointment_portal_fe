@@ -509,6 +509,31 @@ const ClientManagement = () => {
             }}
             onChange={handleTableChange}
           />
+          {/* <Table
+            columns={columns}
+            dataSource={clients}
+            loading={tableLoading}
+            rowKey={(record) => record.id || record.portalid}
+            pagination={{
+              ...pagination,
+              showSizeChanger: false, // 🔴 removes rows per page dropdown
+              showQuickJumper: false,
+            }}
+            onChange={handleTableChange}
+            bordered
+            className="rounded-xl shadow-md border border-gray-200 overflow-hidden 
+             [&_.ant-table-thead>tr>th]:bg-blue-600 
+             [&_.ant-table-thead>tr>th]:text-white 
+             [&_.ant-table-thead>tr>th]:font-semibold 
+             [&_.ant-table-thead>tr>th]:text-center 
+             [&_.ant-table-tbody>tr>td]:text-gray-700 
+             [&_.ant-table-tbody>tr>td]:text-sm"
+            rowClassName={(_, index) =>
+              index % 2 === 0
+                ? "bg-gray-50 hover:bg-gray-100 transition"
+                : "bg-white hover:bg-gray-100 transition"
+            }
+          /> */}
         </div>
 
         <Modal

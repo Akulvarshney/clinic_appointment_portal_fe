@@ -17,7 +17,7 @@ export const fetchClients = async (searchTerm = "", page = 1, limit = 10) => {
     );
     const clients = response.data || [];
 
-    console.log(clients);
+    //console.log(clients);
     return clients;
   } catch (err) {
     console.error("Error fetching clients:", err);
