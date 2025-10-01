@@ -40,6 +40,8 @@ const { Option } = Select;
 export default function GenerateInvoiceModal({
   visible,
   type = "invoice",
+  initialData,
+  setRefresh,
   onClose,
   onSuccess,
   editData = null,
@@ -563,6 +565,7 @@ export default function GenerateInvoiceModal({
           message: "Organization not selected",
         });
         setLoading(false);
+        setRefresh(Math.random());
         return;
       }
 
@@ -572,6 +575,7 @@ export default function GenerateInvoiceModal({
           message: "Client selection is mandatory",
         });
         setLoading(false);
+        setRefresh(Math.random());
         return;
       }
 
@@ -581,6 +585,7 @@ export default function GenerateInvoiceModal({
           message: "At least one service must be added",
         });
         setLoading(false);
+        setRefresh(Math.random());
         return;
       }
 
@@ -598,6 +603,7 @@ export default function GenerateInvoiceModal({
             "At least one service with valid quantity and rate is required",
         });
         setLoading(false);
+        setRefresh(Math.random());
         return;
       }
 
@@ -607,6 +613,7 @@ export default function GenerateInvoiceModal({
           message: "Grand total cannot be zero or negative",
         });
         setLoading(false);
+        setRefresh(Math.random());
         return;
       }
 
@@ -689,6 +696,7 @@ export default function GenerateInvoiceModal({
           editData ? "updated" : "created"
         } successfully!`,
       });
+      setRefresh(Math.random());
 
       onClose(); // keep this if you still want the modal to close
     } catch (error) {
@@ -699,6 +707,7 @@ export default function GenerateInvoiceModal({
           `Failed to ${editData ? "update" : "create"} ${type}`,
       });
     } finally {
+      setRefresh(Math.random());
       setLoading(false);
     }
   };

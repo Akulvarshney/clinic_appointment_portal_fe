@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Radio, message } from "antd";
+import { Table, Button, Radio, message, Modal } from "antd";
+import { Dropdown, Menu } from "antd";
+import { DownOutlined } from "@ant-design/icons";
+
 import GenerateInvoiceModal from "./GenerateInvoiceModal";
 import ReceiptModal from "./ReceiptModal.js";
 import { fetchServices } from "../services/OrgServices.js";
@@ -9,6 +12,7 @@ import {
   saveAsInvoice,
   fetchReceipts,
 } from "../services/invoicesServices.js";
+import { BACKEND_URL } from "../assets/constants/index.js";
 
 const BillManagement = () => {
   const orgId = localStorage.getItem("selectedOrgId");
@@ -22,10 +26,13 @@ const BillManagement = () => {
   const [viewData, setViewData] = useState(null);
   const [invoices, setInvoice] = useState([]);
   const [receiptData, setreceiptData] = useState([]);
+  const [printModalVisible, setPrintModalVisible] = useState(false);
+  const [printUrl, setPrintUrl] = useState("");
+  const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
     fetchServices();
-  }, [orgId]);
+  }, [orgId, refresh]);
 
   useEffect(() => {
     const loadBills = async () => {
@@ -88,7 +95,7 @@ const BillManagement = () => {
     };
 
     loadBills();
-  }, [activeTab, orgId]);
+  }, [activeTab, orgId, refresh]);
 
   const handleTabChange = (e) => setActiveTab(e.target.value);
   const handleCreate = (type) => {
@@ -138,18 +145,14 @@ const BillManagement = () => {
     setModalType(record.raw.type || "invoice");
   };
 
-  const handlePrint = (record) => {
-    const printWindow = window.open("", "PRINT", "height=600,width=800");
-    printWindow.document.write(
-      "<html><head><title>Invoice</title></head><body>"
-    );
-    printWindow.document.write(
-      `<pre>${JSON.stringify(record.raw, null, 2)}</pre>`
-    );
-    printWindow.document.write("</body></html>");
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+  const handlePrint = (record, printType) => {
+    const url =
+      printType === "a4"
+        ? `${BACKEND_URL}/invoice/${record.id}`
+        : `${BACKEND_URL}/invoice2/${record.id}`;
+
+    setPrintUrl(url);
+    setPrintModalVisible(true);
   };
 
   const ReceiptColumns = [
@@ -180,33 +183,51 @@ const BillManagement = () => {
     {
       title: "Action",
       key: "action",
-      render: (_, record) => (
-        <div className="flex gap-2">
-          <Button
-            type="default"
-            size="small"
-            onClick={() => handleView(record)}
-          >
-            View
-          </Button>
-          <Button
-            type="primary"
-            size="small"
-            onClick={() => handlePrint(record)}
-          >
-            Print
-          </Button>
-          {activeTab === "quotations" && !record.invoiceReference && (
+      render: (_, record) => {
+        const printMenu = (
+          <Menu
+            onClick={({ key }) => {
+              if (key === "a4") {
+                handlePrint(record, "a4");
+              } else if (key === "thermal") {
+                handlePrint(record, "thermal");
+              }
+            }}
+            items={[
+              { key: "a4", label: "A4" },
+              { key: "thermal", label: "Thermal" },
+            ]}
+          />
+        );
+
+        return (
+          <div className="flex gap-2">
             <Button
-              type="primary"
+              type="default"
               size="small"
-              onClick={() => handleConvert(record)}
+              onClick={() => handleView(record)}
             >
-              Save as Invoice
+              View
             </Button>
-          )}
-        </div>
-      ),
+
+            <Dropdown overlay={printMenu} trigger={["click"]}>
+              <Button type="primary" size="small">
+                Print <DownOutlined />
+              </Button>
+            </Dropdown>
+
+            {activeTab === "quotations" && !record.invoiceReference && (
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => handleConvert(record)}
+              >
+                Save as Invoice
+              </Button>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -216,33 +237,35 @@ const BillManagement = () => {
         Bill Management
       </h1>
 
-      <Radio.Group
-        value={activeTab}
-        onChange={handleTabChange}
-        style={{ margin: "16px 0" }}
-        buttonStyle="solid"
-      >
-        <Radio.Button value="invoices">Invoices</Radio.Button>
-        <Radio.Button value="quotations">Quotations</Radio.Button>
-        <Radio.Button value="receipts">Receipts</Radio.Button>
-      </Radio.Group>
+      <div className="flex justify-between items-center">
+        <Radio.Group
+          value={activeTab}
+          onChange={handleTabChange}
+          style={{ margin: "16px 0" }}
+          buttonStyle="solid"
+        >
+          <Radio.Button value="invoices">Invoices</Radio.Button>
+          <Radio.Button value="quotations">Quotations</Radio.Button>
+          <Radio.Button value="receipts">Receipts</Radio.Button>
+        </Radio.Group>
 
-      <div style={{ marginBottom: 16 }}>
-        {activeTab === "invoices" && (
-          <Button type="primary" onClick={() => handleCreate("invoice")}>
-            Create Invoice
-          </Button>
-        )}
-        {activeTab === "quotations" && (
-          <Button type="primary" onClick={() => handleCreate("quotation")}>
-            Create Quotation
-          </Button>
-        )}
-        {activeTab === "receipts" && (
-          <Button type="primary" onClick={() => handleCreate("receipt")}>
-            Create Receipt
-          </Button>
-        )}
+        <div style={{ marginBottom: 16 }}>
+          {activeTab === "invoices" && (
+            <Button type="primary" onClick={() => handleCreate("invoice")}>
+              Create Invoice
+            </Button>
+          )}
+          {activeTab === "quotations" && (
+            <Button type="primary" onClick={() => handleCreate("quotation")}>
+              Create Quotation
+            </Button>
+          )}
+          {activeTab === "receipts" && (
+            <Button type="primary" onClick={() => handleCreate("receipt")}>
+              Create Receipt
+            </Button>
+          )}
+        </div>
       </div>
 
       {activeTab === "receipts" ? (
@@ -283,6 +306,7 @@ const BillManagement = () => {
           }
           type={modalType}
           initialData={viewData}
+          setRefresh={setRefresh}
           onClose={() => setModalType(null)}
           onSuccess={(entry) => {
             if (!modalType) return;
@@ -291,6 +315,28 @@ const BillManagement = () => {
           }}
         />
       )}
+
+      <Modal
+        title="Print Preview"
+        open={printModalVisible}
+        onCancel={() => {
+          setPrintModalVisible(false);
+          setPrintUrl("");
+        }}
+        width="80%"
+        footer={null}
+      >
+        <iframe
+          id="print-iframe"
+          src={printUrl}
+          style={{
+            width: "100%",
+            height: "70vh",
+            border: "1px solid #ddd",
+          }}
+          title="Print Preview"
+        />
+      </Modal>
     </div>
   );
 };
