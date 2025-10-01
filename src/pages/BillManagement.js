@@ -155,10 +155,50 @@ const BillManagement = () => {
     setPrintModalVisible(true);
   };
 
+  const handlePrintReceipt = (record, printType) => {
+    console.log("!23", record);
+    const url =
+      printType === "a4"
+        ? `${BACKEND_URL}/receipt/${record.raw.id}`
+        : `${BACKEND_URL}/receipt2/${record.raw.id}`;
+
+    setPrintUrl(url);
+    setPrintModalVisible(true);
+  };
+
   const ReceiptColumns = [
     { title: "Receipt ID", dataIndex: "receiptId", key: "receiptId" },
     { title: "Client Name", dataIndex: "clientName", key: "clientName" },
     { title: "Amount", dataIndex: "amount", key: "amount" },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => {
+        const printMenu = (
+          <Menu
+            onClick={({ key }) => {
+              if (key === "a4") {
+                handlePrintReceipt(record, "a4");
+              } else if (key === "thermal") {
+                handlePrintReceipt(record, "thermal");
+              }
+            }}
+            items={[
+              { key: "a4", label: "A4" },
+              { key: "thermal", label: "Thermal" },
+            ]}
+          />
+        );
+
+        return (
+          <Dropdown overlay={printMenu} trigger={["click"]}>
+            <Button type="primary" size="small">
+              Print <DownOutlined />
+            </Button>
+          </Dropdown>
+        );
+      },
+    },
   ];
   const columns = [
     { title: "Bill ID", dataIndex: "billId", key: "billId" },
