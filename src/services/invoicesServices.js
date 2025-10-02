@@ -42,9 +42,14 @@ export const saveReceipt = async ({ clientId, total, services }) => {
   }
 };
 
-export const fetchBills = async (searchTerm = "", page = 1, limit = 10) => {
+export const fetchBills = async (
+  searchTerm = "",
+  bill_type,
+  page = 1,
+  limit = 10
+) => {
   if (!orgId || !token) return;
-
+  //console.log("fetch bills bill_type ", bill_type);
   const selectedOrgId = localStorage.getItem("selectedOrgId");
   const orgData = JSON.parse(localStorage.getItem("organizations") || "[]");
   const selectedOrg = orgData.find(
@@ -53,7 +58,7 @@ export const fetchBills = async (searchTerm = "", page = 1, limit = 10) => {
 
   try {
     const response = await apiGet(
-      `/clientadmin/invoices/getBills?organization_id=${selectedOrg.organizationId}&search=${searchTerm}&page=${page}&limit=10&orgId=${orgId}`,
+      `/clientadmin/invoices/getBills?organization_id=${selectedOrg.organizationId}&search=${searchTerm}&page=${page}&limit=${limit}&bill_type=${bill_type}`,
       basic_config
     );
     const billsdata = response.data || [];

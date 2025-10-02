@@ -698,9 +698,12 @@ export default function GenerateInvoiceModal({
       });
       setRefresh(Math.random());
 
-      onClose(); // keep this if you still want the modal to close
+      onClose();
     } catch (error) {
       console.error("Error submitting invoice:", error);
+      notification.error({
+        message: error.response.data.message,
+      });
       notification.error({
         message:
           error.message ||

@@ -40,9 +40,12 @@ export async function apiGet(url, config = {}) {
 // POST request
 export async function apiPost(url, body = {}, config = {}) {
   try {
+    //console.log("siddddddddddddddddd");
     const res = await axios.post(BACKEND_URL + url, body, config);
+    //console.log("ghgghghghgghhghghgh");
     return res.data;
   } catch (error) {
+    //alert("alert here");
     console.error(error);
     handleError(error);
   }

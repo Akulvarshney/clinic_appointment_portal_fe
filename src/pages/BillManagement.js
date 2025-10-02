@@ -48,13 +48,11 @@ const BillManagement = () => {
           }));
           setreceiptData(formattedReceipts);
         } else {
-          const billsdata = await fetchBills();
-
-          // ensure it's an array
-          const billsArray = Array.isArray(billsdata) ? billsdata : [];
-          console.log("bills data ", billsdata);
-
           if (activeTab === "invoices") {
+            const billsdata = await fetchBills("", "INVOICE");
+            // ensure it's an array
+            const billsArray = Array.isArray(billsdata) ? billsdata : [];
+            console.log("bills data ", billsdata);
             const formattedInvoices = billsArray
               .filter((entry) => entry.bill_type === "INVOICE")
               .map((entry) => ({
@@ -72,6 +70,10 @@ const BillManagement = () => {
           }
 
           if (activeTab === "quotations") {
+            const billsdata = await fetchBills("", "QUOTATION");
+
+            // ensure it's an array
+            const billsArray = Array.isArray(billsdata) ? billsdata : [];
             const formattedQuotations = billsArray
               .filter((entry) => entry.bill_type === "QUOTATION")
               .map((entry) => ({
@@ -85,6 +87,7 @@ const BillManagement = () => {
                 invoiceReference: entry.invoice_reference,
                 raw: entry,
               }));
+            console.log("formatted quotations >> ", formattedQuotations);
             setData((prev) => ({ ...prev, quotations: formattedQuotations }));
           }
         }
