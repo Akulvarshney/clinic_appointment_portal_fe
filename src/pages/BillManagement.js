@@ -475,7 +475,7 @@ const BillManagement = () => {
 
         return (
           <div className="flex gap-2">
-            {activeTab === "quotations" ? (
+            {activeTab === "quotations" && !record.invoiceReference ? (
               <Button
                 type="default"
                 size="small"
