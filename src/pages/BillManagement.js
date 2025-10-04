@@ -22,7 +22,7 @@ const { Search } = Input;
 
 const BillManagement = () => {
   const orgId = localStorage.getItem("selectedOrgId");
-  const [activeTab, setActiveTab] = useState("invoices");
+  const [activeTab, setActiveTab] = useState("");
   //const [activeTab, setActiveTab] = useState("invoices");
   const [data, setData] = useState({
     invoices: [],
@@ -52,6 +52,7 @@ const BillManagement = () => {
   const [canCreateReceipt, setCanCreateReceipt] = useState(false);
   const [canSaveAsInvoice, setCanSaveAsInvoice] = useState(false);
   const [canPrintInvoice, setCanPrintInvoice] = useState(false);
+  const [canEditQuotation, setCanEditQuotation] = useState(false);
   const [editingBill, setEditingBill] = useState(null);
   const [loadingBillDetails, setLoadingBillDetails] = useState(false);
 
@@ -142,15 +143,14 @@ const BillManagement = () => {
     const initialize = async () => {
       const varisInvoiceView = isFeatureValid("BILLING", "VIEW_INVOICE");
       setIsInvoiceView(varisInvoiceView);
+      console.log("VIEW_INVOICE", varisInvoiceView);
 
       const varisQuotationView = isFeatureValid("BILLING", "VIEW_QUOTATION");
       setIsQuotationView(varisQuotationView);
 
       const varisReceiptView = isFeatureValid("BILLING", "VIEW_RECEIPT");
       setIsReceiptView(varisReceiptView);
-      console.log("isInvoiceView ", isInvoiceView);
-      console.log("isQuotationView ", isQuotationView);
-      console.log("isReceiptView ", isReceiptView);
+
       if (isInvoiceView) {
         setActiveTab("invoices");
       } else if (isQuotationView) {
@@ -176,9 +176,22 @@ const BillManagement = () => {
 
       const varcanPrintInvoice = isFeatureValid("BILLING", "PRINT_INVOICES");
       setCanPrintInvoice(varcanPrintInvoice);
+
+      const varCanEditQuotation = isFeatureValid("BILLING", "EDIT_QUOTATION");
+      setCanEditQuotation(varCanEditQuotation);
     };
     initialize();
-  }, []);
+  }, [
+    isInvoiceView,
+    isQuotationView,
+    isReceiptView,
+    canCreateInvoice,
+    canCreateQuotation,
+    canCreateReceipt,
+    canSaveAsInvoice,
+    canPrintInvoice,
+    canEditQuotation,
+  ]);
 
   useEffect(() => {
     fetchServices();
@@ -368,7 +381,7 @@ const BillManagement = () => {
         raw: entry,
       },
     ]);
-
+    setRefresh(Math.random);
     setModalType(null);
   };
 
@@ -453,6 +466,7 @@ const BillManagement = () => {
         ]
       : []),
     { title: "Date Generated", dataIndex: "datePrinted", key: "datePrinted" },
+
     {
       title: "Action",
       key: "action",
@@ -482,6 +496,7 @@ const BillManagement = () => {
                 icon={<EditOutlined />}
                 onClick={() => handleEdit(record)}
                 loading={loadingBillDetails}
+                disabled={!canEditQuotation}
               >
                 Edit
               </Button>
@@ -493,18 +508,31 @@ const BillManagement = () => {
             >
               View
             </Button> */}
-
-            <Dropdown overlay={printMenu} trigger={["click"]}>
-              <Button type="primary" size="small">
-                Print <DownOutlined />
-              </Button>
-            </Dropdown>
+            {activeTab === "invoices" && (
+              <Dropdown
+                overlay={printMenu}
+                trigger={["click"]}
+                disabled={!canPrintInvoice}
+              >
+                <Button type="primary" size="small">
+                  Print <DownOutlined />
+                </Button>
+              </Dropdown>
+            )}
+            {activeTab === "quotations" && (
+              <Dropdown overlay={printMenu} trigger={["click"]}>
+                <Button type="primary" size="small">
+                  Print <DownOutlined />
+                </Button>
+              </Dropdown>
+            )}
 
             {activeTab === "quotations" && !record.invoiceReference && (
               <Button
                 type="primary"
                 size="small"
                 onClick={() => handleConvert(record)}
+                disabled={!canSaveAsInvoice}
               >
                 Save as Invoice
               </Button>
