@@ -111,7 +111,11 @@ export default function GenerateInvoiceModal({
               selectedOrg.organizationName,
               selectedOrg.address ? selectedOrg.address : "",
               selectedOrg.state ? selectedOrg.state : "",
-              selectedOrg.gstnumber ? selectedOrg.gstnumber : "",
+              type === "invoice"
+                ? selectedOrg.gstnumber
+                  ? selectedOrg.gstnumber
+                  : ""
+                : "",
             ]
               .filter(Boolean)
               .join("\n")
