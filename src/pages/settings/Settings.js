@@ -78,7 +78,7 @@ const Settings = () => {
         return <div>Coming Soon</div>;
       case "SYSTEM_PREFERENCES":
         return <div>Coming Soon</div>;
-      case "AUDIT_LOGS":
+      case "ORGANIZATION_INFO":
         //return <div>Coming Soon</div>;
         return <OrganizationInfo />;
       case "ROLE_MANAGEMENT":

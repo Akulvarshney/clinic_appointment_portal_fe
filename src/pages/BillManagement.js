@@ -29,6 +29,7 @@ const BillManagement = () => {
   const [printModalVisible, setPrintModalVisible] = useState(false);
   const [printUrl, setPrintUrl] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchServices();
@@ -38,7 +39,9 @@ const BillManagement = () => {
     const loadBills = async () => {
       try {
         if (activeTab === "receipts") {
+          setIsLoading(true);
           const receiptsData = await fetchReceipts();
+          setIsLoading(false);
           const formattedReceipts = receiptsData.map((entry) => ({
             receiptId: entry.receipt_id,
             clientName: entry.clients.first_name || "-",
@@ -49,7 +52,9 @@ const BillManagement = () => {
           setreceiptData(formattedReceipts);
         } else {
           if (activeTab === "invoices") {
+            setIsLoading(true);
             const billsdata = await fetchBills("", "INVOICE");
+
             // ensure it's an array
             const billsArray = Array.isArray(billsdata) ? billsdata : [];
             console.log("bills data ", billsdata);
@@ -66,10 +71,12 @@ const BillManagement = () => {
                 invoiceReference: entry.invoice_reference || "-",
                 raw: entry,
               }));
+            setIsLoading(false);
             setData((prev) => ({ ...prev, invoices: formattedInvoices }));
           }
 
           if (activeTab === "quotations") {
+            setIsLoading(true);
             const billsdata = await fetchBills("", "QUOTATION");
 
             // ensure it's an array
@@ -88,6 +95,7 @@ const BillManagement = () => {
                 raw: entry,
               }));
             console.log("formatted quotations >> ", formattedQuotations);
+            setIsLoading(false);
             setData((prev) => ({ ...prev, quotations: formattedQuotations }));
           }
         }
@@ -109,7 +117,8 @@ const BillManagement = () => {
   const handleConvert = async (record) => {
     try {
       console.log("save as invoice ", record);
-      saveAsInvoice(record);
+
+      saveAsInvoice(record, setRefresh);
 
       // if (!res.ok) throw new Error("Failed to convert quotation");
 
@@ -160,6 +169,7 @@ const BillManagement = () => {
 
   const handlePrintReceipt = (record, printType) => {
     console.log("!23", record);
+
     const url =
       printType === "a4"
         ? `${BACKEND_URL}/receipt/${record.raw.id}`
@@ -372,6 +382,7 @@ const BillManagement = () => {
         <iframe
           id="print-iframe"
           src={printUrl}
+          loading={isLoading}
           style={{
             width: "100%",
             height: "70vh",

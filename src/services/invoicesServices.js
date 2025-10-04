@@ -72,7 +72,7 @@ export const fetchBills = async (
   }
 };
 
-export const saveAsInvoice = async (record) => {
+export const saveAsInvoice = async (record, setRefresh) => {
   console.log("record ", record);
   var recordId = record.id;
   try {
@@ -81,6 +81,7 @@ export const saveAsInvoice = async (record) => {
       {},
       basic_config
     );
+    setRefresh(Math.random());
     console.log(response);
   } catch (err) {
     console.log(err);
