@@ -30,6 +30,7 @@ function handleError(error) {
 export async function apiGet(url, config = {}) {
   try {
     const res = await axios.get(BACKEND_URL + url, config);
+    console.log("res. >> ", res);
     return res.data;
   } catch (error) {
     console.error(error);

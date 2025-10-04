@@ -61,9 +61,10 @@ export const fetchBills = async (
       `/clientadmin/invoices/getBills?organization_id=${selectedOrg.organizationId}&search=${searchTerm}&page=${page}&limit=${limit}&bill_type=${bill_type}`,
       basic_config
     );
-    const billsdata = response.data || [];
+    //console.log("response .data here ", response);
+    const billsdata = response || [];
 
-    console.log("Sidd", billsdata);
+    //console.log("Sidd", billsdata);
     return billsdata;
   } catch (err) {
     console.error("Error fetching clients:", err);
@@ -98,12 +99,13 @@ export const fetchReceipts = async (
   if (!orgId || !token) return;
 
   try {
-    let url = `/clientadmin/receipts/getReceiptDetails?search=${searchTerm}&page=${page}&limit=10&orgId=${orgId}`;
+    let url = `/clientadmin/receipts/getReceiptDetails?search=${searchTerm}&page=${page}&limit=${limit}&orgId=${orgId}`;
     if (id) {
       url += `&receiptId=${id}`;
     }
     const response = await apiGet(url, basic_config);
-    const receiptsData = response.data || [];
+    console.log("response receipts.data here ", response);
+    const receiptsData = response || [];
 
     //console.log("Sidd", receiptsData);
     return receiptsData;

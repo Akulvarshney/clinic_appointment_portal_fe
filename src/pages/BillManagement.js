@@ -1,22 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { Table, Button, Radio, message, Modal } from "antd";
+import React, { useState, useEffect, useMemo } from "react";
+import { Table, Button, Radio, message, Modal, Input } from "antd";
 import { Dropdown, Menu } from "antd";
 import { DownOutlined } from "@ant-design/icons";
+import debounce from "lodash/debounce";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 
 import GenerateInvoiceModal from "./GenerateInvoiceModal";
+import { isFeatureValid } from "../assets/constants";
 import ReceiptModal from "./ReceiptModal.js";
 import { fetchServices } from "../services/OrgServices.js";
 import { fetchClients } from "../services/clientServices.js";
+
 import {
   fetchBills,
   saveAsInvoice,
   fetchReceipts,
 } from "../services/invoicesServices.js";
 import { BACKEND_URL } from "../assets/constants/index.js";
+const { Search } = Input;
 
 const BillManagement = () => {
   const orgId = localStorage.getItem("selectedOrgId");
   const [activeTab, setActiveTab] = useState("invoices");
+  //const [activeTab, setActiveTab] = useState("invoices");
   const [data, setData] = useState({
     invoices: [],
     quotations: [],
@@ -29,6 +35,63 @@ const BillManagement = () => {
   const [printModalVisible, setPrintModalVisible] = useState(false);
   const [printUrl, setPrintUrl] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const [search, setSearch] = useState("");
+  const [pagination, setPagination] = useState({
+    current: 1,
+    limit: 10,
+    total: 0,
+  });
+
+  const [isInvoiceView, setIsInvoiceView] = useState(false);
+  const [isQuotationView, setIsQuotationView] = useState(false);
+  const [isReceiptView, setIsReceiptView] = useState(false);
+  const [canCreateInvoice, setCanCreateInvoice] = useState(false);
+  const [canCreateQuotation, setCanCreateQuotation] = useState(false);
+  const [canCreateReceipt, setCanCreateReceipt] = useState(false);
+  const [canSaveAsInvoice, setCanSaveAsInvoice] = useState(false);
+  const [canPrintInvoice, setCanPrintInvoice] = useState(false);
+
+  useEffect(() => {
+    const initialize = async () => {
+      const varisInvoiceView = isFeatureValid("BILLING", "VIEW_INVOICE");
+      setIsInvoiceView(varisInvoiceView);
+
+      const varisQuotationView = isFeatureValid("BILLING", "VIEW_QUOTATION");
+      setIsQuotationView(varisQuotationView);
+
+      const varisReceiptView = isFeatureValid("BILLING", "VIEW_RECEIPT");
+      setIsReceiptView(varisReceiptView);
+      console.log("isInvoiceView ", isInvoiceView);
+      console.log("isQuotationView ", isQuotationView);
+      console.log("isReceiptView ", isReceiptView);
+      if (isInvoiceView) {
+        setActiveTab("invoices");
+      } else if (isQuotationView) {
+        setActiveTab("quotations");
+      } else if (isReceiptView) {
+        setActiveTab("receipts");
+      }
+
+      const varcanCreateInvoice = isFeatureValid("BILLING", "CREATE_INVOICE");
+      setCanCreateInvoice(varcanCreateInvoice);
+
+      const varcanCreateQuotation = isFeatureValid(
+        "BILLING",
+        "CREATE_QUOTATION"
+      );
+      setCanCreateQuotation(varcanCreateQuotation);
+
+      const varcanCreateReceipt = isFeatureValid("BILLING", "CREATE_RECEIPT");
+      setCanCreateReceipt(varcanCreateReceipt);
+
+      const varcanSaveAsInvoice = isFeatureValid("BILLING", "SAVE_AS_INVOICE");
+      setCanSaveAsInvoice(varcanSaveAsInvoice);
+
+      const varcanPrintInvoice = isFeatureValid("BILLING", "PRINT_INVOICES");
+      setCanPrintInvoice(varcanPrintInvoice);
+    };
+    initialize();
+  }, []);
 
   useEffect(() => {
     fetchServices();
@@ -38,8 +101,12 @@ const BillManagement = () => {
     const loadBills = async () => {
       try {
         if (activeTab === "receipts") {
-          const receiptsData = await fetchReceipts();
-          const formattedReceipts = receiptsData.map((entry) => ({
+          const receiptsData = await fetchReceipts(
+            search,
+            pagination.current,
+            pagination.limit
+          );
+          const formattedReceipts = receiptsData.data.map((entry) => ({
             receiptId: entry.receipt_id,
             clientName: entry.clients.first_name || "-",
             amount: entry.amount,
@@ -47,12 +114,26 @@ const BillManagement = () => {
             raw: entry,
           }));
           setreceiptData(formattedReceipts);
+          setPagination((prev) => ({
+            ...prev,
+            total: receiptsData.total || 0,
+          }));
         } else {
           if (activeTab === "invoices") {
-            const billsdata = await fetchBills("", "INVOICE");
-            // ensure it's an array
-            const billsArray = Array.isArray(billsdata) ? billsdata : [];
-            console.log("bills data ", billsdata);
+            console.log("pagination", pagination);
+            const billsdata = await fetchBills(
+              // Function to call API
+              search,
+              "INVOICE",
+              pagination.current,
+              pagination.limit
+            );
+            console.log("pagination here ", billsdata.pagination);
+
+            const billsArray = Array.isArray(billsdata.data)
+              ? billsdata.data
+              : [];
+            //console.log("bills data ", billsdata);
             const formattedInvoices = billsArray
               .filter((entry) => entry.bill_type === "INVOICE")
               .map((entry) => ({
@@ -67,13 +148,26 @@ const BillManagement = () => {
                 raw: entry,
               }));
             setData((prev) => ({ ...prev, invoices: formattedInvoices }));
+
+            setPagination((prev) => ({
+              ...prev,
+              total: billsdata.pagination?.total_records || 0,
+            }));
           }
 
           if (activeTab === "quotations") {
-            const billsdata = await fetchBills("", "QUOTATION");
+            //alert("onclick");
+            const billsdata = await fetchBills(
+              search,
+              "QUOTATION",
+              pagination.current,
+              pagination.limit
+            );
 
             // ensure it's an array
-            const billsArray = Array.isArray(billsdata) ? billsdata : [];
+            const billsArray = Array.isArray(billsdata.data)
+              ? billsdata.data
+              : [];
             const formattedQuotations = billsArray
               .filter((entry) => entry.bill_type === "QUOTATION")
               .map((entry) => ({
@@ -87,8 +181,12 @@ const BillManagement = () => {
                 invoiceReference: entry.invoice_reference,
                 raw: entry,
               }));
-            console.log("formatted quotations >> ", formattedQuotations);
+            //console.log("formatted quotations >> ", formattedQuotations);
             setData((prev) => ({ ...prev, quotations: formattedQuotations }));
+            setPagination((prev) => ({
+              ...prev,
+              total: billsdata.pagination?.total_records || 0,
+            }));
           }
         }
       } catch (err) {
@@ -98,9 +196,20 @@ const BillManagement = () => {
     };
 
     loadBills();
-  }, [activeTab, orgId, refresh]);
+  }, [activeTab, orgId, refresh, search, pagination.current]);
 
-  const handleTabChange = (e) => setActiveTab(e.target.value);
+  //const handleTabChange = (e) => setActiveTab(e.target.value);
+  const handleTabChange = (e) => {
+    const newTab = e.target.value;
+    setActiveTab(newTab);
+
+    // Reset page to 1 whenever tab changes
+    setPagination((prev) => ({
+      ...prev,
+      current: 1,
+      total: 0, // optional: ensures table updates correctly
+    }));
+  };
   const handleCreate = (type) => {
     setViewData(null);
     setModalType(type);
@@ -125,6 +234,20 @@ const BillManagement = () => {
     }
   };
 
+  // Create debounced search handler
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((value) => {
+        setSearch(value);
+        setPagination((prev) => ({ ...prev, current: 1 }));
+      }, 500),
+    []
+  );
+
+  const handleSearch = (value) => {
+    debouncedSearch(value);
+  };
+
   const saveEntry = (entry, typeKey) => {
     const transformed = {
       billId: entry?.id || `BILL-${Date.now()}`,
@@ -141,6 +264,22 @@ const BillManagement = () => {
     }));
 
     message.success(`${typeKey.slice(0, -1)} created`);
+  };
+
+  const updateEntryReceipt = (entry) => {
+    console.log("receiptId ", entry);
+    setreceiptData((prev) => [
+      ...prev,
+      {
+        receiptId: entry.id,
+        clientName: entry.client?.first_name || "-",
+        amount: entry.amount,
+        datePrinted: new Date(entry.created_at).toLocaleDateString(),
+        raw: entry,
+      },
+    ]);
+
+    setModalType(null);
   };
 
   const handleView = (record) => {
@@ -245,13 +384,13 @@ const BillManagement = () => {
 
         return (
           <div className="flex gap-2">
-            <Button
+            {/* <Button
               type="default"
               size="small"
               onClick={() => handleView(record)}
             >
               View
-            </Button>
+            </Button> */}
 
             <Dropdown overlay={printMenu} trigger={["click"]}>
               <Button type="primary" size="small">
@@ -287,23 +426,43 @@ const BillManagement = () => {
           style={{ margin: "16px 0" }}
           buttonStyle="solid"
         >
-          <Radio.Button value="invoices">Invoices</Radio.Button>
-          <Radio.Button value="quotations">Quotations</Radio.Button>
-          <Radio.Button value="receipts">Receipts</Radio.Button>
+          <Radio.Button value="invoices" disabled={!isInvoiceView}>
+            Invoices
+          </Radio.Button>
+          <Radio.Button value="quotations" disabled={!isQuotationView}>
+            Quotations
+          </Radio.Button>
+          <Radio.Button value="receipts" disabled={!isReceiptView}>
+            Receipts
+          </Radio.Button>
         </Radio.Group>
-
+        <Search
+          placeholder="Search by bill id , bill to "
+          allowClear
+          enterButton={<SearchOutlined />}
+          size="large"
+          onSearch={handleSearch}
+          onChange={(e) => {
+            if (!e.target.value) {
+              handleSearch("");
+            } else {
+              handleSearch(e.target.value);
+            }
+          }}
+          style={{ maxWidth: 400 }}
+        />
         <div style={{ marginBottom: 16 }}>
-          {activeTab === "invoices" && (
+          {activeTab === "invoices" && canCreateInvoice && (
             <Button type="primary" onClick={() => handleCreate("invoice")}>
               Create Invoice
             </Button>
           )}
-          {activeTab === "quotations" && (
+          {activeTab === "quotations" && canCreateQuotation && (
             <Button type="primary" onClick={() => handleCreate("quotation")}>
               Create Quotation
             </Button>
           )}
-          {activeTab === "receipts" && (
+          {activeTab === "receipts" && canCreateReceipt && (
             <Button type="primary" onClick={() => handleCreate("receipt")}>
               Create Receipt
             </Button>
@@ -317,6 +476,20 @@ const BillManagement = () => {
           columns={ReceiptColumns} // separate receipt columns
           rowKey="receiptId"
           bordered
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.limit,
+            total: pagination.total,
+            // showSizeChanger: true,
+            //showQuickJumper: true,
+          }}
+          onChange={(newPagination) => {
+            setPagination((prev) => ({
+              ...prev,
+              current: newPagination.current,
+              limit: newPagination.pageSize,
+            }));
+          }}
         />
       ) : (
         <Table
@@ -324,6 +497,20 @@ const BillManagement = () => {
           columns={columns}
           rowKey="billId"
           bordered
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.limit,
+            total: pagination.total,
+            // showSizeChanger: true,
+            //showQuickJumper: true,
+          }}
+          onChange={(newPagination) => {
+            setPagination((prev) => ({
+              ...prev,
+              current: newPagination.current,
+              limit: newPagination.pageSize,
+            }));
+          }}
         />
       )}
 
@@ -331,14 +518,14 @@ const BillManagement = () => {
         <ReceiptModal
           visible={!!modalType && modalType === "receipt"}
           initialData={viewData}
-          //onClose={() => setModalType(null)}
+          onClose={() => setModalType(null)}
           onCancel={() => {
             console.log("Closing modal");
             setModalType(null);
           }}
           onSuccess={(entry) => {
-            saveEntry(entry, "receipts");
-            setModalType(null);
+            updateEntryReceipt(entry);
+            //setModalType(null);
           }}
         />
       ) : (
