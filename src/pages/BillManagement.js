@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Table, Button, Radio, message, Modal, Input } from "antd";
 import { Dropdown, Menu } from "antd";
-import { DownOutlined } from "@ant-design/icons";
+import { DownOutlined, EditOutlined } from "@ant-design/icons";
 import debounce from "lodash/debounce";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 
@@ -17,6 +17,7 @@ import {
   fetchReceipts,
 } from "../services/invoicesServices.js";
 import { BACKEND_URL } from "../assets/constants/index.js";
+import axios from "axios";
 const { Search } = Input;
 
 const BillManagement = () => {
@@ -51,6 +52,91 @@ const BillManagement = () => {
   const [canCreateReceipt, setCanCreateReceipt] = useState(false);
   const [canSaveAsInvoice, setCanSaveAsInvoice] = useState(false);
   const [canPrintInvoice, setCanPrintInvoice] = useState(false);
+  const [editingBill, setEditingBill] = useState(null);
+  const [loadingBillDetails, setLoadingBillDetails] = useState(false);
+
+  const fetchBillDetails = async (billId, billType) => {
+    try {
+      setLoadingBillDetails(true);
+      const token = localStorage.getItem("token");
+      const selectedOrgId = localStorage.getItem("selectedOrgId");
+
+      // Adjust endpoint based on bill type
+      const endpoint = `/clientadmin/invoices/billDetail/${billId}`;
+
+      const response = await axios.get(`${BACKEND_URL}${endpoint}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          organization_id: selectedOrgId,
+        },
+      });
+
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching bill details:", error);
+
+      return null;
+    } finally {
+      setLoadingBillDetails(false);
+    }
+  };
+
+  const handleEdit = async (record) => {
+    const billType = activeTab === "invoices" ? "invoice" : "quotation";
+    const billDetails = await fetchBillDetails(record.id, billType);
+
+    if (billDetails) {
+      // Transform API response to match modal's expected format
+      const formattedData = {
+        id: billDetails.id,
+        invoiceNumber: billDetails.invoice_number,
+        invoiceDate: billDetails.invoice_date,
+        dueDate: billDetails.due_date,
+        // Extract client data from the nested clients object
+        billTo: billDetails.clients
+          ? {
+              id: billDetails.clients.id,
+              first_name: billDetails.clients.first_name,
+              last_name: billDetails.clients.last_name,
+              email: billDetails.clients.email,
+              phone: billDetails.clients.phone,
+              address: billDetails.clients.address,
+              state: billDetails.clients.state,
+            }
+          : {
+              id: billDetails.client_id,
+              first_name: "",
+              last_name: "",
+              email: "",
+              phone: "",
+              address: "",
+              state: "",
+            },
+        // Map bill_line_items (not line_items) to items array
+        items:
+          billDetails.bill_line_items?.map((item) => ({
+            id: item.id,
+            serviceId: item.service_id,
+            description: item.description,
+            qty: Number(item.quantity) || 1,
+            rate: Number(item.rate) || 0,
+            amount: Number(item.amount) || 0,
+            gst: Number(item.gst_percentage) || 0,
+          })) || [],
+        discountPercent: Number(billDetails.discount_percentage) || 0,
+        notes: billDetails.notes || "",
+        terms: billDetails.terms || "Payment due within 30 days",
+        shippingCharges: Number(billDetails.shipping_charges) || 0,
+        billToText: billDetails.bill_to_text || "",
+        billFromText: billDetails.bill_from_text || "",
+      };
+
+      setEditingBill(formattedData);
+      setModalType(billType);
+    }
+  };
 
   useEffect(() => {
     const initialize = async () => {
@@ -214,6 +300,7 @@ const BillManagement = () => {
   };
   const handleCreate = (type) => {
     setViewData(null);
+    setEditingBill(null);
     setModalType(type);
   };
 
@@ -388,6 +475,17 @@ const BillManagement = () => {
 
         return (
           <div className="flex gap-2">
+            {activeTab === "quotations" ? (
+              <Button
+                type="default"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(record)}
+                loading={loadingBillDetails}
+              >
+                Edit
+              </Button>
+            ) : null}
             {/* <Button
               type="default"
               size="small"
@@ -547,6 +645,7 @@ const BillManagement = () => {
             saveEntry(entry, modalType + "s");
             setModalType(null);
           }}
+          editData={editingBill}
         />
       )}
 
