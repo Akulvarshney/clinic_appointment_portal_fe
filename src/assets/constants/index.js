@@ -16,14 +16,14 @@ export const isFeatureValid = (tabUniqueName, featureUniqueName) => {
 
   for (const org of data) {
     for (const role of org.roles || []) {
-      console.log("Checking role:", role.role_name);
+      //console.log("Checking role:", role.role_name);
       for (const tab of role.tabs || []) {
-        console.log("Checking tab:", tab.tab_unique_name);
+        //console.log("Checking tab:", tab.tab_unique_name);
         if (tab.tab_unique_name === tabUniqueName && tab.is_valid) {
-          console.log("✅ Tab matched and is valid");
+          //console.log("✅ Tab matched and is valid");
 
           if (!tab.features || tab.features.length === 0) {
-            console.log("❌ Tab has no features");
+            //console.log("❌ Tab has no features");
             return false;
           }
 

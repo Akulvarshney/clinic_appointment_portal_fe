@@ -20,9 +20,10 @@ const { Option } = Select;
 export default function ReceiptModal({
   visible,
   onCancel,
+  onClose,
   orgName,
   selectedOrg,
-  onSaved,
+  onSuccess,
 }) {
   const [form] = Form.useForm();
   const [services, setServices] = useState([]);
@@ -106,10 +107,12 @@ export default function ReceiptModal({
           })),
         });
         toast.success("Receipt Generated Successfully");
+
         //message.success("Receipt saved successfully!");
-        onSaved(response.data);
+        //console.log("response ", response);
+        onSuccess(response);
         form.resetFields();
-        onCancel(); // ✅ closes modal
+        onClose(); // ✅ closes modal
       } catch (err) {
         console.error(err);
         message.error("Failed to save receipt.");
