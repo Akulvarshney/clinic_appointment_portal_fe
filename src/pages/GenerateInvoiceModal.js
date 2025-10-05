@@ -678,6 +678,10 @@ export default function GenerateInvoiceModal({
           };
         }),
       };
+      if (editData && editData.id) {
+        console.log("should update");
+        payload.id = editData.id;
+      }
 
       const token = localStorage.getItem("token");
 
