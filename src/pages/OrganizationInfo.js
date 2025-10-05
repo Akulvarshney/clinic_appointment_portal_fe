@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, Form, Input, message } from "antd";
+import { Button, Modal, Form, Input, message, Select } from "antd";
 import {
   BankOutlined,
   TagsOutlined,
@@ -8,8 +8,10 @@ import {
   PhoneOutlined,
   HomeOutlined,
 } from "@ant-design/icons";
-
+import { states } from "../assets/constants";
 import { getOrgInfo, saveOrgInfo } from "../services/clientOrganizations";
+const { Option } = Select;
+
 const OrganizationInfo = () => {
   const [organizationInfo, setOrganizationInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -34,8 +36,10 @@ const OrganizationInfo = () => {
     async function fetchOrgInfo() {
       try {
         const data = await getOrgInfo();
-        setOrgInfoComplete(data.response.is_complete);
+        console.log("data.id ", data.response);
+        setOrgInfoComplete(data.response.id);
         setOrganizationInfo(data.response);
+        console.log("data here", organizationInfo);
         messageApi.success("Organization Details Fetched Successfully");
       } catch (error) {
         setOrganizationInfo({
@@ -71,7 +75,7 @@ const OrganizationInfo = () => {
 
   const handleSubmit = async (values) => {
     try {
-      //console.log("handleSubmit sid >> ", values);
+      console.log("handleSubmit sid >> ", values);
       const savedData = await saveOrgInfo(values);
       console.log("handleSubmit sid >> ", values);
       setOrganizationInfo(values);
@@ -88,7 +92,7 @@ const OrganizationInfo = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen text-lg">
-        Loading organization information...
+        Loading billing information...
       </div>
     );
   }
@@ -125,7 +129,7 @@ const OrganizationInfo = () => {
           }}
         >
           <h2 className="text-3xl font-bold text-center mb-12">
-            Organization Information
+            Billing Information
           </h2>
 
           {!orgInfoComplete ? (
@@ -150,8 +154,8 @@ const OrganizationInfo = () => {
               >
                 <Field
                   icon={<BankOutlined className="text-lg text-indigo-600" />}
-                  label="Organization Name"
-                  value={organizationInfo.name}
+                  label="Organization Brand Name"
+                  value={organizationInfo.org_name}
                 />
                 <Field
                   icon={<TagsOutlined className="text-lg text-indigo-600" />}
@@ -160,8 +164,8 @@ const OrganizationInfo = () => {
                 />
                 <Field
                   icon={<IdcardOutlined className="text-lg text-indigo-600" />}
-                  label="GST Number"
-                  value={organizationInfo.gstnumber}
+                  label="Company GST Number"
+                  value={organizationInfo.gst_number}
                 />
                 <Field
                   icon={<IdcardOutlined className="text-lg text-indigo-600" />}
@@ -175,18 +179,18 @@ const OrganizationInfo = () => {
                 />
                 <Field
                   icon={<HomeOutlined className="text-lg text-indigo-600" />}
-                  label="Address"
+                  label="Billing Address"
                   value={organizationInfo.address}
                 />
                 <Field
                   icon={<PhoneOutlined className="text-lg text-indigo-600" />}
-                  label="Phone"
-                  value={organizationInfo.billing_phone}
+                  label="Billing Phone"
+                  value={organizationInfo.phone}
                 />
                 <Field
                   icon={<MailOutlined className="text-lg text-indigo-600" />}
-                  label="Email"
-                  value={organizationInfo.billing_email}
+                  label="Billing Email"
+                  value={organizationInfo.email}
                 />
               </div>
               <div className="flex justify-center mt-12">
@@ -222,8 +226,8 @@ const OrganizationInfo = () => {
               initialValues={organizationInfo}
             >
               <Form.Item
-                label="Organization Name"
-                name="name"
+                label="Organization Brand Name"
+                name="org_name"
                 rules={[
                   {
                     required: true,
@@ -231,16 +235,31 @@ const OrganizationInfo = () => {
                   },
                 ]}
               >
-                <Input placeholder="Enter organization name" size="large" />
-              </Form.Item>
-              <Form.Item label="Company Name" name="company_name">
-                <Input placeholder="Optional" size="large" />
+                <Input
+                  placeholder="Enter organization Brand Name"
+                  size="large"
+                />
               </Form.Item>
               <Form.Item
-                label="GST Number"
-                name="gstnumber"
+                label="Company Name"
+                name="company_name"
                 rules={[
-                  { required: true, message: "Please enter the GST number" },
+                  {
+                    required: true,
+                    message: "Please enter the Company Name name",
+                  },
+                ]}
+              >
+                <Input placeholder="Enter Company Name " size="large" />
+              </Form.Item>
+              <Form.Item
+                label="Company's GST Number"
+                name="gst_number"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter the Company's GST number",
+                  },
                 ]}
               >
                 <Input placeholder="Enter GST number" size="large" />
@@ -278,19 +297,37 @@ const OrganizationInfo = () => {
                   size="large"
                 />
               </Form.Item>
-              <Form.Item label="Address" name="address">
-                <Input.TextArea rows={3} placeholder="Optional" size="large" />
+              <Form.Item
+                label="Billing Address"
+                name="address"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter the Address",
+                  },
+                ]}
+              >
+                <Input.TextArea rows={3} placeholder="Address" size="large" />
               </Form.Item>
-              <Form.Item label="Phone" name="billing_phone">
+              <Form.Item
+                label="Billing Mobile"
+                name="phone"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter the Phone Number",
+                  },
+                ]}
+              >
                 <Input
                   maxLength={20}
-                  placeholder="Optional phone number"
+                  placeholder="Please Enter Phone Number"
                   size="large"
                 />
               </Form.Item>
               <Form.Item
-                label="Email"
-                name="billing_email"
+                label="Billing Email"
+                name="email"
                 rules={[{ required: true, message: "Please enter the Email" }]}
               >
                 <Input
@@ -298,6 +335,25 @@ const OrganizationInfo = () => {
                   placeholder="Email address"
                   size="large"
                 />
+              </Form.Item>
+              <Form.Item
+                label="State"
+                name="state"
+                rules={[{ required: true, message: "Please select State." }]}
+              >
+                <Select
+                  placeholder="Select state"
+                  showSearch
+                  //defaultValue={defaultState}
+                >
+                  {states?.map((s) => {
+                    return (
+                      <Option key={s.value} value={s.value}>
+                        {s.label}
+                      </Option>
+                    );
+                  })}
+                </Select>
               </Form.Item>
             </Form>
           </Modal>

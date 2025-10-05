@@ -8,7 +8,7 @@ const basic_config = {
 export const getOrgInfo = async () => {
   try {
     const response = await apiGet(
-      `/clientadmin/userMgmt/getOrgDetails?orgId=${orgId}`,
+      `/clientadmin/userMgmt/getOrgBillingDetails?orgId=${orgId}`,
       basic_config
     );
 
