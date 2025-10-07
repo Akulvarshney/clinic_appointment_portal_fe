@@ -18,6 +18,7 @@ import {
 } from "../services/invoicesServices.js";
 import { BACKEND_URL } from "../assets/constants/index.js";
 import axios from "axios";
+import { getOrgInfo } from "../services/clientOrganizations.js";
 const { Search } = Input;
 
 const BillManagement = () => {
@@ -44,6 +45,8 @@ const BillManagement = () => {
     total: 0,
   });
 
+  const [orgDetail, setOrgDetail] = useState(null);
+
   const [isInvoiceView, setIsInvoiceView] = useState(false);
   const [isQuotationView, setIsQuotationView] = useState(false);
   const [isReceiptView, setIsReceiptView] = useState(false);
@@ -55,6 +58,20 @@ const BillManagement = () => {
   const [canEditQuotation, setCanEditQuotation] = useState(false);
   const [editingBill, setEditingBill] = useState(null);
   const [loadingBillDetails, setLoadingBillDetails] = useState(false);
+
+  useEffect(() => {
+    const getinfo = async () => {
+      const response = await getOrgInfo();
+
+      console.log("123123", response);
+
+      if (response) {
+        setOrgDetail(response);
+      }
+    };
+
+    getinfo();
+  }, []);
 
   const fetchBillDetails = async (billId, billType) => {
     try {

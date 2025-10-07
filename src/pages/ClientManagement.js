@@ -162,16 +162,16 @@ const ClientManagement = () => {
         },
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("clients?? ", response.data);
+      console.log("clients?? ", response);
       setClients(response.data || []);
 
       // Fix pagination total calculation
       setPagination((prev) => ({
         ...prev,
         total:
-          response.data.totalCount ||
-          response.data.total ||
-          response.data.totalPages * prev.pageSize,
+          response.totalCount ||
+          response.total ||
+          response.totalPages * prev.pageSize,
       }));
     } catch (err) {
       console.error("Error fetching clients:", err);
@@ -549,6 +549,10 @@ const ClientManagement = () => {
               layout="vertical"
               onFinish={handleSubmit}
               autoComplete="off"
+              initialValues={{
+                state: defaultState || undefined,
+                country: "India",
+              }}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Form.Item
