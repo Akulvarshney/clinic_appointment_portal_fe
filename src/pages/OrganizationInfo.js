@@ -36,10 +36,10 @@ const OrganizationInfo = () => {
     async function fetchOrgInfo() {
       try {
         const data = await getOrgInfo();
-        console.log("data.id ", data.response);
+        //console.log("data.id ", data.response);
         setOrgInfoComplete(data.response.id);
         setOrganizationInfo(data.response);
-        console.log("data here", organizationInfo);
+        //console.log("data here", organizationInfo);
         messageApi.success("Organization Details Fetched Successfully");
       } catch (error) {
         setOrganizationInfo({

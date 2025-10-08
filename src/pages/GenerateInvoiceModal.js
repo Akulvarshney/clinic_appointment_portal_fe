@@ -32,6 +32,7 @@ import { fetchClients } from "../services/clientServices.js";
 import { BACKEND_URL } from "../assets/constants/index.js";
 import axios from "axios";
 import { useNotification } from "../utils/messageWrapper.js";
+import { getOrgInfo } from "../services/clientOrganizations.js";
 
 const { TextArea } = Input;
 const { Text, Title } = Typography;
@@ -64,6 +65,7 @@ export default function GenerateInvoiceModal({
   const [billFromOrg, setBillFromOrg] = useState(null);
   const [billFromText, setBillFromText] = useState("");
   const [orgState, setOrgState] = useState("");
+  const [orgDetail, setOrgDetail] = useState(null);
 
   const notification = useNotification();
 
@@ -87,6 +89,18 @@ export default function GenerateInvoiceModal({
     }
   };
 
+  //Load client Billling info
+  useEffect(() => {
+    const getinfo = async () => {
+      const response = await getOrgInfo();
+      console.log("123", response.response);
+      if (response) {
+        setOrgDetail(response.response);
+      }
+    };
+    getinfo();
+  }, []);
+
   // Load organization data from localStorage
   useEffect(() => {
     const loadOrgData = async () => {
@@ -107,13 +121,15 @@ export default function GenerateInvoiceModal({
 
           if (selectedOrg) {
             setBillFromOrg(selectedOrg);
+
             const orgText = [
-              selectedOrg.organizationName,
-              selectedOrg.address ? selectedOrg.address : "",
-              selectedOrg.state ? selectedOrg.state : "",
+              orgDetail.company_name,
+              orgDetail.address ? orgDetail.address : "",
+              orgDetail.email ? orgDetail.email : "",
+              orgDetail.state ? orgDetail.state : "",
               type === "invoice"
-                ? selectedOrg.gstnumber
-                  ? selectedOrg.gstnumber
+                ? orgDetail.gst_number
+                  ? orgDetail.gst_number
                   : ""
                 : "",
             ]
