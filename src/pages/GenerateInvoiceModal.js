@@ -59,8 +59,10 @@ export default function GenerateInvoiceModal({
   const [notes, setNotes] = useState("");
   const [terms, setTerms] = useState("Payment due within 30 days");
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [shippingCharges, setShippingCharges] = useState(0);
+  //const [shippingCharges, setShippingCharges] = useState(0);
   const [roundOff, setRoundOff] = useState(true);
+  const [bankChargesEnabled, setBankChargesEnabled] = useState(false);
+
   const [billToText, setBillToText] = useState("");
   const [billFromOrg, setBillFromOrg] = useState(null);
   const [billFromText, setBillFromText] = useState("");
@@ -178,7 +180,8 @@ export default function GenerateInvoiceModal({
         setDiscountPercent(editData.discountPercent || 0);
         setNotes(editData.notes || "");
         setTerms(editData.terms || "Payment due within 30 days");
-        setShippingCharges(editData.shippingCharges || 0);
+        setBankChargesEnabled(editData.bankChargesEnabled);
+        //setShippingCharges(editData.shippingCharges || 0);
         setBillToText(editData.billToText || "");
         setBillFromText(editData.billFromText || "");
       } else {
@@ -195,7 +198,8 @@ export default function GenerateInvoiceModal({
         setDiscountPercent(0);
         setNotes("");
         setTerms("Payment due within 30 days");
-        setShippingCharges(0);
+        // setShippingCharges(0);
+        setBankChargesEnabled(false);
         // setInvoiceNumber(newInvoiceNumber);
         setBillToText("");
         // Don't reset billFromText here - let it be set by the loadOrgData effect
@@ -417,8 +421,11 @@ export default function GenerateInvoiceModal({
     const totalTax = totalCGST + totalSGST + totalIGST;
 
     // 5. Final calculations
+    const bankCharges = bankChargesEnabled
+      ? roundTo2Decimals(taxableAfterDiscount * 0.02)
+      : 0;
     const grandTotalBeforeRounding =
-      taxableAfterDiscount + totalTax + shippingCharges;
+      taxableAfterDiscount + totalTax + bankCharges;
     const grandTotal = roundOff
       ? Math.round(grandTotalBeforeRounding)
       : grandTotalBeforeRounding;
@@ -432,6 +439,7 @@ export default function GenerateInvoiceModal({
       totalSGST,
       totalIGST,
       totalTax,
+      bankCharges,
       grandTotalBeforeRounding,
       grandTotal,
       roundOffAmount,
@@ -440,7 +448,7 @@ export default function GenerateInvoiceModal({
   }, [
     invoiceItems,
     discountPercent,
-    shippingCharges,
+    bankChargesEnabled,
     roundOff,
     billTo?.state,
     orgState,
@@ -451,11 +459,10 @@ export default function GenerateInvoiceModal({
 
     // Calculate base amounts
     const subTotal = calculations.subTotal;
-    const shippingAmount = shippingCharges || 0;
+    //const shippingAmount = shippingCharges || 0;
 
     // Calculate what the total would be with 0% discount
-    const totalWithoutDiscount =
-      subTotal + calculations.totalTax + shippingAmount;
+    const totalWithoutDiscount = subTotal + calculations.totalTax;
 
     // If desired total is greater than or equal to total without discount, set discount to 0
     if (desiredTotal >= totalWithoutDiscount) {
@@ -495,7 +502,7 @@ export default function GenerateInvoiceModal({
         }
       });
 
-      const testGrandTotal = testTaxableAmount + testTotalTax + shippingAmount;
+      const testGrandTotal = testTaxableAmount + testTotalTax;
 
       if (Math.abs(testGrandTotal - desiredTotal) < 0.01) {
         bestDiscount = testDiscount;
@@ -523,7 +530,7 @@ export default function GenerateInvoiceModal({
         handleGrandTotalChange(value);
         typingRef.current = false;
       }, 500),
-    [calculations.subTotal, calculations.totalTax, shippingCharges]
+    [calculations.subTotal, calculations.totalTax, bankChargesEnabled]
   );
 
   useEffect(() => {
@@ -662,7 +669,8 @@ export default function GenerateInvoiceModal({
         total_sgst: calculations.totalSGST,
         total_igst: calculations.totalIGST,
         total_tax: calculations.totalTax,
-        shipping_charges: shippingCharges || 0,
+        //shipping_charges: shippingCharges || 0,
+        bankCharges: bankChargesEnabled || 0,
         round_off_amount: calculations.roundOffAmount || 0,
         grand_total_before_rounding: calculations.grandTotalBeforeRounding,
         grand_total: calculations.grandTotal,
@@ -1138,22 +1146,20 @@ export default function GenerateInvoiceModal({
 
               {showAdvanced && (
                 <div className="space-y-3">
+                  {/* ✅ Bank Charges (2%) Toggle */}
                   <Form.Item
-                    label="Shipping Charges"
+                    label="Bank Charges (2%)"
                     style={{ marginBottom: "12px" }}
                   >
-                    <InputNumber
-                      value={shippingCharges}
-                      onChange={(value) => setShippingCharges(value || 0)}
-                      min={0}
-                      formatter={(value) =>
-                        `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                      }
-                      parser={(value) => value.replace(/₹\s?|(,*)/g, "")}
-                      className="w-full"
+                    <Switch
+                      checked={bankChargesEnabled}
+                      onChange={setBankChargesEnabled}
+                      checkedChildren="On"
+                      unCheckedChildren="Off"
                     />
                   </Form.Item>
 
+                  {/* ✅ Round Off */}
                   <Form.Item label="Round Off" style={{ marginBottom: 0 }}>
                     <Switch
                       checked={roundOff}
@@ -1249,7 +1255,7 @@ export default function GenerateInvoiceModal({
                   </div>
                 )}
 
-                {showAdvanced && shippingCharges > 0 && (
+                {/* {showAdvanced && shippingCharges > 0 && (
                   <div className="flex justify-between items-center">
                     <span>Shipping:</span>
                     <span>
@@ -1259,7 +1265,21 @@ export default function GenerateInvoiceModal({
                       })}
                     </span>
                   </div>
-                )}
+                )} */}
+
+                {showAdvanced &&
+                  bankChargesEnabled &&
+                  calculations.bankCharges > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span>Bank Charges (2%):</span>
+                      <span>
+                        ₹
+                        {calculations.bankCharges.toLocaleString("en-IN", {
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  )}
 
                 {roundOff && calculations.roundOffAmount !== 0 && (
                   <div className="flex justify-between items-center">
