@@ -202,6 +202,8 @@ export default function GenerateInvoiceModal({
         setBankChargesEnabled(false);
         // setInvoiceNumber(newInvoiceNumber);
         setBillToText("");
+        setManualGrandTotal(0);
+        setBankChargesEnabled(false);
         // Don't reset billFromText here - let it be set by the loadOrgData effect
       }
     }
@@ -670,7 +672,10 @@ export default function GenerateInvoiceModal({
         total_igst: calculations.totalIGST,
         total_tax: calculations.totalTax,
         //shipping_charges: shippingCharges || 0,
-        bankCharges: bankChargesEnabled || 0,
+        bankCharges: bankChargesEnabled
+          ? String(calculations.bankCharges)
+          : null,
+        //bankCharges: bankChargesEnabled || 0,
         round_off_amount: calculations.roundOffAmount || 0,
         grand_total_before_rounding: calculations.grandTotalBeforeRounding,
         grand_total: calculations.grandTotal,
