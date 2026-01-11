@@ -27,6 +27,7 @@ import Settings from "./pages/settings/Settings";
 import ClientManagement from "./pages/ClientManagement";
 import ClientDetailPage from "./pages/ClientDetailPage";
 import NotificationManagement from "./pages/SuperAdmin/NotificationCreation";
+import FeedbackManagement from "./pages/FeedbackManagement";
 
 // ✅ Import icons
 import {
@@ -101,7 +102,7 @@ export const ROUTE_COMPONENTS = {
     label: "Clients",
   },
     "/feedbackManagement": {
-    component: Settings,
+    component: FeedbackManagement,
     icon: <FaUserFriends />,
     label: "Feedback",
   },
