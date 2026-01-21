@@ -180,7 +180,13 @@ export default function GenerateInvoiceModal({
         setDiscountPercent(editData.discountPercent || 0);
         setNotes(editData.notes || "");
         setTerms(editData.terms || "Payment due within 30 days");
-        setBankChargesEnabled(editData.bankChargesEnabled);
+        // Check if bank charges were previously applied (not null and not empty string)
+        const hasBankCharges = editData.bankCharges !== null && editData.bankCharges !== "" && editData.bankCharges !== undefined;
+        setBankChargesEnabled(hasBankCharges);
+        // If bank charges were applied, show the advanced options section
+        if (hasBankCharges) {
+          setShowAdvanced(true);
+        }
         //setShippingCharges(editData.shippingCharges || 0);
         setBillToText(editData.billToText || "");
         setBillFromText(editData.billFromText || "");

@@ -11,6 +11,7 @@ import {
   Alert,
   Tabs,
 } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import { PlusOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
@@ -46,6 +47,7 @@ const FeedbackManagement = () => {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [feedbackSearch, setFeedbackSearch] = useState("");
 
   // Hardcoded data
   const clients = [
@@ -78,6 +80,11 @@ const FeedbackManagement = () => {
     { label: "Good", value: "Good" },
     { label: "Excellent", value: "Excellent" },
   ];
+
+  // Filter feedbacks based on search
+  const filteredFeedbacks = feedbacks.filter(feedback =>
+    feedback.clientName.toLowerCase().includes(feedbackSearch.toLowerCase())
+  );
 
   const handleSubmit = (values) => {
     setErrorMsg("");
@@ -150,25 +157,57 @@ const FeedbackManagement = () => {
                 onFinish={handleSubmit}
                 autoComplete="off"
               >
-                <Form.Item
-                  label="Select Client"
-                  name="clientId"
-                  rules={[{ required: true, message: "Please select a client!" }]}
-                >
-                  <Select placeholder="Choose a client">
-                    {clients.map((client) => (
-                      <Option key={client.id} value={client.id}>
-                        {client.name} ({client.portalId})
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
+                <div className="space-y-4">
+                  <Form.Item
+                    label="Select Client"
+                    name="clientId"
+                    rules={[{ required: true, message: "Please select a client!" }]}
+                  >
+                    <div className="relative">
+                      <Select
+                        placeholder="Choose a client"
+                        showSearch
+                        filterOption={(input, option) => {
+                          const client = clients.find(c => c.id === option.value);
+                          if (!client) return false;
+                          const searchText = `${client.name} ${client.portalId}`.toLowerCase();
+                          return searchText.includes(input.toLowerCase());
+                        }}
+                        onDropdownVisibleChange={(open) => {
+                          if (open && /iPad|iPhone|iPod|Android/i.test(navigator.userAgent)) {
+                            // Small delay to ensure dropdown is open before focusing
+                            setTimeout(() => {
+                              const searchInput = document.querySelector('.ant-select-selection-search-input');
+                              if (searchInput) {
+                                searchInput.focus();
+                                // Force virtual keyboard on mobile
+                                searchInput.setAttribute('inputmode', 'text');
+                                searchInput.setAttribute('autocomplete', 'off');
+                              }
+                            }, 100);
+                          }
+                        }}
+                      >
+                        {clients.map((client) => (
+                          <Option key={client.id} value={client.id}>
+                            {client.name} ({client.portalId})
+                          </Option>
+                        ))}
+                      </Select>
+                      {/iPad|iPhone|iPod|Android/i.test(navigator.userAgent) && (
+                        <div className="mt-1 text-xs text-gray-500 flex items-center">
+                          <SearchOutlined className="mr-1" />
+                          Tap dropdown to search clients
+                        </div>
+                      )}
+                    </div>
+                  </Form.Item>
 
-                <Form.Item
-                  label="Select Staff"
-                  name="staffId"
-                  rules={[{ required: true, message: "Please select staff!" }]}
-                >
+                  <Form.Item
+                    label="Select Staff"
+                    name="staffId"
+                    rules={[{ required: true, message: "Please select staff!" }]}
+                  >
                   <Select placeholder="Choose staff member">
                     {staff.map((member) => (
                       <Option key={member.id} value={member.id}>
@@ -227,13 +266,14 @@ const FeedbackManagement = () => {
                   />
                 </Form.Item>
 
-                <div className="flex justify-end gap-2 mt-6">
-                  <Button onClick={() => form.resetFields()}>
-                    Reset
-                  </Button>
-                  <Button type="primary" htmlType="submit" loading={loading}>
-                    {loading ? "Submitting..." : "Submit Feedback"}
-                  </Button>
+                  <div className="flex justify-end gap-2 mt-6">
+                    <Button onClick={() => form.resetFields()}>
+                      Reset
+                    </Button>
+                    <Button type="primary" htmlType="submit" loading={loading}>
+                      {loading ? "Submitting..." : "Submit Feedback"}
+                    </Button>
+                  </div>
                 </div>
               </Form>
             </div>
@@ -242,8 +282,20 @@ const FeedbackManagement = () => {
       case "view-feedbacks":
         return (
           <div>
-            
-            <div className="bg-white rounded-lg shadow mt-4">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex-1 max-w-md">
+                <Input
+                  placeholder="Search feedback by client name..."
+                  prefix={<SearchOutlined />}
+                  value={feedbackSearch}
+                  onChange={(e) => setFeedbackSearch(e.target.value)}
+                  allowClear
+                  size="large"
+                />
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow">
               <Table
                 columns={[
                   {
@@ -301,7 +353,7 @@ const FeedbackManagement = () => {
                     width: "10%",
                   },
                 ]}
-                dataSource={feedbacks}
+                dataSource={filteredFeedbacks}
                 rowKey="id"
                 pagination={{
                   pageSize: 10,

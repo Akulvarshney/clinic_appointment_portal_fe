@@ -147,6 +147,7 @@ const BillManagement = () => {
         notes: billDetails.notes || "",
         terms: billDetails.terms || "Payment due within 30 days",
         shippingCharges: Number(billDetails.shipping_charges) || 0,
+        bankCharges: billDetails.bank_charges || null,
         billToText: billDetails.bill_to_text || "",
         billFromText: billDetails.bill_from_text || "",
       };
