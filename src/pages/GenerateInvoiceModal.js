@@ -492,7 +492,7 @@ export default function GenerateInvoiceModal({
       const testTaxableAmount = subTotal - testDiscountAmount;
 
       // Calculate tax with this discount
-      let testTotalTax = 0;
+      let testTotalTax = 0; //test
       Object.keys(calculations.gstGroups || {}).forEach((gstRate) => {
         const gstRateNum = Number(gstRate);
         const groupAmount = calculations.gstGroups[gstRate];
