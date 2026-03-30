@@ -5,14 +5,10 @@ import Profile from "../Profile";
 import NotificationCenter from "../NotificationCenter";
 import OrganizationInfo from "../OrganizationInfo";
 
-const { Table, Tabs } = require("antd");
-const { TabPane } = Tabs;
+const { Tabs } = require("antd");
 
 const Settings = () => {
-  const [organizations, setOrganizations] = React.useState([]);
-  const [selectedOrgId, setSelectedOrgId] = React.useState("");
   const [tabs, setTabs] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
   const [activeKey, setActiveKey] = React.useState("");
 
   useEffect(() => {
@@ -21,9 +17,7 @@ const Settings = () => {
     );
     const storedSelected = localStorage.getItem("selectedOrganizationId");
 
-    setOrganizations(storedOrgs);
     const selected = storedSelected || storedOrgs[0]?.organizationId;
-    setSelectedOrgId(selected);
 
     if (selected) {
       const selectedOrg = storedOrgs.find(

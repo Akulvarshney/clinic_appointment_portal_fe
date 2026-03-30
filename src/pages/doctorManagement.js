@@ -13,7 +13,6 @@ import {
   Alert,
 } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import Sidebar from "../components/SideBar";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 
 const { Option } = Select;
@@ -22,7 +21,6 @@ const { Search } = Input;
 const DoctorManagement = () => {
   const [form] = Form.useForm();
   const [doctors, setDoctors] = useState([]);
-  const [roles, setRoles] = useState([]);
   const [roleId, setRoleId] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -207,7 +205,7 @@ const DoctorManagement = () => {
       console.error("API Error:", error);
       message.error(
         error.response?.data?.message ||
-          "Something went wrong. Please try again."
+        "Something went wrong. Please try again."
       );
     } finally {
       setIsSubmitting(false);

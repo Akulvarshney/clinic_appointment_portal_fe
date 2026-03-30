@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Modal, Form, Input, Select, DatePicker, message } from "antd";
-import axios from "axios";
-import { AutoComplete, Button } from "antd";
+import { Button } from "antd";
 import dayjs from "dayjs";
 import debounce from "lodash/debounce";
-import { BACKEND_URL, isFeatureValid } from "../assets/constants";
-import { Divider, Descriptions, Tag } from "antd";
-import { apiGet, apiPost, apiPut, apiPatch } from "../utils/axiosCalls";
+import { isFeatureValid } from "../assets/constants";
+import { Divider, Descriptions, } from "antd";
+import { apiGet, apiPost, apiPatch } from "../utils/axiosCalls";
 
 const token = localStorage.getItem("token");
 const basic_config = {
@@ -39,9 +38,7 @@ function timeLabel(h, m = 0) {
     minute: "2-digit",
   });
 }
-function mkId() {
-  return Math.random().toString(36).slice(2, 9);
-}
+
 function isOverlapping(newAppt, appointmentsList) {
   return appointmentsList.some((a) => {
     if (a.id === newAppt.id) return false;
@@ -625,10 +622,10 @@ export default function AppointmentPage() {
         prev.map((a) =>
           a.id === id
             ? {
-                ...a,
-                start: direction === "top" ? newStart : a.start,
-                end: direction === "bottom" ? newEnd : a.end,
-              }
+              ...a,
+              start: direction === "top" ? newStart : a.start,
+              end: direction === "bottom" ? newEnd : a.end,
+            }
             : a
         )
       );
@@ -1267,7 +1264,7 @@ export default function AppointmentPage() {
             .then((vals) => {
               saveNewAppointment(vals);
             })
-            .catch(() => {});
+            .catch(() => { });
         }}
         onCancel={closeNewApptModal}
         okText="Save"
@@ -1369,12 +1366,12 @@ export default function AppointmentPage() {
             Slot:{" "}
             {newApptInfo
               ? `${timeLabel(
-                  newApptInfo.start.getHours(),
-                  newApptInfo.start.getMinutes()
-                )} — ${timeLabel(
-                  newApptInfo.end.getHours(),
-                  newApptInfo.end.getMinutes()
-                )}`
+                newApptInfo.start.getHours(),
+                newApptInfo.start.getMinutes()
+              )} — ${timeLabel(
+                newApptInfo.end.getHours(),
+                newApptInfo.end.getMinutes()
+              )}`
               : "not selected"}
           </div>
         </Form>
@@ -1421,28 +1418,28 @@ export default function AppointmentPage() {
         footer={
           isEditing
             ? [
-                <Button
-                  key="cancel"
-                  onClick={() => {
-                    setIsEditing(false);
-                    editForm.resetFields();
-                  }}
-                >
-                  Cancel
-                </Button>,
-                <Button
-                  key="save"
-                  type="primary"
-                  onClick={() => editForm.submit()}
-                >
-                  Save
-                </Button>,
-              ]
+              <Button
+                key="cancel"
+                onClick={() => {
+                  setIsEditing(false);
+                  editForm.resetFields();
+                }}
+              >
+                Cancel
+              </Button>,
+              <Button
+                key="save"
+                type="primary"
+                onClick={() => editForm.submit()}
+              >
+                Save
+              </Button>,
+            ]
             : [
-                <Button key="close" type="primary" onClick={closeDetailModal}>
-                  Close
-                </Button>,
-              ]
+              <Button key="close" type="primary" onClick={closeDetailModal}>
+                Close
+              </Button>,
+            ]
         }
         width={900}
         bodyStyle={{
@@ -1628,21 +1625,21 @@ export default function AppointmentPage() {
                   prev.map((appt) =>
                     appt.id === detailAppt.id
                       ? {
-                          ...appt,
-                          doctorId: values.doctorId,
-                          employeeId: values.employeeId,
-                          serviceId: values.serviceId,
-                          remarks: values.notes,
-                          doctorName:
-                            Doctor.find((d) => d.id === values.doctorId)
-                              ?.name || "",
-                          employeeName:
-                            Employees.find((e) => e.id === values.employeeId)
-                              ?.name || "",
-                          service:
-                            Services.find((s) => s.id === values.serviceId)
-                              ?.name || "",
-                        }
+                        ...appt,
+                        doctorId: values.doctorId,
+                        employeeId: values.employeeId,
+                        serviceId: values.serviceId,
+                        remarks: values.notes,
+                        doctorName:
+                          Doctor.find((d) => d.id === values.doctorId)
+                            ?.name || "",
+                        employeeName:
+                          Employees.find((e) => e.id === values.employeeId)
+                            ?.name || "",
+                        service:
+                          Services.find((s) => s.id === values.serviceId)
+                            ?.name || "",
+                      }
                       : appt
                   )
                 );

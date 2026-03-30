@@ -1,5 +1,5 @@
 import React from "react";
-import { FaChartBar, FaUser, FaTable, FaShoppingCart } from "react-icons/fa";
+import { FaChartBar, FaUser, } from "react-icons/fa";
 import { useAuth } from "../layouts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -24,7 +24,7 @@ const SuperAdminSidebar = () => {
         >
           <FaChartBar className="mr-3" /> Organizations
         </li>
-                <li
+        <li
           className="flex items-center text-blue-600 font-bold hover:text-blue-800 transition duration-300 cursor-pointer"
           onClick={() => navigate("/sa/NotificationManagement")}
         >

@@ -101,14 +101,14 @@ export const ROUTE_COMPONENTS = {
     icon: <FaUserFriends />,
     label: "Clients",
   },
-    "/feedbackManagement": {
+  "/feedbackManagement": {
     component: FeedbackManagement,
     icon: <FaUserFriends />,
     label: "Feedback",
   },
 
 
-  
+
 };
 
 const getUserAllowedRoutes = (selectedOrgId, userRole) => {
