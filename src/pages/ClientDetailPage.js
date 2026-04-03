@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
+import { Box } from "@mui/material";
 import { BACKEND_URL, isFeatureValid, states } from "../assets/constants";
 import { PALETTE } from "../theme/palette";
 import {
@@ -233,34 +234,34 @@ const ClientDetailPage = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case "COMPLETED":
-        return "green";
+        return PALETTE.primaryDark;
       case "CONFIRMED":
-        return "blue";
+        return PALETTE.primary;
       case "PENDING":
-        return "orange";
+        return "#b8995c";
       case "CANCELLED":
-        return "red";
+        return "#b45353";
       case "NO_SHOW":
-        return "volcano";
+        return PALETTE.ink3;
       default:
-        return "default";
+        return PALETTE.muted;
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
       case "COMPLETED":
-        return <CheckCircleOutlined className="text-green-500" />;
+        return <CheckCircleOutlined className="text-gw-primary-dark" />;
       case "CONFIRMED":
         return <ClockCircleOutlined className="text-gw-primary" />;
       case "PENDING":
-        return <ExclamationCircleOutlined className="text-yellow-500" />;
+        return <ExclamationCircleOutlined className="text-amber-700/90" />;
       case "CANCELLED":
-        return <CloseCircleOutlined className="text-red-500" />;
+        return <CloseCircleOutlined className="text-[#b45353]" />;
       case "NO_SHOW":
-        return <MinusCircleOutlined className="text-orange-500" />;
+        return <MinusCircleOutlined className="text-gw-ink-3" />;
       default:
-        return <ClockCircleOutlined className="text-gray-400" />;
+        return <ClockCircleOutlined className="text-gw-ink-4" />;
     }
   };
 
@@ -362,19 +363,25 @@ const ClientDetailPage = () => {
   // Show loading state while data is being fetched
   if (!clientData) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+      <Box
+        className="flex min-h-full items-center justify-center p-6 sm:p-8"
+        sx={{ background: PALETTE.surface }}
+      >
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gw-primary mx-auto mb-4"></div>
-          <Text className="text-gray-500">Loading client details...</Text>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gw-primary mx-auto mb-4" />
+          <Text className="text-gw-ink-3">Loading client details...</Text>
         </div>
-      </div>
+      </Box>
     );
   }
 
   const stats = getAppointmentStats();
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <Box
+      className="min-h-full p-6 sm:p-8"
+      sx={{ background: PALETTE.surface }}
+    >
       {contextHolder}
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-end">
@@ -387,7 +394,7 @@ const ClientDetailPage = () => {
           </Button>
         </div>
         {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-5">
+        <div className="bg-white rounded-lg shadow border border-gw-muted/40 p-6 mb-5">
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
             {/* Avatar */}
             <div className="flex-shrink-0">
@@ -400,45 +407,70 @@ const ClientDetailPage = () => {
 
             {/* Client Info */}
             <div className="flex-grow">
-              <Title level={2} className="!mb-2">
+              <Title
+                level={2}
+                className="!mb-2 !text-gw-primary-dark !font-bold"
+              >
                 {clientData?.first_name} {clientData?.last_name}
               </Title>
               <div className="flex gap-5 items-center">
-                <Text className="text-gray-500 block mb-3">
+                <Text className="text-gw-ink-3 block mb-3">
                   Client ID:{" "}
                   {clientData?.client_organization_category?.[0]?.portal_id}
                 </Text>
-                <Text className="text-gray-500 block mb-3">
+                <Text className="text-gw-ink-3 block mb-3">
                   Login ID: {clientData?.users.login_id}
                 </Text>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Tag color="blue" icon={<TeamOutlined />}>
+                <Tag
+                  icon={<TeamOutlined />}
+                  bordered={false}
+                  style={{
+                    backgroundColor: PALETTE.accentLight,
+                    color: PALETTE.primaryDark,
+                  }}
+                >
                   {clientData?.organizations?.name}
                 </Tag>
-                <Tag color="green">{clientData?.gender}</Tag>
-                <Tag color={PALETTE.primary}>
+                <Tag
+                  bordered={false}
+                  style={{
+                    backgroundColor: "rgba(129, 166, 198, 0.2)",
+                    color: PALETTE.primaryDark,
+                  }}
+                >
+                  {clientData?.gender}
+                </Tag>
+                <Tag
+                  bordered={false}
+                  style={{
+                    backgroundColor: PALETTE.surface,
+                    color: PALETTE.ink2,
+                    border: `1px solid ${PALETTE.line}`,
+                  }}
+                >
                   Age: {calculateAge(clientData?.date_of_birth)}
                 </Tag>
                 {clientData?.client_organization_category?.[0]
                   ?.booked_status === "BOOKED" ? (
                   <Tag
+                    bordered={false}
                     style={{
-                      backgroundColor: "green", // green
-                      color: "white",
-                      border: "none",
-                      fontWeight: "bold",
+                      backgroundColor: PALETTE.primaryDark,
+                      color: PALETTE.white,
+                      fontWeight: 600,
                     }}
                   >
                     Booked
                   </Tag>
                 ) : (
                   <Tag
+                    bordered={false}
                     style={{
-                      backgroundColor: "#dc2626", // red
-                      color: "white",
-                      border: "none",
-                      fontWeight: "bold",
+                      backgroundColor: "rgba(180, 83, 83, 0.15)",
+                      color: "#8f3d3d",
+                      fontWeight: 600,
                     }}
                   >
                     Unbooked
@@ -468,45 +500,48 @@ const ClientDetailPage = () => {
           {/* Left Column - Client Details & Appointments */}
           <div className="lg:col-span-2 space-y-6">
             {/* Client Information */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <Title level={4} className="!mb-4">
+            <div className="bg-white rounded-lg shadow border border-gw-muted/40 p-6">
+              <Title
+                level={4}
+                className="!mb-4 !text-gw-primary-dark !font-semibold"
+              >
                 Client Information
               </Title>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
-                  <PhoneOutlined className="text-gray-500" />
+                  <PhoneOutlined className="text-gw-primary" />
                   <div>
-                    <Text className="text-gray-500 text-sm block">Phone</Text>
+                    <Text className="text-gw-ink-3 text-sm block">Phone</Text>
                     <Text>
                       {isMobileView ? clientData?.phone : "**********"}
                     </Text>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <MailOutlined className="text-gray-500" />
+                  <MailOutlined className="text-gw-primary" />
                   <div>
-                    <Text className="text-gray-500 text-sm block">Email</Text>
+                    <Text className="text-gw-ink-3 text-sm block">Email</Text>
                     <Text>{clientData?.email}</Text>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <HomeOutlined className="text-gray-500" />
+                  <HomeOutlined className="text-gw-primary" />
                   <div>
-                    <Text className="text-gray-500 text-sm block">Address</Text>
+                    <Text className="text-gw-ink-3 text-sm block">Address</Text>
                     <Text>{clientData?.address}</Text>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <HomeOutlined className="text-gray-500" />
+                  <HomeOutlined className="text-gw-primary" />
                   <div>
-                    <Text className="text-gray-500 text-sm block">State</Text>
+                    <Text className="text-gw-ink-3 text-sm block">State</Text>
                     <Text>{clientData?.state}</Text>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <CalendarOutlined className="text-gray-500" />
+                  <CalendarOutlined className="text-gw-primary" />
                   <div>
-                    <Text className="text-gray-500 text-sm block">
+                    <Text className="text-gw-ink-3 text-sm block">
                       Date of Birth
                     </Text>
                     <Text>
@@ -520,12 +555,15 @@ const ClientDetailPage = () => {
             </div>
 
             {/* Appointment History */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-white rounded-lg shadow border border-gw-muted/40 p-6">
               <div className="flex items-center justify-between mb-4">
-                <Title level={4} className="!mb-0">
+                <Title
+                  level={4}
+                  className="!mb-0 !text-gw-primary-dark !font-semibold"
+                >
                   Appointment History
                 </Title>
-                <Text className="text-gray-500">
+                <Text className="text-gw-ink-3">
                   {clientData?.appointments?.length || 0} total appointments
                 </Text>
               </div>
@@ -552,7 +590,7 @@ const ClientDetailPage = () => {
                 <div className="mb-6 space-y-4">
                   {(statusFilter !== "ALL" || searchQuery || dateFilter) && (
                     <div className="flex items-center gap-2">
-                      <Text className="text-sm text-gray-500">
+                      <Text className="text-sm text-gw-ink-3">
                         Showing {filteredAndPaginatedAppointments.total} of{" "}
                         {clientData?.appointments?.length} appointments
                       </Text>
@@ -580,7 +618,7 @@ const ClientDetailPage = () => {
                       (appointment) => (
                         <div
                           key={appointment.id}
-                          className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+                          className="border border-gw-muted/60 rounded-lg p-4 transition-shadow hover:border-gw-primary-light/70 hover:shadow-sm"
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-3">
@@ -589,18 +627,18 @@ const ClientDetailPage = () => {
                                 <Text strong className="block">
                                   Appointment #{appointment.portal_id}
                                 </Text>
-                                <Text className="text-gray-500 text-sm block">
+                                <Text className="text-gw-ink-3 text-sm block">
                                   {formatDate(appointment.start_time)} •{" "}
                                   {formatTime(appointment.start_time)} -{" "}
                                   {formatTime(appointment.end_time)}
                                 </Text>
                                 {appointment.remarks && (
-                                  <Text className="text-gray-600 text-sm block mt-1">
+                                  <Text className="text-gw-ink-2 text-sm block mt-1">
                                     Notes: {appointment.remarks}
                                   </Text>
                                 )}
                                 {appointment.cancel_remarks && (
-                                  <Text className="text-red-500 text-sm block mt-1">
+                                  <Text className="text-[#b45353] text-sm block mt-1">
                                     Cancel Reason: {appointment.cancel_remarks}
                                   </Text>
                                 )}
@@ -624,9 +662,14 @@ const ClientDetailPage = () => {
                         total={filteredAndPaginatedAppointments.total}
                         onChange={(page) => setCurrentPage(page)}
                         showSizeChanger={false}
-                        showQuickJumper
+                        showQuickJumper={false}
+                        hideOnSinglePage={false}
                         showTotal={(total, range) =>
-                          `${range[0]}-${range[1]} of ${total} appointments`
+                          Array.isArray(range) &&
+                          range[0] != null &&
+                          range[1] != null
+                            ? `${range[0]}–${range[1]} of ${total}`
+                            : `Total ${total}`
                         }
                       />
                     </div>
@@ -647,46 +690,52 @@ const ClientDetailPage = () => {
 
           <div className="space-y-6">
             {/* Statistics */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <Title level={4} className="!mb-4">
+            <div className="bg-white rounded-lg shadow border border-gw-muted/40 p-6">
+              <Title
+                level={4}
+                className="!mb-4 !text-gw-primary-dark !font-semibold"
+              >
                 Appointment Statistics
                 {(statusFilter !== "ALL" || searchQuery || dateFilter) && (
-                  <Text className="text-sm text-gray-500 font-normal ml-2">
+                  <Text className="text-sm text-gw-ink-3 font-normal ml-2">
                     (filtered)
                   </Text>
                 )}
               </Title>
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-gw-primary-light/30 rounded-lg">
+                <div className="text-center p-3 bg-gw-primary-light/30 rounded-lg border border-gw-primary-light/25">
                   <div className="text-2xl font-bold text-gw-primary-dark">
                     {stats.total}
                   </div>
-                  <div className="text-sm text-gray-600">Total</div>
+                  <div className="text-sm text-gw-ink-3">Total</div>
                 </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
+                <div className="text-center p-3 bg-gw-primary-light/20 rounded-lg border border-gw-primary/20">
+                  <div className="text-2xl font-bold text-gw-primary-dark">
                     {stats.completed}
                   </div>
-                  <div className="text-sm text-gray-600">Completed</div>
+                  <div className="text-sm text-gw-ink-3">Completed</div>
                 </div>
-                <div className="text-center p-3 bg-red-50 rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">
+                <div className="text-center p-3 bg-gw-muted/45 rounded-lg border border-gw-muted">
+                  <div className="text-2xl font-bold text-[#8f3d3d]">
                     {stats.cancelled}
                   </div>
-                  <div className="text-sm text-gray-600">Cancelled</div>
+                  <div className="text-sm text-gw-ink-3">Cancelled</div>
                 </div>
-                <div className="text-center p-3 bg-orange-50 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">
+                <div className="text-center p-3 bg-gw-surface rounded-lg border border-gw-muted/80">
+                  <div className="text-2xl font-bold text-gw-ink-2">
                     {stats.noShow}
                   </div>
-                  <div className="text-sm text-gray-600">No Show</div>
+                  <div className="text-sm text-gw-ink-3">No Show</div>
                 </div>
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <Title level={4} className="!mb-4">
+            <div className="bg-white rounded-lg shadow border border-gw-muted/40 p-6">
+              <Title
+                level={4}
+                className="!mb-4 !text-gw-primary-dark !font-semibold"
+              >
                 Quick Actions
               </Title>
               <div className="space-y-3">
@@ -701,12 +750,12 @@ const ClientDetailPage = () => {
                     ...(clientData?.client_organization_category?.[0]
                       ?.booked_status === "BOOKED"
                       ? {
-                        backgroundColor: "#16a34a", // green fill
-                        borderColor: "#16a34a",
-                        color: "white",
+                        backgroundColor: PALETTE.primaryDark,
+                        borderColor: PALETTE.primaryDark,
+                        color: PALETTE.white,
                       }
                       : {
-                        backgroundColor: "white",
+                        backgroundColor: PALETTE.white,
                         borderColor: PALETTE.primary,
                         color: PALETTE.primaryDark,
                       }),
@@ -959,7 +1008,7 @@ const ClientDetailPage = () => {
           </Form>
         </Modal>
       </div>
-    </div>
+    </Box>
   );
 };
 
