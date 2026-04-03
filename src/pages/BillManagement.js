@@ -563,7 +563,7 @@ const BillManagement = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
         Bill Management
       </h1>
 

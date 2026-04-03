@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --gw-primary: #81a6c6;
+  --gw-primary-light: #aacddc;
+  --gw-surface: #f3e3d0;
+  --gw-muted: #d2c4b4;
+  --gw-primary-dark: #5a788e;
+  --gw-ink: #2a2622;
+  --gw-ink2: #454039;
+  --gw-ink3: #6b6258;
+  --gw-ink4: #8a7f72;
+  --gw-white: #ffffff;
+  --gw-line: rgba(42, 38, 34, 0.12);
+  --gw-accent-light: rgba(170, 205, 220, 0.45);
+  --gw-primary-hover: #6b94b0;
+}
+
+body {
+  background-color: var(--gw-surface);
+  color: var(--gw-ink);
+}

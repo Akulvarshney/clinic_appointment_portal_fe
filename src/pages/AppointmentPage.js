@@ -6,6 +6,7 @@ import debounce from "lodash/debounce";
 import { isFeatureValid } from "../assets/constants";
 import { Divider, Descriptions, } from "antd";
 import { apiGet, apiPost, apiPatch } from "../utils/axiosCalls";
+import { PALETTE } from "../theme/palette";
 
 const token = localStorage.getItem("token");
 const basic_config = {
@@ -54,7 +55,7 @@ function isOverlapping(newAppt, appointmentsList) {
 function getStatusColor(status) {
   switch (status) {
     case "BOOKED":
-      return "#e2eafc"; // light blue
+      return "rgba(170, 205, 220, 0.55)";
     case "CONFIRMED":
       return "#c5f0dd"; // light mint green
     case "VISITED":
@@ -175,7 +176,7 @@ export default function AppointmentPage() {
         const formatted = employees.map((emp) => ({
           id: emp.id,
           name: emp.first_name,
-          color: "#e3f2fd",
+          color: PALETTE.accentLight,
           dot: emp.color || "#789",
         }));
         setEmployees(formatted);
@@ -200,7 +201,7 @@ export default function AppointmentPage() {
         const formatted = doctor.map((doc) => ({
           id: doc.id,
           name: doc.first_name,
-          color: "#e3f2fd",
+          color: PALETTE.accentLight,
           dot: doc.color || "#789",
         }));
         console.log("formatted , ", formatted);
@@ -224,7 +225,7 @@ export default function AppointmentPage() {
         const formatted = services.map((service) => ({
           id: service.id,
           name: service.name,
-          color: "#e3f2fd",
+          color: PALETTE.accentLight,
           dot: service.color || "#789",
         }));
         //console.log("formatted services>> ", formatted )
@@ -249,7 +250,7 @@ export default function AppointmentPage() {
         const formatted = appts.map((emp) => ({
           id: emp.id,
           name: emp.name,
-          color: "#e3f2fd",
+          color: PALETTE.accentLight,
           dot: emp.color || "#789",
           resource_order: emp.resource_order,
         }));
@@ -415,7 +416,7 @@ export default function AppointmentPage() {
           employeeId: appt.employees?.id || "",
           doctorId: appt.doctors?.id || "",
           serviceId: appt.services?.id || "",
-          color: getStatusColor(appt.status) || "#e2eafc",
+          color: getStatusColor(appt.status) || PALETTE.accentLight,
         }));
 
         setAppointments(formattedAppts);
@@ -805,11 +806,11 @@ export default function AppointmentPage() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "18px 20px",
-          borderBottom: "1px solid #e0e7ef",
-          background: "#e3f2fd",
+          borderBottom: `1px solid ${PALETTE.muted}`,
+          background: PALETTE.accentLight,
           fontWeight: 700,
           fontSize: 14,
-          color: "#222",
+          color: PALETTE.ink,
           userSelect: "none",
         }}
       >
@@ -869,7 +870,7 @@ export default function AppointmentPage() {
               padding: "0 10px",
               borderRadius: 6,
               border: "none",
-              background: "#e0e7ef",
+              background: PALETTE.muted,
               cursor: "pointer",
             }}
             aria-label="Today"
@@ -878,7 +879,7 @@ export default function AppointmentPage() {
           </button>
         </div>
 
-        <div style={{ fontSize: 13, fontWeight: 500, color: "#555" }}>
+        <div style={{ fontSize: 13, fontWeight: 500, color: PALETTE.ink3 }}>
           Drag to move • Drag edges to resize • Double-click to add • Click
           appointment
           {appointmentsLoading && " • Loading..."}
@@ -896,9 +897,9 @@ export default function AppointmentPage() {
       <div
         ref={timeRulerRef}
         style={{
-          borderRight: "1px solid #a6c2e2ff",
+          borderRight: `1px solid ${PALETTE.primaryLight}`,
           // borderRight: "1px solid #e0e7ef",
-          background: "#f8fafc",
+          background: PALETTE.surface,
           position: "relative",
           overflowY: "scroll",
           scrollbarWidth: "none",
@@ -906,17 +907,17 @@ export default function AppointmentPage() {
           userSelect: "none",
         }}
       >
-        <div style={{ height: HEADER_H, borderBottom: "1px solid #e0e7ef" }} />
+        <div style={{ height: HEADER_H, borderBottom: `1px solid ${PALETTE.muted}` }} />
         {timeSlots.map(({ h, m }, i) => (
           <div
             key={i}
             style={{
               height: SLOT_HEIGHT,
-              borderBottom: "1px dashed #e0e7ef",
+              borderBottom: `1px dashed ${PALETTE.muted}`,
               paddingRight: 8,
               textAlign: "right",
               fontSize: 15,
-              color: "rgba(126, 159, 193, 1)",
+              color: PALETTE.primaryDark,
               display: "flex",
               alignItems: "flex-start",
               userSelect: "none",
@@ -970,15 +971,15 @@ export default function AppointmentPage() {
             top: topPx,
             height: heightPx,
             borderRadius: 7,
-            border: "1px solid #bcd",
+            border: `1px solid ${PALETTE.primaryLight}`,
             background: getStatusColor(a.status),
-            boxShadow: "0 2px 10px #b9eafb77",
+            boxShadow: "0 2px 10px rgba(129, 166, 198, 0.35)",
             cursor: "grab",
             userSelect: "none",
             zIndex: 11,
             outline: "none",
             padding: "8px 10px 6px",
-            color: "#125",
+            color: PALETTE.primaryDark,
             fontFamily: "Arial, sans-serif",
           }}
         >
@@ -1020,7 +1021,7 @@ export default function AppointmentPage() {
           >
             {a.client} ( {a.service} )
           </div>
-          <div style={{ fontSize: 12, color: "#345" }}>
+          <div style={{ fontSize: 12, color: PALETTE.ink2 }}>
             {timeLabel(a.start.getHours(), a.start.getMinutes())} —{" "}
             {timeLabel(a.end.getHours(), a.end.getMinutes())}
           </div>
@@ -1044,7 +1045,7 @@ export default function AppointmentPage() {
           //gridTemplateColumns: `repeat(${Resources.length}, minmax(0,1fr))`,
           gridTemplateColumns: `repeat(${Resources.length}, minmax(165px, 1fr))`,
           minHeight: slotCount * SLOT_HEIGHT,
-          background: "#f9fafb",
+          background: PALETTE.surface,
           height: "100%",
           userSelect: "none",
         }}
@@ -1057,7 +1058,7 @@ export default function AppointmentPage() {
               style={{
                 position: "relative",
                 //borderRight: "1px solid #e0e7ef",
-                borderRight: "1px solid #e0e7ef",
+                borderRight: `1px solid ${PALETTE.muted}`,
                 background: "#fff",
               }}
               onDragOver={onDragOverCol}
@@ -1079,7 +1080,7 @@ export default function AppointmentPage() {
                   key={i}
                   style={{
                     height: SLOT_HEIGHT,
-                    borderBottom: "1px solid #eef3f7ff",
+                    borderBottom: `1px solid ${PALETTE.muted}`,
                   }}
                 />
               ))}
@@ -1120,7 +1121,7 @@ export default function AppointmentPage() {
           top: 0,
           zIndex: 12,
           background: "#fff",
-          borderBottom: "1px solid #e0e7ef",
+          borderBottom: `1px solid ${PALETTE.muted}`,
           gridTemplateColumns: `repeat(${Resources.length}, minmax(165px, 1fr))`,
           height: HEADER_H,
           userSelect: "none",
@@ -1143,9 +1144,9 @@ export default function AppointmentPage() {
                 flexDirection: "column",
                 justifyContent: "center",
                 fontWeight: 450,
-                color: "#345",
+                color: PALETTE.ink2,
                 borderRight:
-                  i === Resources.length - 1 ? "none" : "1px solid #e0e7ef", // ✅ fixed
+                  i === Resources.length - 1 ? "none" : `1px solid ${PALETTE.muted}`,
                 height: "100%",
                 userSelect: "none",
               }}
@@ -1165,7 +1166,7 @@ export default function AppointmentPage() {
                 {r.name}
               </span>
               <span
-                style={{ fontSize: 14, color: "#555", paddingBottom: "3px" }}
+                style={{ fontSize: 14, color: PALETTE.ink3, paddingBottom: "3px" }}
               >
                 ({appointmentCount})
               </span>
@@ -1362,7 +1363,7 @@ export default function AppointmentPage() {
           <Form.Item name="notes" label="Notes">
             <Input.TextArea rows={3} />
           </Form.Item>
-          <div style={{ fontSize: 12, color: "#555" }}>
+          <div style={{ fontSize: 12, color: PALETTE.ink3 }}>
             Slot:{" "}
             {newApptInfo
               ? `${timeLabel(
@@ -1450,7 +1451,7 @@ export default function AppointmentPage() {
       >
         {detailAppt && !isEditing && (
           <div>
-            <h2 style={{ marginBottom: 16, color: "#1890ff" }}>
+            <h2 style={{ marginBottom: 16, color: PALETTE.primary }}>
               {detailAppt.title}
             </h2>
 
@@ -1722,7 +1723,7 @@ export default function AppointmentPage() {
       <div
         style={{
           minHeight: "100vh",
-          background: "#f8fafc",
+          background: PALETTE.surface,
           padding: 18,
           fontFamily: "Arial, sans-serif",
           userSelect: "none",
@@ -1739,10 +1740,10 @@ export default function AppointmentPage() {
             flex: "1",
             //width: "100%",
             borderRadius: 18,
-            border: "1px solid #e0e7ef",
+            border: `1px solid ${PALETTE.muted}`,
 
             background: "#fff",
-            boxShadow: "0 2px 16px #e3f2fd88",
+            boxShadow: "0 2px 16px rgba(129, 166, 198, 0.35)",
             overflow: "hidden",
             display: "flex",
             flexDirection: "column",

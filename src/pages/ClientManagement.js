@@ -16,6 +16,7 @@ import {
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import Sidebar from "../components/SideBar";
 import { BACKEND_URL, isFeatureValid, states } from "../assets/constants";
+import { PALETTE } from "../theme/palette";
 import { Link, useNavigate } from "react-router-dom";
 import { apiGet, apiPost, apiPut, apiPatch } from "../utils/axiosCalls";
 const { Option } = Select;
@@ -40,7 +41,7 @@ const ClientManagement = () => {
   const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 20,
+    pageSize: 10,
     total: 0,
   });
   const [sort, setSort] = useState("portalid");
@@ -355,13 +356,13 @@ const ClientManagement = () => {
     },
     ...(isMobileView
       ? [
-          {
-            title: "Mobile",
-            dataIndex: "phone",
-            key: "phone",
-            width: "18%",
-          },
-        ]
+        {
+          title: "Mobile",
+          dataIndex: "phone",
+          key: "phone",
+          width: "18%",
+        },
+      ]
       : []),
 
     {
@@ -438,10 +439,10 @@ const ClientManagement = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", background: "#f4f9ff" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", background: PALETTE.surface }}>
       <div className="flex-1 p-6 sm:p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
             Client Management
           </h1>
           <div className="flex gap-3 items-center">
@@ -522,7 +523,7 @@ const ClientManagement = () => {
             onChange={handleTableChange}
             bordered
             className="rounded-xl shadow-md border border-gray-200 overflow-hidden 
-             [&_.ant-table-thead>tr>th]:bg-blue-600 
+             [&_.ant-table-thead>tr>th]:bg-gw-primary-dark 
              [&_.ant-table-thead>tr>th]:text-white 
              [&_.ant-table-thead>tr>th]:font-semibold 
              [&_.ant-table-thead>tr>th]:text-center 

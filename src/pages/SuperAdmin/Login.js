@@ -69,7 +69,7 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="login-container bg-gradient-to-br from-gw-surface to-gw-primary-light/50">
       <div className="login-wrapper">
         <Card className="login-card">
           <div className="login-content">

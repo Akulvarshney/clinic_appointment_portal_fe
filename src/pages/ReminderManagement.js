@@ -17,6 +17,7 @@ import dayjs from "dayjs";
 import axios from "axios";
 
 import { BACKEND_URL } from "../assets/constants";
+import { PALETTE } from "../theme/palette";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -210,12 +211,12 @@ const ReminderPage = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", background: "#f4f9ff" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", background: PALETTE.surface }}>
       {/* Sidebar should be here if you have one */}
       <div className="flex-1 p-6 sm:p-8 overflow-x-hidden w-full">
         {/* Top Bar */}
         <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
-          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
             Reminders
           </h1>
           <div className="flex flex-wrap gap-2 sm:gap-3 items-center">

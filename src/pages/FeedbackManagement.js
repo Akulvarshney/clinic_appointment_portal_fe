@@ -330,7 +330,7 @@ const FeedbackManagement = () => {
                     render: (rating) => (
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
                         rating === 'Excellent' ? 'bg-green-100 text-green-800' :
-                        rating === 'Good' ? 'bg-blue-100 text-blue-800' :
+                        rating === 'Good' ? 'bg-gw-primary-light/40 text-gw-primary-dark' :
                         rating === 'Fair' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
                       }`}>
@@ -383,7 +383,7 @@ const FeedbackManagement = () => {
   return (
     <div className="pageCss">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
           Feedbacks
         </h1>
       </div>

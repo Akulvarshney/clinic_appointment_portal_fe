@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { BACKEND_URL, isFeatureValid, states } from "../assets/constants";
+import { PALETTE } from "../theme/palette";
 import {
   Card,
   Avatar,
@@ -251,7 +252,7 @@ const ClientDetailPage = () => {
       case "COMPLETED":
         return <CheckCircleOutlined className="text-green-500" />;
       case "CONFIRMED":
-        return <ClockCircleOutlined className="text-blue-500" />;
+        return <ClockCircleOutlined className="text-gw-primary" />;
       case "PENDING":
         return <ExclamationCircleOutlined className="text-yellow-500" />;
       case "CANCELLED":
@@ -363,7 +364,7 @@ const ClientDetailPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gw-primary mx-auto mb-4"></div>
           <Text className="text-gray-500">Loading client details...</Text>
         </div>
       </div>
@@ -380,7 +381,7 @@ const ClientDetailPage = () => {
           <Button
             type="link"
             onClick={() => window.history.back()}
-            className="text-blue-500 hover:text-blue-700 mb-4"
+            className="text-gw-primary hover:text-gw-primary-dark mb-4"
           >
             &larr; Back to Clients
           </Button>
@@ -393,7 +394,7 @@ const ClientDetailPage = () => {
               <Avatar
                 size={120}
                 icon={<UserOutlined />}
-                className="bg-gradient-to-br from-blue-500 to-purple-600"
+                className="bg-gradient-to-br from-gw-primary to-gw-primary-dark"
               />
             </div>
 
@@ -416,7 +417,7 @@ const ClientDetailPage = () => {
                   {clientData?.organizations?.name}
                 </Tag>
                 <Tag color="green">{clientData?.gender}</Tag>
-                <Tag color="purple">
+                <Tag color={PALETTE.primary}>
                   Age: {calculateAge(clientData?.date_of_birth)}
                 </Tag>
                 {clientData?.client_organization_category?.[0]
@@ -656,8 +657,8 @@ const ClientDetailPage = () => {
                 )}
               </Title>
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">
+                <div className="text-center p-3 bg-gw-primary-light/30 rounded-lg">
+                  <div className="text-2xl font-bold text-gw-primary-dark">
                     {stats.total}
                   </div>
                   <div className="text-sm text-gray-600">Total</div>
@@ -705,9 +706,9 @@ const ClientDetailPage = () => {
                           color: "white",
                         }
                       : {
-                          backgroundColor: "white", // white fill
-                          borderColor: "#2563eb", // blue border
-                          color: "#2563eb", // blue text
+                          backgroundColor: "white",
+                          borderColor: PALETTE.primary,
+                          color: PALETTE.primaryDark,
                         }),
                   }}
                   onClick={async () => {

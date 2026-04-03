@@ -66,7 +66,7 @@ const LoggedInLayout = () => {
         />
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto" }}>
+      <div className="min-h-0 flex-1 overflow-y-auto bg-gw-surface">
         <Outlet />
       </div>
     </div>

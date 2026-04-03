@@ -22,6 +22,7 @@ import {
   PieChartOutlined,
   DollarOutlined,
 } from "@ant-design/icons";
+import { CHART_COLORS, PALETTE } from "../theme/palette";
 
 const DashboardPage = () => {
   const orgId = localStorage.getItem("selectedOrgId");
@@ -139,14 +140,14 @@ const DashboardPage = () => {
   }, [selectedMonth, selectedYear]);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-blue-50 font-sans text-gray-800">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-gw-primary-light/40 via-gw-surface to-gw-muted/30 font-sans text-gw-ink">
       <main className="flex-1 px-6 md:px-12 py-10 animate-fadeIn">
         {/* HEADER */}
         <header className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4">
-          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 drop-shadow-sm">
+          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gw-primary-dark to-gw-primary drop-shadow-sm">
             Dashboard Overview
           </h2>
-          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 shadow-lg border-4 border-white flex items-center justify-center text-white font-bold text-xl">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-gw-primary to-gw-primary-light shadow-lg border-4 border-white flex items-center justify-center text-white font-bold text-xl">
             ✨
           </div>
         </header>
@@ -157,9 +158,9 @@ const DashboardPage = () => {
             <div
               key={i}
               onClick={() => navigate(kpiRoutes[title] || "/")}
-              className="cursor-pointer relative bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl border-l-4 border-blue-500 hover:border-purple-600 transition-all duration-300 transform hover:-translate-y-1"
+              className="cursor-pointer relative bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl border-l-4 border-gw-primary hover:border-gw-primary-dark transition-all duration-300 transform hover:-translate-y-1"
             >
-              <div className="absolute top-4 right-4 text-blue-500 text-2xl">
+              <div className="absolute top-4 right-4 text-gw-primary text-2xl">
                 {icons[i % icons.length]}
               </div>
               <h4 className="text-gray-500 font-semibold text-lg">{title}</h4>
@@ -181,8 +182,8 @@ const DashboardPage = () => {
               <BarChart data={barData}>
                 <XAxis dataKey="name" stroke="#666" />
                 <YAxis stroke="#666" />
-                <Tooltip cursor={{ fill: "#f1f5f9" }} />
-                <Bar dataKey="value" fill="#007bff" radius={[10, 10, 0, 0]} />
+                <Tooltip cursor={{ fill: PALETTE.accentLight }} />
+                <Bar dataKey="value" fill={PALETTE.primary} radius={[10, 10, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -240,7 +241,7 @@ const DashboardPage = () => {
                       key={`cell-${index}`}
                       fill={
                         entry.color ||
-                        ["#007bff", "#00C49F", "#FFBB28", "#FF8042"][index % 4]
+                        CHART_COLORS[index % CHART_COLORS.length]
                       }
                     />
                   ))}

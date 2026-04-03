@@ -328,7 +328,7 @@ const Profile = () => {
                 type="primary"
                 htmlType="submit"
                 loading={resetPasswordLoading}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-gw-primary-dark hover:opacity-90"
               >
                 Send OTP
               </Button>
@@ -381,7 +381,7 @@ const Profile = () => {
                 type="primary"
                 htmlType="submit"
                 loading={resetPasswordLoading}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-gw-primary-dark hover:opacity-90"
               >
                 Verify OTP
               </Button>
@@ -578,7 +578,7 @@ const Profile = () => {
               <Avatar
                 size={80}
                 icon={<UserOutlined />}
-                className="bg-blue-500"
+                className="bg-gw-primary"
               />
               <div>
                 <Title level={3} className="mb-1">
@@ -601,7 +601,7 @@ const Profile = () => {
                   type="primary"
                   icon={<EditOutlined />}
                   onClick={handleEdit}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-gw-primary-dark hover:opacity-90"
                 >
                   Edit Profile
                 </Button> */}

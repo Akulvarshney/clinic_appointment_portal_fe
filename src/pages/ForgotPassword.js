@@ -198,7 +198,7 @@ const ForgotPassword = () => {
                 block
                 // size="large"
                 loading={loading}
-                className="rounded-lg text-base font-medium bg-blue-600 hover:bg-blue-700"
+                className="rounded-lg text-base font-medium bg-gw-primary-dark hover:opacity-90"
               >
                 {loading ? "Sending OTP..." : "Send OTP"}
               </Button>
@@ -251,7 +251,7 @@ const ForgotPassword = () => {
                 htmlType="submit"
                 size="large"
                 loading={loading}
-                className="flex-1 rounded-lg h-12 text-base font-medium bg-blue-600 hover:bg-blue-700"
+                className="flex-1 rounded-lg h-12 text-base font-medium bg-gw-primary-dark hover:opacity-90"
               >
                 {loading ? "Verifying..." : "Verify OTP"}
               </Button>
@@ -331,7 +331,7 @@ const ForgotPassword = () => {
                 htmlType="submit"
                 size="large"
                 loading={loading}
-                className="flex-1 rounded-lg h-12 text-base font-medium bg-blue-600 hover:bg-blue-700"
+                className="flex-1 rounded-lg h-12 text-base font-medium bg-gw-primary-dark hover:opacity-90"
               >
                 {loading ? "Saving..." : "Save New Password"}
               </Button>
@@ -345,7 +345,7 @@ const ForgotPassword = () => {
             Remember your password?{" "}
             <a
               href="/login"
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-gw-primary-dark hover:opacity-80 font-medium"
             >
               Sign in
             </a>

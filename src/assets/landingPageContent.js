@@ -18,10 +18,11 @@ import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 
 export const BRAND = {
-  deep: "#1a4d6d",
-  main: "#2980b9",
-  light: "#5dade2",
-  surface: "#f4f7fb",
+  deep: "#5a788e",
+  main: "#81A6C6",
+  light: "#AACDDC",
+  muted: "#D2C4B4",
+  surface: "#F3E3D0",
 };
 
 /** Unsplash URLs — use `referrerPolicy="no-referrer"` on <img> where needed */
@@ -63,7 +64,7 @@ export const TESTIMONIALS = [
     name: "Akansha Srivastava",
     role: "Owner, Elaria Esthetique",
     avatar:
-      "https://ui-avatars.com/api/?name=Akansha+Srivastava&size=200&background=2980b9&color=fff&bold=true",
+      "https://ui-avatars.com/api/?name=Akansha+Srivastava&size=200&background=81A6C6&color=fff&bold=true",
   },
 ];
 
@@ -91,10 +92,10 @@ export const FAQ_ITEMS = [
 ];
 
 export const FAQ_ACCENT_STOPS = [
-  ["#6366f1", "#a855f7"],
-  ["#0ea5e9", "#6366f1"],
-  ["#14b8a6", "#0ea5e9"],
-  ["#f59e0b", "#ec4899"],
+  ["#81A6C6", "#AACDDC"],
+  ["#AACDDC", "#D2C4B4"],
+  ["#5a788e", "#81A6C6"],
+  ["#81A6C6", "#D2C4B4"],
 ];
 
 export const PARTNER_STEPS = [
@@ -110,14 +111,14 @@ export const PARTNER_STEPS = [
     Icon: VerifiedUserIcon,
     title: "Verification & approval",
     desc: "Our super-admin team validates your details and activates your organization with care.",
-    accent: "#1abc9c",
+    accent: BRAND.light,
   },
   {
     step: 3,
     Icon: MailOutlineIcon,
     title: "Credentials in your inbox",
     desc: "Admins receive secure sign-in details instantly—your clinic can start configuring the same day.",
-    accent: "#8e44ad",
+    accent: BRAND.muted,
   },
 ];
 
@@ -133,31 +134,31 @@ export const FEATURES = [
     Icon: ManageAccountsOutlinedIcon,
     title: "Employees & access",
     desc: "Onboard people in minutes. Roles unlock the right tabs instantly so reception never sees finance—and nobody fights the wrong dashboard.",
-    accent: "#2980b9",
+    accent: BRAND.light,
   },
   {
     Icon: DesignServicesOutlinedIcon,
     title: "Services",
     desc: "Define what you sell once. Services flow through booking, reminders, and billing so your front desk and your ledger always agree.",
-    accent: "#16a085",
+    accent: BRAND.muted,
   },
   {
     Icon: EventAvailableIcon,
     title: "Appointments",
     desc: "A calendar that behaves like your clinic: slots, resources, and doctors in sync—see the day, move it, own it.",
-    accent: "#1abc9c",
+    accent: BRAND.deep,
   },
   {
     Icon: NotificationsActiveOutlinedIcon,
     title: "Reminders",
     desc: "Gentle, reliable nudges for patients and staff—timed so no-shows shrink and your team stops playing phone tag.",
-    accent: "#8e44ad",
+    accent: BRAND.main,
   },
   {
     Icon: ReceiptLongOutlinedIcon,
     title: "Invoices & billing",
     desc: "Issue invoices where the visit already lives. Context stays attached so collections feel intentional, not archaeological.",
-    accent: "#d35400",
+    accent: BRAND.light,
   },
 ];
 
@@ -176,7 +177,7 @@ export const PREMIUM_BENTO = [
     Icon: GroupsOutlinedIcon,
     title: "Designed for how people work",
     body: "Each role opens a focused workspace. Permissions follow responsibility—so power users move fast and everyone else stays safe.",
-    accent: "#1abc9c",
+    accent: BRAND.light,
     large: false,
   },
   {
@@ -184,7 +185,7 @@ export const PREMIUM_BENTO = [
     Icon: BoltOutlinedIcon,
     title: "Velocity without chaos",
     body: "Fewer tools to juggle means faster check-ins, tighter days, and a front desk that breathes again.",
-    accent: "#8e44ad",
+    accent: BRAND.muted,
     large: false,
   },
   {
@@ -192,7 +193,7 @@ export const PREMIUM_BENTO = [
     Icon: VerifiedUserOutlinedIcon,
     title: "Governance you can stand behind",
     body: "Organization-scoped access, super-admin separation, and audit-friendly flows—built for teams who take compliance seriously.",
-    accent: "#d35400",
+    accent: BRAND.deep,
     large: false,
   },
 ];

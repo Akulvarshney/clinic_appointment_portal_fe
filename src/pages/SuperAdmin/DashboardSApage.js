@@ -10,6 +10,7 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
+import { CHART_COLORS, PALETTE } from "../../theme/palette";
 
 const DashboardSAPage = () => {
   const barData = [
@@ -26,16 +27,14 @@ const DashboardSAPage = () => {
     { name: "Group C", value: 300 },
   ];
 
-  const COLORS = ["#007bff", "#00C49F", "#FFBB28"];
-
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-blue-100 to-blue-50 font-sans text-gray-800">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-gw-primary-light/40 via-gw-surface to-gw-muted/30 font-sans text-gw-ink">
       <main className="flex-1 px-6 md:px-12 py-10 animate-fadeIn">
         <header className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4">
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-wide">
+          <h2 className="text-4xl font-extrabold text-gw-ink tracking-wide">
             Main Dashboard
           </h2>
-          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 shadow-xl border-4 border-white animate-bounce"></div>
+          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-gw-primary to-gw-primary-light shadow-xl border-4 border-white animate-bounce"></div>
         </header>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -51,7 +50,7 @@ const DashboardSAPage = () => {
           ].map(({ title, amount, badge }, i) => (
             <div
               key={i}
-              className="bg-white p-6 rounded-2xl shadow-md hover:shadow-2xl border-l-4 border-blue-500 hover:border-blue-700 transition-all duration-300 transform hover:-translate-y-1"
+              className="bg-white p-6 rounded-2xl shadow-md hover:shadow-2xl border-l-4 border-gw-primary hover:border-gw-primary-dark transition-all duration-300 transform hover:-translate-y-1"
             >
               <h4 className="text-gray-500 font-semibold text-lg">{title}</h4>
               <p className="text-3xl font-bold text-gray-800 mt-2">
@@ -70,8 +69,8 @@ const DashboardSAPage = () => {
               <BarChart data={barData}>
                 <XAxis dataKey="name" stroke="#888" />
                 <YAxis stroke="#888" />
-                <Tooltip cursor={{ fill: "#f1f5f9" }} />
-                <Bar dataKey="value" fill="#007bff" radius={[10, 10, 0, 0]} />
+                <Tooltip cursor={{ fill: PALETTE.accentLight }} />
+                <Bar dataKey="value" fill={PALETTE.primary} radius={[10, 10, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -89,13 +88,13 @@ const DashboardSAPage = () => {
                   cx="50%"
                   cy="50%"
                   outerRadius={85}
-                  fill="#8884d8"
+                  fill={PALETTE.primary}
                   label
                 >
                   {pieData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
+                      fill={CHART_COLORS[index % CHART_COLORS.length]}
                     />
                   ))}
                 </Pie>

@@ -14,6 +14,7 @@ import {
 } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
+import { PALETTE } from "../theme/palette";
 
 const { Option } = Select;
 const { Search } = Input;
@@ -253,10 +254,10 @@ const DoctorManagement = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", background: "#f4f9ff" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", background: PALETTE.surface }}>
       <div className="flex-1 p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
             Doctor Management
           </h1>
 

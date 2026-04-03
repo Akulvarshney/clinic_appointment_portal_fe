@@ -15,7 +15,7 @@ const TopBarWithDrawer = ({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex justify-between items-center p-4 bg-blue-500 text-white">
+    <div className="flex justify-between items-center p-4 bg-gw-primary-dark text-white">
       <p className="text-lg font-bold">GloryWellnic</p>
 
       <div>
@@ -35,7 +35,7 @@ const TopBarWithDrawer = ({
             <select
               value={selectedOrgId}
               onChange={(e) => onOrgChange(e.target.value)}
-              className="w-full p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 rounded border border-gw-muted focus:outline-none focus:ring-2 focus:ring-gw-primary"
             >
               {organizations.map((org) => (
                 <option key={org.organizationId} value={org.organizationId}>
@@ -59,11 +59,11 @@ const TopBarWithDrawer = ({
                   }}
                   className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-300 cursor-pointer ${
                     location.pathname === tab.tab_path
-                      ? "bg-blue-100 text-blue-800 shadow-inner"
-                      : "hover:bg-blue-50 hover:shadow-md"
+                      ? "bg-gw-primary-light/40 text-gw-primary-dark shadow-inner"
+                      : "hover:bg-gw-surface hover:shadow-md"
                   }`}
                 >
-                  <span className="p-2 rounded-full bg-blue-200 text-blue-700">
+                  <span className="p-2 rounded-full bg-gw-primary-light/50 text-gw-primary-dark">
                     <FaChartBar />
                   </span>
                   <span className="font-semibold">{tab.tab_name}</span>
@@ -79,10 +79,10 @@ const TopBarWithDrawer = ({
             }}
             className="mt-6 flex items-center gap-3 p-2 rounded-lg hover:bg-red-50 cursor-pointer"
           >
-            <span className="p-2 rounded-full bg-red-200 text-red-600">
+            <span className="p-2 rounded-full bg-red-100 text-red-600">
               <FaUser />
             </span>
-            <span className="font-semibold">Logout</span>
+            <span className="font-semibold text-gw-ink">Logout</span>
           </div>
         </Drawer>
       </div>

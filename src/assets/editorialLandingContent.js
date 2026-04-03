@@ -3,14 +3,14 @@
  */
 
 export const EDITORIAL = {
-  bg: "#fafaf8",
-  ink: "#0a0a0a",
-  ink2: "#454545",
-  ink3: "#6b6b6b",
-  ink4: "#a3a3a3",
-  accent: "#1b4d3e",
-  accentLight: "#e8f2ef",
-  line: "rgba(14,14,14,0.1)",
+  bg: "#F3E3D0",
+  ink: "#2a2622",
+  ink2: "#454039",
+  ink3: "#6b6258",
+  ink4: "#8a7f72",
+  accent: "#81A6C6",
+  accentLight: "rgba(170, 205, 220, 0.45)",
+  line: "rgba(42,38,34,0.12)",
   white: "#ffffff",
   fontSerif: "'Playfair Display', Georgia, 'Times New Roman', serif",
   fontSans: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",

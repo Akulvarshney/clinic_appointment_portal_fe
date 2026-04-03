@@ -16,6 +16,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { Box } from "@mui/material";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
+import { PALETTE } from "../theme/palette";
 
 const ResourceManagement = () => {
   const [form] = Form.useForm();
@@ -297,12 +298,12 @@ const ResourceManagement = () => {
       sx={{
         display: "flex",
         minHeight: "100vh",
-        background: "#f4f9ff",
+        background: PALETTE.surface,
       }}
     >
       <div className="flex-1 p-6 sm:p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
             Resource Management
           </h1>
           {isNewService && (

@@ -15,6 +15,7 @@ import {
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
+import { PALETTE } from "../theme/palette";
 
 const { Option } = Select;
 const { Search } = Input;
@@ -284,11 +285,11 @@ const UserManagement = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", background: "#f4f9ff" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", background: PALETTE.surface }}>
       <div className="flex-1 p-6 sm:p-8">
         <div>
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
               Employee Management
             </h1>
             <div className="flex gap-3 items-center">

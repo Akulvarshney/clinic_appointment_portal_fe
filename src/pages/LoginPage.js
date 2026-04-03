@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
+import { PALETTE } from "../theme/palette";
 import { useAuth } from "../layouts/AuthContext";
 import { Form, Input, Button, Typography, Card, Alert, Space } from "antd";
 
@@ -57,16 +58,16 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-[90vh] justify-center items-center flex flex-col  bg-gray-50">
+    <div className="min-h-[90vh] justify-center items-center flex flex-col bg-gw-surface">
       <Card
         className="w-full max-w-md p-6"
         style={{
           borderRadius: "12px",
-          boxShadow: "0 12px 28px rgba(59, 130, 246, 0.12)",
+          boxShadow: "0 12px 28px rgba(129, 166, 198, 0.25)",
         }}
       >
         <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-          <Title level={3} style={{ color: "#1e3a8a", marginBottom: "0.3rem" }}>
+          <Title level={3} style={{ color: PALETTE.primaryDark, marginBottom: "0.3rem" }}>
             Sign in
           </Title>
           <Text type="secondary">Enter your credentials to continue</Text>
@@ -107,7 +108,7 @@ const LoginPage = () => {
               loading={loading}
               block
               style={{
-                background: "linear-gradient(to right, #3b82f6, #2563eb)",
+                background: `linear-gradient(to right, ${PALETTE.primary}, ${PALETTE.primaryDark})`,
                 border: "none",
                 fontWeight: "600",
               }}

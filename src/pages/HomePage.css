@@ -1,14 +1,14 @@
 /* Homepage layout — plain CSS. Main content: #homepage. Modals: .lp-* (MUI portal — vars live on :root). */
 /* Editorial tokens — mirror src/assets/editorialLandingContent.js EDITORIAL */
 :root {
-  --e-bg: #fafaf8;
-  --e-ink: #0a0a0a;
-  --e-ink2: #454545;
-  --e-ink3: #6b6b6b;
-  --e-ink4: #a3a3a3;
-  --e-accent: #1b4d3e;
-  --e-accent-light: #e8f2ef;
-  --e-line: rgba(14, 14, 14, 0.1);
+  --e-bg: #f3e3d0;
+  --e-ink: #2a2622;
+  --e-ink2: #454039;
+  --e-ink3: #6b6258;
+  --e-ink4: #8a7f72;
+  --e-accent: #81a6c6;
+  --e-accent-light: rgba(170, 205, 220, 0.45);
+  --e-line: rgba(42, 38, 34, 0.12);
   --e-white: #ffffff;
   --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
   --font-serif-2: "Playfair Display", Georgia, "Times New Roman", serif;
@@ -239,7 +239,7 @@
   display: flex;
   align-items: center;
   padding: 1.5rem 1.5rem 3.5rem;
-  background-color: #fafaf8;
+  background-color: var(--e-bg);
   border-bottom: 1px solid var(--e-line);
 }
 
@@ -248,9 +248,9 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 90% 65% at 12% 8%, rgba(27, 77, 62, 0.06), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 88% 100%, rgba(14, 14, 14, 0.03), transparent 50%),
-    linear-gradient(105deg, #fafaf8 0%, var(--e-bg) 100%);
+    radial-gradient(ellipse 90% 65% at 12% 8%, rgba(129, 166, 198, 0.12), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 88% 100%, rgba(210, 196, 180, 0.2), transparent 50%),
+    linear-gradient(105deg, var(--e-bg) 0%, rgba(170, 205, 220, 0.25) 100%);
   pointer-events: none;
 }
 
@@ -637,7 +637,7 @@
   border-radius: 20px;
   overflow: hidden;
   border: 1px solid var(--e-line);
-  box-shadow: 0 20px 48px rgba(14, 14, 14, 0.08);
+  box-shadow: 0 20px 48px rgba(42, 38, 34, 0.08);
   min-width: 0;
 }
 
@@ -793,7 +793,7 @@
 #homepage .missionImgOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 60%, rgba(14, 14, 14, 0.12));
+  background: linear-gradient(to bottom, transparent 60%, rgba(42, 38, 34, 0.12));
   pointer-events: none;
 }
 
@@ -1135,7 +1135,7 @@
 #homepage .partnerFigOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 60%, rgba(14, 14, 14, 0.12));
+  background: linear-gradient(to bottom, transparent 60%, rgba(42, 38, 34, 0.12));
   pointer-events: none;
 }
 
@@ -1320,8 +1320,8 @@
   background: linear-gradient(165deg, var(--e-white) 0%, rgba(255, 255, 255, 0.92) 40%, var(--e-accent-light) 220%);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 2px 4px rgba(14, 14, 14, 0.02),
-    0 28px 56px -28px rgba(14, 14, 14, 0.14);
+    0 2px 4px rgba(42, 38, 34, 0.02),
+    0 28px 56px -28px rgba(42, 38, 34, 0.14);
   isolation: isolate;
 }
 
@@ -1346,7 +1346,7 @@
   transform: translateX(-50%);
   width: min(100%, 820px);
   height: min(70%, 420px);
-  background: radial-gradient(ellipse at center, rgba(26, 107, 90, 0.14) 0%, rgba(26, 107, 90, 0.04) 42%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(129, 166, 198, 0.2) 0%, rgba(129, 166, 198, 0.06) 42%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -1516,7 +1516,7 @@
 /* ——— Modals ——— */
 .lp-modal-backdrop {
   backdrop-filter: blur(14px);
-  background-color: rgba(247, 245, 242, 0.92);
+  background-color: rgba(243, 227, 208, 0.92);
 }
 
 .lp-modal-wrap {
@@ -1540,7 +1540,7 @@
   border-radius: 20px;
   border: 1px solid var(--e-line);
   background-color: var(--e-white);
-  box-shadow: 0 24px 80px rgba(14, 14, 14, 0.08);
+  box-shadow: 0 24px 80px rgba(42, 38, 34, 0.08);
 }
 
 .lp-modal-header {

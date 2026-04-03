@@ -845,7 +845,7 @@ export default function GenerateInvoiceModal({
       render: (_, record, index) => {
         const taxDetails = getLineItemTaxDetails(record, index);
         return (
-          <Text strong className="text-blue-600">
+          <Text strong className="text-gw-primary-dark">
             ₹
             {taxDetails.taxableLineAmount.toLocaleString("en-IN", {
               maximumFractionDigits: 2,
