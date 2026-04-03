@@ -1,6 +1,7 @@
 // NotificationManagement.jsx
 import React, { useEffect, useState } from "react";
-import { Table, Switch, Button, Modal, Form, Input, message, Spin } from "antd";
+import { Switch, Button, Modal, Form, Input, message, Spin } from "antd";
+import DataTable from "../../components/DataTable";
 import axios from "axios";
 import { BACKEND_URL } from "../../assets/constants"
 
@@ -102,7 +103,7 @@ const NotificationManagement = () => {
         </Button>
       </div>
 
-      <Table
+      <DataTable
         rowKey="id"
         columns={columns}
         dataSource={notifications}

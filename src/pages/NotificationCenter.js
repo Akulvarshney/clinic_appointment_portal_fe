@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Table, Switch, Typography, message, Spin } from "antd";
+import { Switch, Typography, message, Spin } from "antd";
+import DataTable from "../components/DataTable";
 import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
 
@@ -96,12 +97,11 @@ const NotificationCenter = () => {
       {loading ? (
         <Spin size="large" />
       ) : (
-        <Table
+        <DataTable
           columns={columns}
           dataSource={notifications}
           rowKey="id"
           pagination={false}
-          bordered
         />
       )}
     </div>

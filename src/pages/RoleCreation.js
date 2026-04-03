@@ -1,7 +1,6 @@
 // RoleManagement.js
 import React, { useState, useEffect } from "react";
 import {
-  Table,
   Button,
   Modal,
   Form,
@@ -11,6 +10,7 @@ import {
   Switch,
   Spin,
 } from "antd";
+import DataTable from "../components/DataTable";
 import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
 
@@ -232,16 +232,11 @@ const RoleManagement = () => {
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow">
-        <Table
+        <DataTable
           columns={roleColumns}
           dataSource={roles}
           loading={tableLoading}
           rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: false,
-            showQuickJumper: true,
-          }}
           scroll={{ x: 800 }}
         />
       </div>
@@ -336,7 +331,7 @@ const RoleManagement = () => {
           </Button>,
         ]}
       >
-        <Table
+        <DataTable
           columns={[
             {
               title: "Tab Name",
@@ -364,7 +359,6 @@ const RoleManagement = () => {
           ]}
           dataSource={tableData}
           pagination={false}
-          bordered
           scroll={{ y: 300 }}
           loading={tableLoading}
         />

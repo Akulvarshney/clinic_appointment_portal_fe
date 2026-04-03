@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Box } from "@mui/material";
 import {
-  Table,
   Button,
   Modal,
   Form,
@@ -12,6 +11,7 @@ import {
   message,
   Alert,
 } from "antd";
+import DataTable from "../components/DataTable";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 import { PALETTE } from "../theme/palette";
@@ -310,7 +310,7 @@ const DoctorManagement = () => {
         )}
 
         <div className="bg-white rounded-lg shadow">
-          <Table
+          <DataTable
             columns={columns}
             dataSource={doctors}
             loading={tableLoading}
@@ -319,9 +319,6 @@ const DoctorManagement = () => {
               current: currentPage,
               pageSize: pageSize,
               total: totalRecords,
-              showSizeChanger: false,
-              showQuickJumper: false,
-
               onChange: (page, size) => {
                 setCurrentPage(page);
                 setPageSize(size);

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Table,
   Button,
   Modal,
   Form,
@@ -12,6 +11,7 @@ import {
   Space,
   InputNumber,
 } from "antd";
+import DataTable from "../components/DataTable";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { Box } from "@mui/material";
@@ -235,9 +235,8 @@ const ResourceManagement = () => {
       key: "status",
       render: (status, record) => (
         <Popconfirm
-          title={`Are you sure you want to ${
-            status === "ENABLED" ? "disable" : "enable"
-          } this resource?`}
+          title={`Are you sure you want to ${status === "ENABLED" ? "disable" : "enable"
+            } this resource?`}
           onConfirm={() =>
             handleStatusChange(
               record.id,
@@ -341,16 +340,11 @@ const ResourceManagement = () => {
         )}
 
         <div className="bg-white rounded-lg shadow">
-          <Table
+          <DataTable
             columns={columns}
             dataSource={resources}
             loading={tableLoading}
             rowKey="id"
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: false,
-              showQuickJumper: true,
-            }}
             scroll={{ x: 600 }}
           />
         </div>
@@ -428,8 +422,8 @@ const ResourceManagement = () => {
                       ? "Updating..."
                       : "Creating..."
                     : editingResource
-                    ? "Update Resource"
-                    : "Create Resource"}
+                      ? "Update Resource"
+                      : "Create Resource"}
                 </Button>
               </div>
             </Form>

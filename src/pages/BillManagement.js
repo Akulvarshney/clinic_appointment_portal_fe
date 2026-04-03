@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Table, Button, Radio, message, Modal, Input } from "antd";
+import { Button, Radio, message, Modal, Input } from "antd";
+import DataTable from "../components/DataTable";
 import { Dropdown, Menu } from "antd";
 import { DownOutlined, EditOutlined } from "@ant-design/icons";
 import debounce from "lodash/debounce";
@@ -115,23 +116,23 @@ const BillManagement = () => {
         // Extract client data from the nested clients object
         billTo: billDetails.clients
           ? {
-              id: billDetails.clients.id,
-              first_name: billDetails.clients.first_name,
-              last_name: billDetails.clients.last_name,
-              email: billDetails.clients.email,
-              phone: billDetails.clients.phone,
-              address: billDetails.clients.address,
-              state: billDetails.clients.state,
-            }
+            id: billDetails.clients.id,
+            first_name: billDetails.clients.first_name,
+            last_name: billDetails.clients.last_name,
+            email: billDetails.clients.email,
+            phone: billDetails.clients.phone,
+            address: billDetails.clients.address,
+            state: billDetails.clients.state,
+          }
           : {
-              id: billDetails.client_id,
-              first_name: "",
-              last_name: "",
-              email: "",
-              phone: "",
-              address: "",
-              state: "",
-            },
+            id: billDetails.client_id,
+            first_name: "",
+            last_name: "",
+            email: "",
+            phone: "",
+            address: "",
+            state: "",
+          },
         // Map bill_line_items (not line_items) to items array
         items:
           billDetails.bill_line_items?.map((item) => ({
@@ -476,12 +477,12 @@ const BillManagement = () => {
     },
     ...(activeTab === "quotations"
       ? [
-          {
-            title: "Invoice Id",
-            dataIndex: "invoiceReference",
-            key: "invoiceReference",
-          },
-        ]
+        {
+          title: "Invoice Id",
+          dataIndex: "invoiceReference",
+          key: "invoiceReference",
+        },
+      ]
       : []),
     { title: "Date Generated", dataIndex: "datePrinted", key: "datePrinted" },
 
@@ -619,17 +620,14 @@ const BillManagement = () => {
       </div>
 
       {activeTab === "receipts" ? (
-        <Table
+        <DataTable
           dataSource={receiptData} // separate receipt data
           columns={ReceiptColumns} // separate receipt columns
           rowKey="receiptId"
-          bordered
           pagination={{
             current: pagination.current,
             pageSize: pagination.limit,
             total: pagination.total,
-            // showSizeChanger: true,
-            //showQuickJumper: true,
           }}
           onChange={(newPagination) => {
             setPagination((prev) => ({
@@ -640,17 +638,14 @@ const BillManagement = () => {
           }}
         />
       ) : (
-        <Table
+        <DataTable
           dataSource={data[activeTab]} // invoices or quotations
           columns={columns}
           rowKey="billId"
-          bordered
           pagination={{
             current: pagination.current,
             pageSize: pagination.limit,
             total: pagination.total,
-            // showSizeChanger: true,
-            //showQuickJumper: true,
           }}
           onChange={(newPagination) => {
             setPagination((prev) => ({

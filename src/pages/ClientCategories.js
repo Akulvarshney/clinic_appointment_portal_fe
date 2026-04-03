@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Input, Select, Tag, message } from "antd";
+import { Button, Modal, Input, Select, Tag, message } from "antd";
+import DataTable from "../components/DataTable";
 import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
 
@@ -141,7 +142,7 @@ const ClientCategories = () => {
         </Button>
       </div>
 
-      <Table
+      <DataTable
         dataSource={categories}
         columns={columns}
         rowKey="id"

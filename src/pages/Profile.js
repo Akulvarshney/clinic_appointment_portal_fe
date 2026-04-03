@@ -507,7 +507,7 @@ const Profile = () => {
 
         {/* Organization & Role Selector - Only show if multiple orgs/roles exist */}
         {userData?.organizations?.length > 1 ||
-        userData?.organizations?.[0]?.roles?.length > 1 ? (
+          userData?.organizations?.[0]?.roles?.length > 1 ? (
           <Card className="mb-6 shadow-sm">
             <div className="mb-4">
               <Title level={4} className="mb-4 flex items-center">
@@ -561,9 +561,8 @@ const Profile = () => {
             </div>
 
             <Alert
-              message={`Currently viewing: ${currentOrg?.name || "N/A"} as ${
-                currentRole?.description || currentRole?.name || "N/A"
-              }`}
+              message={`Currently viewing: ${currentOrg?.name || "N/A"} as ${currentRole?.description || currentRole?.name || "N/A"
+                }`}
               type="info"
               showIcon
               className="mt-4"
@@ -848,7 +847,7 @@ const Profile = () => {
                             key={role.id || roleIndex}
                             color={
                               orgIndex === selectedOrgIndex &&
-                              roleIndex === selectedRoleIndex
+                                roleIndex === selectedRoleIndex
                                 ? "blue"
                                 : "default"
                             }

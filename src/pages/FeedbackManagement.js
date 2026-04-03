@@ -5,12 +5,12 @@ import {
   Select,
   Radio,
   Button,
-  Table,
   Rate,
   message,
   Alert,
   Tabs,
 } from "antd";
+import DataTable from "../components/DataTable";
 import { SearchOutlined } from "@ant-design/icons";
 import { PlusOutlined } from "@ant-design/icons";
 
@@ -127,7 +127,7 @@ const FeedbackManagement = () => {
       case "new-feedback":
         return (
           <div>
-           
+
             <div className="bg-white p-6 rounded-lg shadow mt-4">
               {successMsg && (
                 <Alert
@@ -208,63 +208,63 @@ const FeedbackManagement = () => {
                     name="staffId"
                     rules={[{ required: true, message: "Please select staff!" }]}
                   >
-                  <Select placeholder="Choose staff member">
-                    {staff.map((member) => (
-                      <Option key={member.id} value={member.id}>
-                        {member.name} - {member.role}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
+                    <Select placeholder="Choose staff member">
+                      {staff.map((member) => (
+                        <Option key={member.id} value={member.id}>
+                          {member.name} - {member.role}
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
 
-                <Form.Item
-                  label="1. Service Category"
-                  name="serviceCategory"
-                  rules={[{ required: true, message: "Please select a service category!" }]}
-                >
-                  <Radio.Group>
-                    {serviceCategories.map((category) => (
-                      <Radio key={category} value={category}>
-                        {category}
-                      </Radio>
-                    ))}
-                  </Radio.Group>
-                </Form.Item>
+                  <Form.Item
+                    label="1. Service Category"
+                    name="serviceCategory"
+                    rules={[{ required: true, message: "Please select a service category!" }]}
+                  >
+                    <Radio.Group>
+                      {serviceCategories.map((category) => (
+                        <Radio key={category} value={category}>
+                          {category}
+                        </Radio>
+                      ))}
+                    </Radio.Group>
+                  </Form.Item>
 
-                <Form.Item
-                  label="2. Name of Service"
-                  name="serviceName"
-                  rules={[{ required: true, message: "Please enter the service name!" }]}
-                >
-                  <Input placeholder="Enter the specific service received" />
-                </Form.Item>
+                  <Form.Item
+                    label="2. Name of Service"
+                    name="serviceName"
+                    rules={[{ required: true, message: "Please enter the service name!" }]}
+                  >
+                    <Input placeholder="Enter the specific service received" />
+                  </Form.Item>
 
-                <Form.Item
-                  label="3. How was your experience with us?"
-                  name="experience"
-                  rules={[{ required: true, message: "Please rate your experience!" }]}
-                >
-                  <Radio.Group>
-                    {experienceOptions.map((option) => (
-                      <Radio key={option.value} value={option.value}>
-                        {option.label}
-                      </Radio>
-                    ))}
-                  </Radio.Group>
-                </Form.Item>
+                  <Form.Item
+                    label="3. How was your experience with us?"
+                    name="experience"
+                    rules={[{ required: true, message: "Please rate your experience!" }]}
+                  >
+                    <Radio.Group>
+                      {experienceOptions.map((option) => (
+                        <Radio key={option.value} value={option.value}>
+                          {option.label}
+                        </Radio>
+                      ))}
+                    </Radio.Group>
+                  </Form.Item>
 
-               
 
-                <Form.Item
-                  label="4. Comments"
-                  name="comments"
-                  rules={[{ required: true, message: "Please enter your comments!" }]}
-                >
-                  <TextArea
-                    rows={4}
-                    placeholder="Please share any additional comments or suggestions..."
-                  />
-                </Form.Item>
+
+                  <Form.Item
+                    label="4. Comments"
+                    name="comments"
+                    rules={[{ required: true, message: "Please enter your comments!" }]}
+                  >
+                    <TextArea
+                      rows={4}
+                      placeholder="Please share any additional comments or suggestions..."
+                    />
+                  </Form.Item>
 
                   <div className="flex justify-end gap-2 mt-6">
                     <Button onClick={() => form.resetFields()}>
@@ -296,7 +296,7 @@ const FeedbackManagement = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow">
-              <Table
+              <DataTable
                 columns={[
                   {
                     title: "Client Name",
@@ -328,12 +328,11 @@ const FeedbackManagement = () => {
                     key: "experience",
                     width: "12%",
                     render: (rating) => (
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        rating === 'Excellent' ? 'bg-green-100 text-green-800' :
-                        rating === 'Good' ? 'bg-gw-primary-light/40 text-gw-primary-dark' :
-                        rating === 'Fair' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${rating === 'Excellent' ? 'bg-green-100 text-green-800' :
+                          rating === 'Good' ? 'bg-gw-primary-light/40 text-gw-primary-dark' :
+                            rating === 'Fair' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                        }`}>
                         {rating}
                       </span>
                     ),
@@ -355,11 +354,6 @@ const FeedbackManagement = () => {
                 ]}
                 dataSource={filteredFeedbacks}
                 rowKey="id"
-                pagination={{
-                  pageSize: 10,
-                  showSizeChanger: false,
-                  showQuickJumper: false,
-                }}
               />
             </div>
           </div>

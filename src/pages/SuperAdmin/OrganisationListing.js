@@ -1,4 +1,5 @@
-import { Tabs, Table, Spin } from "antd";
+import { Tabs, Spin } from "antd";
+import DataTable from "../../components/DataTable";
 import { useEffect, useState } from "react";
 import {
   handleActionOnApplication,
@@ -122,11 +123,10 @@ const OrganisationListing = () => {
             <Spin tip="Loading organization data..." />
           </div>
         ) : (
-          <Table
+          <DataTable
             columns={columns}
             dataSource={listing}
             rowKey="id"
-            pagination={{ pageSize: 10 }}
           />
         )}
       </div>

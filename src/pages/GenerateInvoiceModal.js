@@ -9,7 +9,6 @@ import {
   Divider,
   Space,
   InputNumber,
-  Table,
   Typography,
   Tag,
   Tooltip,
@@ -33,6 +32,7 @@ import { BACKEND_URL } from "../assets/constants/index.js";
 import axios from "axios";
 import { useNotification } from "../utils/messageWrapper.js";
 import { getOrgInfo } from "../services/clientOrganizations.js";
+import DataTable from "../components/DataTable";
 
 const { TextArea } = Input;
 const { Text, Title } = Typography;
@@ -270,14 +270,14 @@ export default function GenerateInvoiceModal({
       prev.map((item, i) =>
         i === index
           ? {
-              ...item,
-              serviceId,
-              description: service.description || service.name,
-              rate: Number(service.price) || 0,
-              gst: Number(service.tax) || 0,
-              // Recalculate amount with current quantity
-              amount: (Number(item.qty) || 1) * (Number(service.price) || 0),
-            }
+            ...item,
+            serviceId,
+            description: service.description || service.name,
+            rate: Number(service.price) || 0,
+            gst: Number(service.tax) || 0,
+            // Recalculate amount with current quantity
+            amount: (Number(item.qty) || 1) * (Number(service.price) || 0),
+          }
           : item
       )
     );
@@ -735,9 +735,8 @@ export default function GenerateInvoiceModal({
       const result = response.data;
 
       notification.success({
-        message: `${type} ${result.data?.invoice_number || ""} ${
-          editData ? "updated" : "created"
-        } successfully!`,
+        message: `${type} ${result.data?.invoice_number || ""} ${editData ? "updated" : "created"
+          } successfully!`,
       });
       setRefresh(Math.random());
 
@@ -856,63 +855,63 @@ export default function GenerateInvoiceModal({
     },
     // New tax columns
     ...(billTo?.state &&
-    orgState &&
-    billTo.state.toUpperCase() === orgState.toUpperCase()
+      orgState &&
+      billTo.state.toUpperCase() === orgState.toUpperCase()
       ? [
-          {
-            title: "CGST",
-            width: 90,
-            render: (_, record, index) => {
-              const taxDetails = getLineItemTaxDetails(record, index);
-              return (
-                <div className="text-center">
-                  <Text className="text-xs text-gray-500">
-                    ₹
-                    {taxDetails.cgst.toLocaleString("en-IN", {
-                      maximumFractionDigits: 2,
-                    })}
-                  </Text>
-                </div>
-              );
-            },
+        {
+          title: "CGST",
+          width: 90,
+          render: (_, record, index) => {
+            const taxDetails = getLineItemTaxDetails(record, index);
+            return (
+              <div className="text-center">
+                <Text className="text-xs text-gray-500">
+                  ₹
+                  {taxDetails.cgst.toLocaleString("en-IN", {
+                    maximumFractionDigits: 2,
+                  })}
+                </Text>
+              </div>
+            );
           },
-          {
-            title: "SGST",
-            width: 90,
-            render: (_, record, index) => {
-              const taxDetails = getLineItemTaxDetails(record, index);
-              return (
-                <div className="text-center">
-                  <Text className="text-xs text-gray-500">
-                    ₹
-                    {taxDetails.sgst.toLocaleString("en-IN", {
-                      maximumFractionDigits: 2,
-                    })}
-                  </Text>
-                </div>
-              );
-            },
+        },
+        {
+          title: "SGST",
+          width: 90,
+          render: (_, record, index) => {
+            const taxDetails = getLineItemTaxDetails(record, index);
+            return (
+              <div className="text-center">
+                <Text className="text-xs text-gray-500">
+                  ₹
+                  {taxDetails.sgst.toLocaleString("en-IN", {
+                    maximumFractionDigits: 2,
+                  })}
+                </Text>
+              </div>
+            );
           },
-        ]
+        },
+      ]
       : [
-          {
-            title: "IGST",
-            width: 90,
-            render: (_, record, index) => {
-              const taxDetails = getLineItemTaxDetails(record, index);
-              return (
-                <div className="text-center">
-                  <Text className="text-xs text-gray-500">
-                    ₹
-                    {taxDetails.igst.toLocaleString("en-IN", {
-                      maximumFractionDigits: 2,
-                    })}
-                  </Text>
-                </div>
-              );
-            },
+        {
+          title: "IGST",
+          width: 90,
+          render: (_, record, index) => {
+            const taxDetails = getLineItemTaxDetails(record, index);
+            return (
+              <div className="text-center">
+                <Text className="text-xs text-gray-500">
+                  ₹
+                  {taxDetails.igst.toLocaleString("en-IN", {
+                    maximumFractionDigits: 2,
+                  })}
+                </Text>
+              </div>
+            );
           },
-        ]),
+        },
+      ]),
     {
       title: (
         <Tooltip title="Final amount including discount and tax">
@@ -1095,7 +1094,7 @@ export default function GenerateInvoiceModal({
             bodyStyle={{ padding: "12px" }}
           >
             <div style={{ overflowX: "auto" }}>
-              <Table
+              <DataTable
                 columns={itemColumns}
                 dataSource={invoiceItems}
                 pagination={false}
@@ -1232,8 +1231,8 @@ export default function GenerateInvoiceModal({
                 </div>
 
                 {billTo?.state &&
-                orgState &&
-                billTo.state.toUpperCase() === orgState.toUpperCase() ? (
+                  orgState &&
+                  billTo.state.toUpperCase() === orgState.toUpperCase() ? (
                   <div className="space-y-1">
                     <div className="flex justify-between items-center">
                       <span>CGST:</span>

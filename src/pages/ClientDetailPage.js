@@ -701,15 +701,15 @@ const ClientDetailPage = () => {
                     ...(clientData?.client_organization_category?.[0]
                       ?.booked_status === "BOOKED"
                       ? {
-                          backgroundColor: "#16a34a", // green fill
-                          borderColor: "#16a34a",
-                          color: "white",
-                        }
+                        backgroundColor: "#16a34a", // green fill
+                        borderColor: "#16a34a",
+                        color: "white",
+                      }
                       : {
-                          backgroundColor: "white",
-                          borderColor: PALETTE.primary,
-                          color: PALETTE.primaryDark,
-                        }),
+                        backgroundColor: "white",
+                        borderColor: PALETTE.primary,
+                        color: PALETTE.primaryDark,
+                      }),
                   }}
                   onClick={async () => {
                     try {
@@ -738,9 +738,8 @@ const ClientDetailPage = () => {
                       );
 
                       messageApi.success(
-                        `Client marked as ${newStatus} (${
-                          clientData?.client_organization_category?.[0]
-                            ?.categories?.category_name || "No Category"
+                        `Client marked as ${newStatus} (${clientData?.client_organization_category?.[0]
+                          ?.categories?.category_name || "No Category"
                         })`
                       );
 
@@ -923,7 +922,7 @@ const ClientDetailPage = () => {
             <Form.Item
               name="address"
               label="Address"
-              //rules={[{ required: true, message: "Please enter address" }]}
+            //rules={[{ required: true, message: "Please enter address" }]}
             >
               <Input.TextArea rows={3} placeholder="Enter full address" />
             </Form.Item>
@@ -932,7 +931,7 @@ const ClientDetailPage = () => {
               <Select
                 placeholder="Select state"
                 showSearch
-                // defaultValue={defaultState}
+              // defaultValue={defaultState}
               >
                 {states?.map((s) => {
                   return (

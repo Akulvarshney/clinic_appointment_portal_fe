@@ -57,11 +57,10 @@ const TopBarWithDrawer = ({
                     navigate(`${tab.tab_path}`);
                     setOpen(false);
                   }}
-                  className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-300 cursor-pointer ${
-                    location.pathname === tab.tab_path
+                  className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-300 cursor-pointer ${location.pathname === tab.tab_path
                       ? "bg-gw-primary-light/40 text-gw-primary-dark shadow-inner"
                       : "hover:bg-gw-surface hover:shadow-md"
-                  }`}
+                    }`}
                 >
                   <span className="p-2 rounded-full bg-gw-primary-light/50 text-gw-primary-dark">
                     <FaChartBar />

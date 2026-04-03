@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Table,
   Button,
   Modal,
   Form,
@@ -11,6 +10,7 @@ import {
   message,
   Alert,
 } from "antd";
+import DataTable from "../components/DataTable";
 import { PlusOutlined } from "@ant-design/icons";
 import { Box } from "@mui/material";
 import dayjs from "dayjs";
@@ -260,7 +260,7 @@ const ReminderPage = () => {
 
         {/* Table */}
         <div className="bg-white rounded-lg shadow">
-          <Table
+          <DataTable
             columns={columns}
             dataSource={sortedReminders}
             rowKey="id"
@@ -294,7 +294,7 @@ const ReminderPage = () => {
             form
               .validateFields()
               .then((values) => handleAddReminder(values))
-              .catch(() => {});
+              .catch(() => { });
           }}
         >
           <Form layout="vertical" form={form}>

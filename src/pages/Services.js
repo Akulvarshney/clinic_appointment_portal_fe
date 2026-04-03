@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Table,
   Button,
   Modal,
   Form,
@@ -11,6 +10,7 @@ import {
   Tag,
   Space,
 } from "antd";
+import DataTable from "../components/DataTable";
 import {
   PlusOutlined,
   EditOutlined,
@@ -218,9 +218,8 @@ const Services = () => {
         const isEnabled = status === "ENABLED";
         return (
           <Popconfirm
-            title={`Are you sure you want to ${
-              isEnabled ? "disable" : "enable"
-            } this service?`}
+            title={`Are you sure you want to ${isEnabled ? "disable" : "enable"
+              } this service?`}
             onConfirm={() =>
               handleStatusChange(record.id, isEnabled ? "DISABLED" : "ENABLED")
             }
@@ -330,7 +329,7 @@ const Services = () => {
 
         {/* Table */}
         <div className="bg-white rounded-lg shadow">
-          <Table
+          <DataTable
             columns={columns}
             dataSource={services}
             loading={tableLoading}
@@ -339,8 +338,6 @@ const Services = () => {
               current: pagination.current,
               pageSize: pagination.pageSize,
               total: pagination.total,
-              showSizeChanger: false,
-              showQuickJumper: false,
               onChange: (page, pageSize) => {
                 fetchServices(page, pageSize, searchText);
               },
@@ -433,8 +430,8 @@ const Services = () => {
                       ? "Updating..."
                       : "Creating..."
                     : editingService
-                    ? "Update Service"
-                    : "Create Service"}
+                      ? "Update Service"
+                      : "Create Service"}
                 </Button>
               </div>
             </Form>
