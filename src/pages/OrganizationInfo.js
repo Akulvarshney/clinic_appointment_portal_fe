@@ -40,7 +40,7 @@ const OrganizationInfo = () => {
         setOrgInfoComplete(data.response.id);
         setOrganizationInfo(data.response);
         //console.log("data here", organizationInfo);
-        messageApi.success("Organization Details Fetched Successfully");
+        // messageApi.success("Organization Details Fetched Successfully");
       } catch (error) {
         setOrganizationInfo({
           org_name: "",
@@ -344,7 +344,7 @@ const OrganizationInfo = () => {
                 <Select
                   placeholder="Select state"
                   showSearch
-                  //defaultValue={defaultState}
+                //defaultValue={defaultState}
                 >
                   {states?.map((s) => {
                     return (

@@ -18,11 +18,11 @@ import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 
 export const BRAND = {
-  deep: "#5a788e",
-  main: "#81A6C6",
-  light: "#AACDDC",
-  muted: "#D2C4B4",
-  surface: "#F3E3D0",
+  deep: "#4A70A9",
+  main: "#8FABD4",
+  light: "#C4D4EF",
+  muted: "#DAD6CC",
+  surface: "#EFECE3",
 };
 
 /** Unsplash URLs — use `referrerPolicy="no-referrer"` on <img> where needed */
@@ -64,7 +64,7 @@ export const TESTIMONIALS = [
     name: "Akansha Srivastava",
     role: "Owner, Elaria Esthetique",
     avatar:
-      "https://ui-avatars.com/api/?name=Akansha+Srivastava&size=200&background=81A6C6&color=fff&bold=true",
+      "https://ui-avatars.com/api/?name=Akansha+Srivastava&size=200&background=8FABD4&color=fff&bold=true",
   },
 ];
 
@@ -92,10 +92,10 @@ export const FAQ_ITEMS = [
 ];
 
 export const FAQ_ACCENT_STOPS = [
-  ["#81A6C6", "#AACDDC"],
-  ["#AACDDC", "#D2C4B4"],
-  ["#5a788e", "#81A6C6"],
-  ["#81A6C6", "#D2C4B4"],
+  ["#8FABD4", "#C4D4EF"],
+  ["#C4D4EF", "#DAD6CC"],
+  ["#4A70A9", "#8FABD4"],
+  ["#8FABD4", "#DAD6CC"],
 ];
 
 export const PARTNER_STEPS = [

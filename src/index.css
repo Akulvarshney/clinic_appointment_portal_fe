@@ -3,22 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --gw-primary: #81a6c6;
-  --gw-primary-light: #aacddc;
-  --gw-surface: #f3e3d0;
-  --gw-muted: #d2c4b4;
-  --gw-primary-dark: #5a788e;
-  --gw-ink: #2a2622;
-  --gw-ink2: #454039;
-  --gw-ink3: #6b6258;
-  --gw-ink4: #8a7f72;
+  --gw-primary: #8fabd4;
+  --gw-primary-light: #c4d4ef;
+  --gw-surface: #efece3;
+  --gw-muted: #dad6cc;
+  --gw-primary-dark: #4a70a9;
+  --gw-ink: #000000;
+  --gw-ink2: #333333;
+  --gw-ink3: #666666;
+  --gw-ink4: #999999;
   --gw-white: #ffffff;
-  --gw-line: rgba(42, 38, 34, 0.12);
-  --gw-accent-light: rgba(170, 205, 220, 0.45);
-  --gw-primary-hover: #6b94b0;
+  --gw-line: rgba(0, 0, 0, 0.1);
+  --gw-accent-light: rgba(143, 171, 212, 0.28);
+  --gw-primary-hover: #6b8fc4;
 }
 
 body {
   background-color: var(--gw-surface);
   color: var(--gw-ink);
+}
+
+/* ── Uniform pagination (tables + standalone) — same bar on cream or white parents */
+.ant-table-wrapper .ant-table-pagination {
+  margin: 0 !important;
+  padding: 12px 16px;
+  background-color: var(--gw-white);
+  border-top: 1px solid var(--gw-line);
+}
+
+/* Standalone Pagination (e.g. appointment lists) — match table footer bar */
+.gw-pagination-uniform.ant-pagination {
+  margin: 0;
+  padding: 12px 16px;
+  background-color: var(--gw-white);
+  border: 1px solid var(--gw-line);
+  border-radius: 8px;
 }

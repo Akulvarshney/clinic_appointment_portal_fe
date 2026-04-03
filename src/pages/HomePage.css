@@ -1,12 +1,12 @@
 /* Homepage layout — plain CSS. Main content: #homepage. Modals: .lp-* (MUI portal — vars live on :root). */
 /* Editorial tokens — mirror src/assets/editorialLandingContent.js EDITORIAL */
 :root {
-  --e-bg: #f3e3d0;
+  --e-bg: #efece3;
   --e-ink: #2a2622;
   --e-ink2: #454039;
   --e-ink3: #6b6258;
   --e-ink4: #8a7f72;
-  --e-accent: #81a6c6;
+  --e-accent: #8fabd4;
   --e-accent-light: rgba(170, 205, 220, 0.45);
   --e-line: rgba(42, 38, 34, 0.12);
   --e-white: #ffffff;

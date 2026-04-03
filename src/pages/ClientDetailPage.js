@@ -657,6 +657,7 @@ const ClientDetailPage = () => {
                   {filteredAndPaginatedAppointments.total > pageSize && (
                     <div className="mt-6 flex justify-center">
                       <Pagination
+                        className="gw-pagination-uniform"
                         current={currentPage}
                         pageSize={pageSize}
                         total={filteredAndPaginatedAppointments.total}

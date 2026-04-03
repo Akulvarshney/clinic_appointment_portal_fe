@@ -59,7 +59,7 @@ const Sidebar = ({
 
   return (
     <aside
-      className="relative z-30 flex h-screen shrink-0 flex-col border-r border-black/8 bg-[linear-gradient(180deg,#5c7d95_0%,#4d6b7f_48%,#455e72_100%)] shadow-[4px_0_24px_-8px_rgba(42,38,34,0.18)] transition-[width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)]"
+      className="relative z-30 flex h-screen shrink-0 flex-col border-r border-black/8 bg-[linear-gradient(180deg,#5c82bc_0%,#4a70a9_48%,#3a5d91_100%)] shadow-[4px_0_24px_-8px_rgba(0,0,0,0.12)] transition-[width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)]"
       style={{ width: collapsed ? collapsedWidth : expandedWidth }}
       aria-label="Application navigation"
     >
@@ -98,7 +98,7 @@ const Sidebar = ({
             onClick={() => setCollapsed((c) => !c)}
             aria-expanded={!collapsed}
             aria-controls="sidebar-main-nav"
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-white transition hover:bg-white/18 focus:outline-none focus-visible:ring-2 focus-visible:ring-gw-primary-light focus-visible:ring-offset-2 focus-visible:ring-offset-[#4d6b7f] ${collapsed ? "mt-1" : ""
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-white transition hover:bg-white/18 focus:outline-none focus-visible:ring-2 focus-visible:ring-gw-primary-light focus-visible:ring-offset-2 focus-visible:ring-offset-[#4a70a9] ${collapsed ? "mt-1" : ""
               }`}
           >
             {collapsed ? (
