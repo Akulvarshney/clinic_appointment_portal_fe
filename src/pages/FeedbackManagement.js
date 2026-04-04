@@ -282,16 +282,18 @@ const FeedbackManagement = () => {
       case "view-feedbacks":
         return (
           <div>
-            <div className="mb-4 min-w-0 w-full">
-              <Input
-                placeholder="Search feedback by client name..."
-                prefix={<SearchOutlined />}
-                value={feedbackSearch}
-                onChange={(e) => setFeedbackSearch(e.target.value)}
-                allowClear
-                size="large"
-                className="w-full min-w-0 sm:max-w-md"
-              />
+            <div className="mb-4 min-w-0 w-full sm:flex sm:justify-end">
+              <div className="w-full sm:w-[280px] md:w-[300px]">
+                <Input
+                  placeholder="Search feedback by client name..."
+                  prefix={<SearchOutlined />}
+                  value={feedbackSearch}
+                  onChange={(e) => setFeedbackSearch(e.target.value)}
+                  allowClear
+                  size="large"
+                  className="!w-full"
+                />
+              </div>
             </div>
 
             <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">

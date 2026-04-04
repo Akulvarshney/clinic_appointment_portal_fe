@@ -222,11 +222,11 @@ const ReminderPage = () => {
     >
       <div className="min-w-0 w-full flex-1 overflow-x-hidden px-3 py-4 sm:px-6 sm:py-8">
         {/* Top Bar */}
-        <div className="mb-5 flex min-w-0 flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="mb-5 flex min-w-0 flex-col gap-3 sm:mb-6 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
           <h1 className="m-0 shrink-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
             Reminders
           </h1>
-          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
             <div className="w-full sm:w-40">
               <DatePicker
                 value={selectedDate}

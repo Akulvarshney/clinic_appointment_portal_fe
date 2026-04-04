@@ -296,11 +296,11 @@ const UserManagement = () => {
     >
       <div className="min-w-0 w-full flex-1 px-3 py-4 sm:px-6 sm:py-8">
         <div>
-          <div className="mb-5 flex min-w-0 flex-col gap-4 sm:mb-6 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+          <div className="mb-5 flex min-w-0 flex-col gap-3 sm:mb-6 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
             <h1 className="m-0 shrink-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
               Employee Management
             </h1>
-            <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex min-w-0 w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
               {/* <Input.Search
                 placeholder="Search employees..."
                 allowClear
@@ -314,6 +314,7 @@ const UserManagement = () => {
                 size="large"
               /> */}
 
+              <div className="w-full shrink-0 sm:w-[280px] md:w-[300px]">
               <Search
                 placeholder="Search employees..."
                 allowClear
@@ -323,15 +324,11 @@ const UserManagement = () => {
                     setSearchText("");
                   }
                 }}
-                // style={{ width: 300 }}
                 size="large"
                 enterButton={<SearchOutlined />}
-                // size="large"
-                // onSearch={handleSearch}
-
-                className="w-full min-w-0 sm:flex-1 sm:max-w-md lg:max-w-xl"
                 style={{ width: "100%" }}
               />
+              </div>
               {isAllowedToAddEmployee ? (
                 <Button
                   type="primary"

@@ -131,7 +131,7 @@ const ClientCategories = () => {
 
   return (
     <div className="min-w-0 max-w-full">
-      <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <h1 className="m-0 text-xl font-semibold sm:text-2xl">Client Category</h1>
         <Button
           type="primary"

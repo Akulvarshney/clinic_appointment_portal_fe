@@ -432,27 +432,28 @@ const ClientManagement = () => {
       }}
     >
       <div className="min-w-0 w-full flex-1 px-3 py-4 sm:px-6 sm:py-8">
-        <div className="mb-5 flex min-w-0 flex-col gap-4 sm:mb-6 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+        <div className="mb-5 flex min-w-0 flex-col gap-3 sm:mb-6 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
           <h1 className="m-0 shrink-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
             Client Management
           </h1>
-          <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <Search
-              placeholder="Search by name, mobile..."
-              allowClear
-              enterButton={<SearchOutlined />}
-              size="large"
-              className="w-full min-w-0 sm:flex-1 sm:max-w-md lg:max-w-xl"
-              onSearch={handleSearch}
-              onChange={(e) => {
-                if (!e.target.value) {
-                  handleSearch("");
-                } else {
-                  handleSearch(e.target.value);
-                }
-              }}
-              style={{ width: "100%" }}
-            />
+          <div className="flex min-w-0 w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
+            <div className="w-full shrink-0 sm:w-[280px] md:w-[300px]">
+              <Search
+                placeholder="Search by name, mobile..."
+                allowClear
+                enterButton={<SearchOutlined />}
+                size="large"
+                onSearch={handleSearch}
+                onChange={(e) => {
+                  if (!e.target.value) {
+                    handleSearch("");
+                  } else {
+                    handleSearch(e.target.value);
+                  }
+                }}
+                style={{ width: "100%" }}
+              />
+            </div>
 
             {isAddClientFeatureValid ? (
               <Button

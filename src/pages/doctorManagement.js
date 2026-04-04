@@ -227,23 +227,24 @@ const DoctorManagement = () => {
       }}
     >
       <div className="min-w-0 w-full flex-1 px-3 py-4 sm:px-6 sm:py-8">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="m-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
+        <div className="mb-5 flex min-w-0 flex-col gap-3 sm:mb-6 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+          <h1 className="m-0 shrink-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
             Doctor Management
           </h1>
 
-          <div className="flex min-w-0 w-full flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:items-center">
+          <div className="flex min-w-0 w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
+            <div className="w-full shrink-0 sm:w-[280px] md:w-[300px]">
             <Search
               placeholder="Search doctors..."
               allowClear
               enterButton={<SearchOutlined />}
               size="large"
-              className="w-full min-w-0 sm:!max-w-[400px]"
               style={{ width: "100%" }}
               onSearch={handleSearch}
               onChange={handleSearchChange}
               loading={tableLoading}
             />
+            </div>
 
             {isNewDoctor && (
               <Button
