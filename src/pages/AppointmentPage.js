@@ -801,21 +801,19 @@ export default function AppointmentPage() {
   function renderToolbar() {
     return (
       <div
+        className="flex flex-col gap-3 border-b sm:flex-row sm:items-center sm:justify-between sm:gap-4"
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "18px 20px",
-          borderBottom: `1px solid ${PALETTE.muted}`,
+          padding: "12px 14px",
           background: PALETTE.accentLight,
           fontWeight: 700,
           fontSize: 14,
           color: PALETTE.ink,
           userSelect: "none",
+          borderBottomColor: PALETTE.muted,
         }}
       >
         {contextHolder}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => moveDay(-1)}
@@ -866,7 +864,6 @@ export default function AppointmentPage() {
             type="button"
             onClick={goToday}
             style={{
-              marginLeft: 12,
               padding: "0 10px",
               borderRadius: 6,
               border: "none",
@@ -879,11 +876,14 @@ export default function AppointmentPage() {
           </button>
         </div>
 
-        <div style={{ fontSize: 13, fontWeight: 500, color: PALETTE.ink3 }}>
+        <div
+          className="min-w-0 text-xs sm:text-[13px]"
+          style={{ fontWeight: 500, color: PALETTE.ink3 }}
+        >
           Drag to move • Drag edges to resize • Double-click to add • Click
           appointment
           {appointmentsLoading && " • Loading..."}
-          <div style={{ fontSize: 11, marginTop: 4 }}>
+          <div className="mt-1 text-[11px] leading-snug">
             Showing {appointments.length} appointments for{" "}
             {currentDate.toDateString()}
           </div>
@@ -1269,6 +1269,13 @@ export default function AppointmentPage() {
         }}
         onCancel={closeNewApptModal}
         okText="Save"
+        centered
+        styles={{
+          content: {
+            width: "min(520px, calc(100vw - 24px))",
+            maxWidth: "100%",
+          },
+        }}
       >
         <Form
           form={form}
@@ -1381,19 +1388,13 @@ export default function AppointmentPage() {
       {/* Appointment Detail Modal (Antd) */}
       <Modal
         title={
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span style={{ fontWeight: "bold", fontSize: 18 }}>
+          <div className="flex min-w-0 flex-col gap-2 pr-8 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:pr-10">
+            <span className="min-w-0 text-base font-bold sm:text-lg">
               🗓 Appointment Details
             </span>
             {!isEditing && detailAppt && (
               <Button
-                className="mr-10"
+                className="w-full shrink-0 sm:mr-4 sm:w-auto"
                 type="primary"
                 onClick={() => {
                   setIsEditing(true);
@@ -1442,11 +1443,17 @@ export default function AppointmentPage() {
               </Button>,
             ]
         }
-        width={900}
-        bodyStyle={{
-          padding: "20px 32px",
-          maxHeight: "75vh",
-          overflowY: "auto",
+        centered
+        styles={{
+          content: {
+            width: "min(900px, calc(100vw - 24px))",
+            maxWidth: "100%",
+          },
+          body: {
+            padding: "16px 20px",
+            maxHeight: "min(75vh, 75dvh)",
+            overflowY: "auto",
+          },
         }}
       >
         {detailAppt && !isEditing && (
@@ -1457,7 +1464,7 @@ export default function AppointmentPage() {
 
             <Descriptions
               bordered
-              column={2}
+              column={{ xs: 1, sm: 2 }}
               size="middle"
               labelStyle={{ fontWeight: "bold", width: 150 }}
             >
@@ -1721,10 +1728,11 @@ export default function AppointmentPage() {
 
       {/* Main page */}
       <div
+        className="min-w-0 w-full box-border"
         style={{
           minHeight: "100vh",
           background: PALETTE.surface,
-          padding: 18,
+          padding: "clamp(8px, 2.5vw, 18px)",
           fontFamily: "Arial, sans-serif",
           userSelect: "none",
           WebkitFontSmoothing: "antialiased",
@@ -1732,29 +1740,24 @@ export default function AppointmentPage() {
         }}
       >
         <div
+          className="flex min-w-0 flex-col overflow-hidden"
           style={{
-            height: "100%",
-            //maxWidth: 1200,
-            //margin: "0 auto",
             margin: "0",
             flex: "1",
-            //width: "100%",
             borderRadius: 18,
             border: `1px solid ${PALETTE.muted}`,
-
             background: "#fff",
             boxShadow: "0 2px 16px rgba(129, 166, 198, 0.35)",
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
           }}
         >
           {renderToolbar()}
           <div
+            className="min-h-0 min-w-0"
             style={{
               display: "grid",
-              gridTemplateColumns: "70px 1fr",
-              height: "calc(100vh - 80px)",
+              gridTemplateColumns: "minmax(52px, 70px) minmax(0, 1fr)",
+              height: "calc(100vh - 132px)",
+              maxHeight: "calc(100dvh - 132px)",
             }}
           >
             {renderTimeRuler()}

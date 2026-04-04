@@ -959,7 +959,6 @@ const Profile = () => {
           open={resetPasswordModal}
           onCancel={closeResetPasswordModal}
           footer={null}
-          width={520}
           destroyOnClose
           centered
           maskClosable={!resetPasswordLoading}
@@ -978,7 +977,13 @@ const Profile = () => {
             "[&_.ant-modal-close]:hover:!bg-white/10 [&_.ant-modal-close]:!transition-colors"
           }
           styles={{
-            content: { borderRadius: 12, overflow: "hidden", padding: 0 },
+            content: {
+              borderRadius: 12,
+              overflow: "hidden",
+              padding: 0,
+              width: "min(520px, calc(100vw - 24px))",
+              maxWidth: "100%",
+            },
             header: { marginBottom: 0, borderBottom: "none" },
             body: { padding: "20px 24px 24px" },
           }}

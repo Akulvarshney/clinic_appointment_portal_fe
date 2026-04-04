@@ -15,18 +15,31 @@ const TopBarWithDrawer = ({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex justify-between items-center p-4 bg-gw-primary-dark text-white">
-      <p className="text-lg font-bold">GloryWellnic</p>
+    <div className="flex w-full min-w-0 items-center justify-between gap-3 px-3 py-3 sm:p-4 bg-gw-primary-dark text-white">
+      <p className="min-w-0 flex-1 truncate text-base font-bold sm:text-lg">
+        GloryWellnic
+      </p>
 
-      <div>
+      <div className="shrink-0">
         <Button
           type="text"
-          className="text-white text-lg"
+          className="!text-white text-lg flex items-center justify-center min-w-10 min-h-10"
           onClick={() => setOpen(true)}
+          aria-label="Open menu"
         >
           <MenuOutlined />
         </Button>
-        <Drawer title="Menu" onClose={() => setOpen(false)} open={open}>
+        <Drawer
+          title="Menu"
+          placement="right"
+          width={320}
+          onClose={() => setOpen(false)}
+          open={open}
+          styles={{
+            body: { paddingBottom: 24 },
+            wrapper: { maxWidth: "min(calc(100vw - 16px), 320px)" },
+          }}
+        >
           {/* Organization Selector */}
           <div className="mb-4">
             <label className="block text-sm font-medium mb-1">

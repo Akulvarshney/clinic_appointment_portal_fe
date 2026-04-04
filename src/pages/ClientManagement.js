@@ -14,10 +14,9 @@ import {
 } from "antd";
 import DataTable from "../components/DataTable";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import Sidebar from "../components/SideBar";
 import { BACKEND_URL, isFeatureValid, states } from "../assets/constants";
 import { PALETTE } from "../theme/palette";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { apiGet, apiPost, apiPut, apiPatch } from "../utils/axiosCalls";
 const { Option } = Select;
 const { Search } = Input;
@@ -27,7 +26,6 @@ const basic_config = {
 };
 
 const ClientManagement = () => {
-  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [clients, setClients] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -47,7 +45,6 @@ const ClientManagement = () => {
   const [sort, setSort] = useState("portalid");
   const [sortDir, setSortDir] = useState("desc");
   const [categorySelected, setCategorySelected] = useState(null);
-  const [isMobileView, setIsMobileView] = useState(false);
   const [isAddClientFeatureValid, setIsAddClientFeatureValid] = useState(false);
 
   const orgId = localStorage.getItem("selectedOrgId");
@@ -70,7 +67,6 @@ const ClientManagement = () => {
   useEffect(() => {
     const initialize = async () => {
       await fetchRoleId();
-      checkMobileView();
       fetchCategories();
       checkAddClientFeatureValid();
     };
@@ -114,15 +110,6 @@ const ClientManagement = () => {
     } catch (err) {
       console.error("Error fetching roles:", err);
       message.error("Failed to fetch client roles");
-    }
-  };
-
-  const checkMobileView = () => {
-    try {
-      const response = isFeatureValid("CLIENT_LISTING", "VIEW_MOBILE");
-      setIsMobileView(response);
-    } catch (err) {
-      console.error("Error checking mobile view permission:", err);
     }
   };
 
@@ -320,7 +307,8 @@ const ClientManagement = () => {
       title: "Name",
       dataIndex: "first_name",
       key: "name",
-      width: "22%",
+      width: 200,
+      ellipsis: true,
 
       render: (firstName, record) => {
         const fullName =
@@ -337,40 +325,35 @@ const ClientManagement = () => {
     },
     {
       title: (
-        <p
-          // type="link"
+        <button
+          type="button"
+          className="m-0 cursor-pointer select-none border-0 bg-transparent p-0 text-center font-semibold text-white hover:underline"
           onClick={() => {
             setSort("portalid");
             setSortDir((prev) => (prev === "desc" ? "asc" : "desc"));
           }}
         >
           Client ID {sortDir === "asc" ? "▲" : "▼"}
-        </p>
+        </button>
       ),
       key: "portalid",
-      width: "14%",
-      // sorter: true,
+      width: 168,
 
       render: (_, record) =>
         record.client_organization_category?.[0]?.portal_id || "-",
     },
-    ...(isMobileView
-      ? [
-        {
-          title: "Mobile",
-          dataIndex: "phone",
-          key: "phone",
-          width: "18%",
-        },
-      ]
-      : []),
-
+    {
+      title: "Mobile",
+      dataIndex: "phone",
+      key: "phone",
+      width: 132,
+    },
     {
       title: "State",
       dataIndex: "state",
       key: "state",
       ellipsis: true,
-      width: "10%",
+      width: 104,
     },
     // {
     //   title: "Date of Birth",
@@ -399,7 +382,7 @@ const ClientManagement = () => {
     {
       title: "Category",
       key: "category",
-      width: "18%",
+      width: 160,
       dataIndex: ["categories", "category_name"],
       filterDropdown: ({
         setSelectedKeys,
@@ -434,23 +417,32 @@ const ClientManagement = () => {
       dataIndex: "email",
       key: "email",
       ellipsis: true,
-      width: "18%",
+      width: 220,
     },
   ];
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", background: PALETTE.surface }}>
-      <div className="flex-1 p-6 sm:p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        width: "100%",
+        minWidth: 0,
+        background: PALETTE.surface,
+      }}
+    >
+      <div className="min-w-0 w-full flex-1 px-3 py-4 sm:px-6 sm:py-8">
+        <div className="mb-5 flex min-w-0 flex-col gap-4 sm:mb-6 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+          <h1 className="m-0 shrink-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
             Client Management
           </h1>
-          <div className="flex gap-3 items-center">
+          <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Search
               placeholder="Search by name, mobile..."
               allowClear
               enterButton={<SearchOutlined />}
               size="large"
+              className="w-full min-w-0 sm:flex-1 sm:max-w-md lg:max-w-xl"
               onSearch={handleSearch}
               onChange={(e) => {
                 if (!e.target.value) {
@@ -459,7 +451,7 @@ const ClientManagement = () => {
                   handleSearch(e.target.value);
                 }
               }}
-              style={{ maxWidth: 400 }}
+              style={{ width: "100%" }}
             />
 
             {isAddClientFeatureValid ? (
@@ -468,6 +460,7 @@ const ClientManagement = () => {
                 icon={<PlusOutlined />}
                 onClick={handleAddClient}
                 size="large"
+                className="w-full shrink-0 sm:w-auto"
               >
                 Register Client
               </Button>
@@ -497,7 +490,7 @@ const ClientManagement = () => {
           />
         )}
 
-        <div className="bg-white rounded-lg shadow">
+        <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
           <DataTable
             columns={columns}
             dataSource={clients}
@@ -505,6 +498,7 @@ const ClientManagement = () => {
             rowKey={(record) => record.id || record.portalid}
             pagination={pagination}
             onChange={handleTableChange}
+            scroll={{ x: 1100 }}
           />
         </div>
 
@@ -513,7 +507,13 @@ const ClientManagement = () => {
           open={isModalVisible}
           onCancel={handleModalCancel}
           footer={null}
-          width={800}
+          centered
+          styles={{
+            content: {
+              width: "min(800px, calc(100vw - 24px))",
+              maxWidth: "100%",
+            },
+          }}
         >
           <div className="modal_outDiv">
             <Form

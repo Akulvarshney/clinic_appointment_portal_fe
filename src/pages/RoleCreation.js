@@ -214,24 +214,23 @@ const RoleManagement = () => {
   ];
 
   return (
-    <div>
+    <div className="min-w-0 max-w-full">
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <h1 style={{ fontSize: 24, fontWeight: 600 }}>Role Management</h1>
-        <Button type="primary" onClick={() => setModalVisible(true)}>
+      <div className="mb-4 flex min-w-0 flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="m-0 text-xl font-semibold sm:text-2xl">
+          Role Management
+        </h1>
+        <Button
+          type="primary"
+          className="w-full shrink-0 sm:w-auto"
+          onClick={() => setModalVisible(true)}
+        >
           Create Role
         </Button>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
         <DataTable
           columns={roleColumns}
           dataSource={roles}
@@ -315,8 +314,14 @@ const RoleManagement = () => {
         title={`Edit Role: ${editingRole?.name}`}
         open={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
-        width={800}
-        bodyStyle={{ maxHeight: "60vh", overflowY: "auto" }}
+        centered
+        styles={{
+          content: {
+            width: "min(800px, calc(100vw - 24px))",
+            maxWidth: "100%",
+          },
+          body: { maxHeight: "60vh", overflowY: "auto" },
+        }}
         footer={[
           <Button key="cancel" onClick={() => setEditModalVisible(false)}>
             Cancel

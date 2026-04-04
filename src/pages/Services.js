@@ -273,24 +273,33 @@ const Services = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", background: PALETTE.surface }}>
-      <div className="flex-1 p-6 sm:p-8">
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        width: "100%",
+        minWidth: 0,
+        background: PALETTE.surface,
+      }}
+    >
+      <div className="min-w-0 w-full flex-1 px-3 py-4 sm:px-6 sm:py-8">
         {/* Header with Search + Add Button */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
+        <div className="mb-5 flex min-w-0 flex-col gap-4 sm:mb-6 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+          <h1 className="m-0 shrink-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
             Service Management
           </h1>
-          <div className="flex gap-2">
+          <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Search
               placeholder="Search services"
               allowClear
               enterButton={<SearchOutlined />}
               size="large"
+              className="w-full min-w-0 sm:flex-1 sm:max-w-md lg:max-w-xl"
+              style={{ width: "100%" }}
               onSearch={(value) => {
                 setSearchText(value);
                 fetchServices(1, pagination.pageSize, value);
               }}
-              style={{ maxWidth: 400 }}
             />
             {isNewService && (
               <Button
@@ -298,6 +307,7 @@ const Services = () => {
                 icon={<PlusOutlined />}
                 onClick={handleAddService}
                 size="large"
+                className="w-full shrink-0 sm:w-auto"
               >
                 Add Service
               </Button>
@@ -328,7 +338,7 @@ const Services = () => {
         )}
 
         {/* Table */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
           <DataTable
             columns={columns}
             dataSource={services}
@@ -352,8 +362,14 @@ const Services = () => {
           open={isModalVisible}
           onCancel={handleModalCancel}
           footer={null}
-          width={800}
+          centered
           destroyOnClose
+          styles={{
+            content: {
+              width: "min(800px, calc(100vw - 24px))",
+              maxWidth: "100%",
+            },
+          }}
         >
           <div className="modal_outDiv">
             <Form

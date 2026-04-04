@@ -211,25 +211,37 @@ const ReminderPage = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", background: PALETTE.surface }}>
-      {/* Sidebar should be here if you have one */}
-      <div className="flex-1 p-6 sm:p-8 overflow-x-hidden w-full">
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        width: "100%",
+        minWidth: 0,
+        background: PALETTE.surface,
+      }}
+    >
+      <div className="min-w-0 w-full flex-1 overflow-x-hidden px-3 py-4 sm:px-6 sm:py-8">
         {/* Top Bar */}
-        <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
+        <div className="mb-5 flex min-w-0 flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          <h1 className="m-0 shrink-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
             Reminders
           </h1>
-          <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
-            <DatePicker
-              value={selectedDate}
-              onChange={(val) => setSelectedDate(val)}
-              style={{ width: 160 }}
-            />
-            <Button onClick={handleToday}>Today</Button>
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="w-full sm:w-40">
+              <DatePicker
+                value={selectedDate}
+                onChange={(val) => setSelectedDate(val)}
+                className="!w-full"
+              />
+            </div>
+            <Button onClick={handleToday} className="w-full sm:w-auto">
+              Today
+            </Button>
             <Button
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => setShowAddModal(true)}
+              className="w-full sm:w-auto"
             >
               Add Reminder
             </Button>
@@ -259,7 +271,7 @@ const ReminderPage = () => {
         )}
 
         {/* Table */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
           <DataTable
             columns={columns}
             dataSource={sortedReminders}

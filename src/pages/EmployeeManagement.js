@@ -285,14 +285,22 @@ const UserManagement = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", background: PALETTE.surface }}>
-      <div className="flex-1 p-6 sm:p-8">
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        width: "100%",
+        minWidth: 0,
+        background: PALETTE.surface,
+      }}
+    >
+      <div className="min-w-0 w-full flex-1 px-3 py-4 sm:px-6 sm:py-8">
         <div>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
+          <div className="mb-5 flex min-w-0 flex-col gap-4 sm:mb-6 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+            <h1 className="m-0 shrink-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
               Employee Management
             </h1>
-            <div className="flex gap-3 items-center">
+            <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               {/* <Input.Search
                 placeholder="Search employees..."
                 allowClear
@@ -321,7 +329,8 @@ const UserManagement = () => {
                 // size="large"
                 // onSearch={handleSearch}
 
-                style={{ maxWidth: 400 }}
+                className="w-full min-w-0 sm:flex-1 sm:max-w-md lg:max-w-xl"
+                style={{ width: "100%" }}
               />
               {isAllowedToAddEmployee ? (
                 <Button
@@ -329,6 +338,7 @@ const UserManagement = () => {
                   icon={<PlusOutlined />}
                   onClick={handleAddEmployee}
                   size="large"
+                  className="w-full shrink-0 sm:w-auto"
                 >
                   Add Employee
                 </Button>
@@ -358,7 +368,7 @@ const UserManagement = () => {
             />
           )}
 
-          <div className="bg-white rounded-lg shadow">
+          <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
             <DataTable
               columns={columns}
               dataSource={users}
@@ -380,7 +390,13 @@ const UserManagement = () => {
           open={isModalVisible}
           onCancel={handleModalCancel}
           footer={null}
-          width={800}
+          centered
+          styles={{
+            content: {
+              width: "min(800px, calc(100vw - 24px))",
+              maxWidth: "100%",
+            },
+          }}
         >
           <div className="modal_outDiv">
             <Form

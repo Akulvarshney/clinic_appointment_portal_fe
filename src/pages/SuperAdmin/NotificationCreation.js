@@ -96,19 +96,26 @@ const NotificationManagement = () => {
   ];
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-        <Button type="primary" onClick={() => setModalVisible(true)}>
+    <div className="gw-page-content min-w-0 max-w-full">
+      <div className="mb-4 flex justify-end sm:mb-5">
+        <Button
+          type="primary"
+          className="w-full sm:w-auto"
+          onClick={() => setModalVisible(true)}
+        >
           Add Notification
         </Button>
       </div>
 
-      <DataTable
-        rowKey="id"
-        columns={columns}
-        dataSource={notifications}
-        loading={loading}
-      />
+      <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
+        <DataTable
+          rowKey="id"
+          columns={columns}
+          dataSource={notifications}
+          loading={loading}
+          scroll={{ x: 720 }}
+        />
+      </div>
 
       <Modal
         title="Add Notification"

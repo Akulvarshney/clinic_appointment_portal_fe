@@ -26,12 +26,31 @@ body {
 }
 
 .pageCss {
-  padding: 2rem;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: clamp(0.75rem, 3vw, 2rem);
+}
+
+@media (max-width: 480px) {
+  .pageCss {
+    padding: 12px;
+  }
 }
 
 .modal_outDiv {
   max-height: 70vh !important;
+  max-height: 70dvh !important;
   overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 576px) {
+  .modal_outDiv {
+    max-height: 65vh !important;
+    max-height: 65dvh !important;
+  }
 }
 
 /* Button hover transition (optional) */
@@ -272,6 +291,36 @@ body {
 
   .login-title {
     font-size: 1.5rem !important;
+  }
+}
+
+/* Ant Design modals — usable width on phones (desktop widths unchanged above breakpoint) */
+@media (max-width: 576px) {
+  .ant-modal-root .ant-modal-wrap {
+    padding: 8px !important;
+  }
+
+  .ant-modal-root .ant-modal {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    margin: 0 auto !important;
+    top: 8px;
+    padding-bottom: 0;
+  }
+}
+
+/* Shared inner shell for logged-in pages (matches .pageCss rhythm) */
+.gw-page-content {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: clamp(0.75rem, 3vw, 1.5rem);
+}
+
+@media (min-width: 640px) {
+  .gw-page-content {
+    padding: 1.5rem 2rem;
   }
 }
 

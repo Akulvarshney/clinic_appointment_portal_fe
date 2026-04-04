@@ -6,11 +6,11 @@ import { useAuth } from "../layouts/AuthContext";
 const SuperAdminSidebar = () => {
   const { logout } = useAuth();
   return (
-    <aside className="w-full md:w-64 bg-gw-surface p-6 shadow-2xl border-r border-gw-muted animate-fadeInUp">
-      <h2 className="text-3xl font-extrabold text-gw-primary-dark mb-10 tracking-widest uppercase">
+    <aside className="w-full shrink-0 border-gw-muted bg-gw-surface p-4 shadow-md animate-fadeInUp md:w-64 md:border-r md:p-6 md:shadow-2xl border-b md:border-b-0">
+      <h2 className="mb-4 text-xl font-extrabold uppercase tracking-widest text-gw-primary-dark md:mb-10 md:text-3xl">
         GloryWellnic
       </h2>
-      <ul className="space-y-6 text-lg">
+      <ul className="space-y-3 text-base md:space-y-6 md:text-lg">
         <li>
           <Link
             to="/superadmin/dashboard"

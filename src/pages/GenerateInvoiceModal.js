@@ -964,9 +964,19 @@ export default function GenerateInvoiceModal({
           {type === "invoice" ? "Invoice" : "Quotation"}
         </Button>,
       ]}
-      width="90%"
-      style={{ maxWidth: "1400px", top: 2 }}
       centered
+      styles={{
+        content: {
+          width: "min(1400px, calc(100vw - 16px))",
+          maxWidth: "100%",
+          top: 2,
+        },
+        body: {
+          padding: 0,
+          maxHeight: "min(calc(100vh - 120px), calc(100dvh - 120px))",
+          overflow: "hidden",
+        },
+      }}
       title={
         <Space>
           <FileTextOutlined />
@@ -975,17 +985,12 @@ export default function GenerateInvoiceModal({
         </Space>
       }
       destroyOnClose
-      bodyStyle={{
-        padding: 0,
-        maxHeight: "calc(100vh - 200px)",
-        overflow: "hidden",
-      }}
     >
       <div
+        className="box-border px-3 py-4 sm:p-6"
         style={{
-          maxHeight: "calc(100vh - 200px)",
+          maxHeight: "min(calc(100vh - 140px), calc(100dvh - 140px))",
           overflowY: "auto",
-          padding: "24px",
         }}
       >
         <Form form={form} layout="vertical" size="large">

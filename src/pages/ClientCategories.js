@@ -130,24 +130,27 @@ const ClientCategories = () => {
   ];
 
   return (
-    <div>
-      <div className="mb-4 flex justify-between items-center">
-        <h1 style={{ fontSize: 24, fontWeight: 600 }}>Client Category</h1>
+    <div className="min-w-0 max-w-full">
+      <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="m-0 text-xl font-semibold sm:text-2xl">Client Category</h1>
         <Button
           type="primary"
-          style={{ marginBottom: 16 }}
+          className="w-full shrink-0 sm:w-auto"
           onClick={() => setIsAddModalVisible(true)}
         >
           Add Category
         </Button>
       </div>
 
-      <DataTable
-        dataSource={categories}
-        columns={columns}
-        rowKey="id"
-        loading={loading}
-      />
+      <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
+        <DataTable
+          dataSource={categories}
+          columns={columns}
+          rowKey="id"
+          loading={loading}
+          scroll={{ x: 720 }}
+        />
+      </div>
 
       <Modal
         title="Add Category"

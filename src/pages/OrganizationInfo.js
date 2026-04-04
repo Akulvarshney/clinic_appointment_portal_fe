@@ -203,7 +203,7 @@ const OrganizationInfo = () => {
 
           <Modal
             title="Complete Organization Information"
-            visible={modalVisible}
+            open={modalVisible}
             onCancel={handleCancel}
             onOk={() => {
               form
@@ -216,7 +216,13 @@ const OrganizationInfo = () => {
                 });
             }}
             okText="Save"
-            bodyStyle={{ paddingTop: 0 }}
+            styles={{
+              body: { paddingTop: 0 },
+              content: {
+                width: "min(720px, calc(100vw - 24px))",
+                maxWidth: "100%",
+              },
+            }}
             centered
             className="rounded-xl"
           >

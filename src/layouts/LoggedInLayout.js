@@ -39,8 +39,8 @@ const LoggedInLayout = () => {
   };
 
   return (
-    <div style={{ height: "100vh" }} className="flex flex-col md:flex-row">
-      <div className="hidden md:block">
+    <div className="flex min-h-screen flex-col overflow-x-hidden md:h-[100dvh] md:max-h-[100dvh] md:flex-row md:overflow-hidden">
+      <div className="hidden shrink-0 md:block">
         <Sidebar
           collapsedDefault={false}
           organizations={organizations}
@@ -52,7 +52,7 @@ const LoggedInLayout = () => {
         />
       </div>
 
-      <div className="md:hidden">
+      <div className="shrink-0 md:hidden">
         <TopBarWithDrawer
           organizations={organizations}
           selectedOrgId={selectedOrgId}
@@ -63,7 +63,7 @@ const LoggedInLayout = () => {
         />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto bg-gw-surface">
+      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-gw-surface">
         <Outlet />
       </div>
     </div>

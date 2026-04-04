@@ -91,16 +91,21 @@ const NotificationCenter = () => {
   ];
 
   return (
-    <div style={{ padding: 20 }}>
+    <div className="gw-page-content min-w-0">
       {loading ? (
-        <Spin size="large" />
+        <div className="flex justify-center py-12">
+          <Spin size="large" />
+        </div>
       ) : (
-        <DataTable
-          columns={columns}
-          dataSource={notifications}
-          rowKey="id"
-          pagination={false}
-        />
+        <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
+          <DataTable
+            columns={columns}
+            dataSource={notifications}
+            rowKey="id"
+            pagination={false}
+            scroll={{ x: 640 }}
+          />
+        </div>
       )}
     </div>
   );

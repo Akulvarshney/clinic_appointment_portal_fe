@@ -297,12 +297,14 @@ const ResourceManagement = () => {
       sx={{
         display: "flex",
         minHeight: "100vh",
+        width: "100%",
+        minWidth: 0,
         background: PALETTE.surface,
       }}
     >
-      <div className="flex-1 p-6 sm:p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
+      <div className="min-w-0 w-full flex-1 px-3 py-4 sm:px-6 sm:py-8">
+        <div className="mb-5 flex min-w-0 flex-col gap-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="m-0 shrink-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
             Resource Management
           </h1>
           {isNewService && (
@@ -311,6 +313,7 @@ const ResourceManagement = () => {
               icon={<PlusOutlined />}
               onClick={handleAddResource}
               size="large"
+              className="w-full shrink-0 sm:w-auto"
             >
               Add Resource
             </Button>
@@ -339,7 +342,7 @@ const ResourceManagement = () => {
           />
         )}
 
-        <div className="bg-white rounded-lg shadow">
+        <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
           <DataTable
             columns={columns}
             dataSource={resources}
@@ -354,8 +357,14 @@ const ResourceManagement = () => {
           open={isModalVisible}
           onCancel={handleModalCancel}
           footer={null}
-          width={500}
+          centered
           destroyOnClose
+          styles={{
+            content: {
+              width: "min(500px, calc(100vw - 24px))",
+              maxWidth: "100%",
+            },
+          }}
         >
           <div className="modal_outDiv">
             <Form

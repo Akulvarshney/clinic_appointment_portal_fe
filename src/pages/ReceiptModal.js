@@ -127,7 +127,13 @@ export default function ReceiptModal({
       title="Generate Receipt"
       open={visible}
       onCancel={onCancel}
-      width={700}
+      centered
+      styles={{
+        content: {
+          width: "min(700px, calc(100vw - 24px))",
+          maxWidth: "100%",
+        },
+      }}
       footer={[
         <Button key="cancel" onClick={onCancel}>
           Cancel{" "}

@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-width: 0;
+}
+
 :root {
   --gw-primary: #8fabd4;
   --gw-primary-light: #c4d4ef;
@@ -21,6 +31,30 @@
 body {
   background-color: var(--gw-surface);
   color: var(--gw-ink);
+  margin: 0;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Wide tables scroll inside their wrapper instead of expanding the page */
+.ant-table-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767px) {
+  .ant-pagination {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    justify-content: center;
+  }
+
+  .ant-pagination-options {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+  }
 }
 
 /* ── Uniform pagination (tables + standalone) — same bar on cream or white parents */
@@ -40,7 +74,20 @@ body {
   border-radius: 8px;
 }
 
-/* Bill management — wrap long column titles instead of one line */
+/* Table cell nowrap for shared DataTable — use scroll.x (see DataTable) so columns do not overlap */
+.gw-data-table.ant-table-wrapper .ant-table-tbody > tr > td,
+.gw-data-table.ant-table-wrapper .ant-table-thead > tr > th {
+  white-space: nowrap !important;
+  word-break: normal !important;
+  vertical-align: middle;
+}
+
+.gw-data-table.ant-table-wrapper .ant-table-body,
+.gw-data-table.ant-table-wrapper .ant-table-content {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Bill management — wrap long column titles (must follow gw-data-table so it wins) */
 .bill-management-table.ant-table-wrapper .ant-table-thead > tr > th,
 .bill-management-table.ant-table-wrapper
   .ant-table-thead
@@ -52,10 +99,4 @@ body {
   overflow-wrap: break-word;
   line-height: 1.35;
   vertical-align: top;
-}
-
-
-.ant-table-cell{
-  white-space: nowrap !important;
-  word-break: normal !important;
 }

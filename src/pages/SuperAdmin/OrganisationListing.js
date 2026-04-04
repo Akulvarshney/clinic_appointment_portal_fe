@@ -111,23 +111,30 @@ const OrganisationListing = () => {
 
   return (
     <>
-      <div className="pageCss">
-        <Tabs defaultActiveKey="PENDING" onChange={setStatus}>
+      <div className="pageCss min-w-0 max-w-full">
+        <Tabs
+          defaultActiveKey="PENDING"
+          onChange={setStatus}
+          className="min-w-0 [&_.ant-tabs-nav-wrap]:overflow-x-auto [&_.ant-tabs-nav-wrap]:pb-1 [&_.ant-tabs-nav-list]:flex-nowrap"
+        >
           <TabPane tab="PENDING" key="PENDING" />
           <TabPane tab="APPROVED" key="APPROVED" />
           <TabPane tab="REJECTED" key="REJECTED" />
         </Tabs>
 
         {loading ? (
-          <div style={{ textAlign: "center", marginTop: 20 }}>
+          <div className="mt-5 text-center">
             <Spin tip="Loading organization data..." />
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            dataSource={listing}
-            rowKey="id"
-          />
+          <div className="mt-4 min-w-0 overflow-hidden rounded-lg bg-white shadow sm:mt-5">
+            <DataTable
+              columns={columns}
+              dataSource={listing}
+              rowKey="id"
+              scroll={{ x: 1100 }}
+            />
+          </div>
         )}
       </div>
     </>

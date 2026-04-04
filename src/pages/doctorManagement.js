@@ -217,20 +217,29 @@ const DoctorManagement = () => {
       : "—";
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", background: PALETTE.surface }}>
-      <div className="flex-1 p-6 sm:p-8">
-        <div className="flex topbar flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        width: "100%",
+        minWidth: 0,
+        background: PALETTE.surface,
+      }}
+    >
+      <div className="min-w-0 w-full flex-1 px-3 py-4 sm:px-6 sm:py-8">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="m-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
             Doctor Management
           </h1>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+          <div className="flex min-w-0 w-full flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:items-center">
             <Search
               placeholder="Search doctors..."
               allowClear
               enterButton={<SearchOutlined />}
               size="large"
-              style={{ width: "100%", minWidth: "300px", maxWidth: "400px" }}
+              className="w-full min-w-0 sm:!max-w-[400px]"
+              style={{ width: "100%" }}
               onSearch={handleSearch}
               onChange={handleSearchChange}
               loading={tableLoading}
@@ -242,7 +251,7 @@ const DoctorManagement = () => {
                 icon={<PlusOutlined />}
                 onClick={handleAddDoctor}
                 size="large"
-                style={{ minWidth: "140px" }}
+                className="w-full shrink-0 sm:w-auto"
               >
                 Add Doctor
               </Button>
@@ -362,8 +371,14 @@ const DoctorManagement = () => {
           open={isModalVisible}
           onCancel={handleModalCancel}
           footer={null}
-          width={800}
+          centered
           destroyOnClose
+          styles={{
+            content: {
+              width: "min(800px, calc(100vw - 24px))",
+              maxWidth: "100%",
+            },
+          }}
         >
           <div className="modal_outDiv">
             <Form

@@ -282,51 +282,50 @@ const FeedbackManagement = () => {
       case "view-feedbacks":
         return (
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex-1 max-w-md">
-                <Input
-                  placeholder="Search feedback by client name..."
-                  prefix={<SearchOutlined />}
-                  value={feedbackSearch}
-                  onChange={(e) => setFeedbackSearch(e.target.value)}
-                  allowClear
-                  size="large"
-                />
-              </div>
+            <div className="mb-4 min-w-0 w-full">
+              <Input
+                placeholder="Search feedback by client name..."
+                prefix={<SearchOutlined />}
+                value={feedbackSearch}
+                onChange={(e) => setFeedbackSearch(e.target.value)}
+                allowClear
+                size="large"
+                className="w-full min-w-0 sm:max-w-md"
+              />
             </div>
 
-            <div className="bg-white rounded-lg shadow">
+            <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
               <DataTable
                 columns={[
                   {
                     title: "Client Name",
                     dataIndex: "clientName",
                     key: "clientName",
-                    width: "15%",
+                    width: 140,
                   },
                   {
                     title: "Staff Name",
                     dataIndex: "staffName",
                     key: "staffName",
-                    width: "15%",
+                    width: 140,
                   },
                   {
                     title: "Service Category",
                     dataIndex: "serviceCategory",
                     key: "serviceCategory",
-                    width: "12%",
+                    width: 130,
                   },
                   {
                     title: "Service Name",
                     dataIndex: "serviceName",
                     key: "serviceName",
-                    width: "15%",
+                    width: 140,
                   },
                   {
                     title: "Experience Rating",
                     dataIndex: "experience",
                     key: "experience",
-                    width: "12%",
+                    width: 140,
                     render: (rating) => (
                       <span className={`px-2 py-1 rounded text-xs font-medium ${rating === 'Excellent' ? 'bg-green-100 text-green-800' :
                           rating === 'Good' ? 'bg-gw-primary-light/40 text-gw-primary-dark' :
@@ -342,18 +341,19 @@ const FeedbackManagement = () => {
                     title: "Comments",
                     dataIndex: "comments",
                     key: "comments",
-                    width: "20%",
+                    width: 200,
                     ellipsis: true,
                   },
                   {
                     title: "Date",
                     dataIndex: "date",
                     key: "date",
-                    width: "10%",
+                    width: 110,
                   },
                 ]}
                 dataSource={filteredFeedbacks}
                 rowKey="id"
+                scroll={{ x: 1100 }}
               />
             </div>
           </div>
@@ -375,9 +375,9 @@ const FeedbackManagement = () => {
   ];
 
   return (
-    <div className="pageCss">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
+    <div className="pageCss min-w-0 max-w-full">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="m-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
           Feedbacks
         </h1>
       </div>
@@ -385,8 +385,9 @@ const FeedbackManagement = () => {
         activeKey={activeKey}
         onChange={setActiveKey}
         items={tabItems}
+        className="min-w-0 [&_.ant-tabs-nav-wrap]:overflow-x-auto [&_.ant-tabs-nav-wrap]:pb-1 [&_.ant-tabs-nav-list]:flex-nowrap"
       />
-      <div style={{ marginTop: 20 }}>{renderActiveComponent()}</div>
+      <div className="mt-4 min-w-0 sm:mt-5">{renderActiveComponent()}</div>
     </div>
   );
 };

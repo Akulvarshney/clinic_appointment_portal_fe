@@ -377,11 +377,11 @@ const ClientDetailPage = () => {
 
   return (
     <Box
-      className="min-h-full p-6 sm:p-8"
+      className="min-h-full min-w-0 w-full px-3 py-4 sm:px-6 sm:py-8"
       sx={{ background: PALETTE.surface }}
     >
       {contextHolder}
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl min-w-0">
         <div className="flex justify-end">
           <Button
             type="link"
@@ -838,8 +838,14 @@ const ClientDetailPage = () => {
           open={isEditModalVisible}
           onCancel={handleCancelEdit}
           footer={null}
-          width={600}
+          centered
           destroyOnClose={true}
+          styles={{
+            content: {
+              width: "min(600px, calc(100vw - 24px))",
+              maxWidth: "100%",
+            },
+          }}
         >
           <Form
             form={form}

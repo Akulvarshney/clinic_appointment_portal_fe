@@ -603,17 +603,19 @@ const BillManagement = () => {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
+    <div className="gw-page-content">
+      <div className="mb-5 flex min-w-0 flex-col gap-4 sm:mb-6 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+        <h1 className="m-0 shrink-0 text-xl font-bold text-gw-primary-dark sm:text-2xl lg:text-3xl">
           Bill Management
         </h1>
-        <div className="flex gap-3 items-center">
+        <div className="flex min-w-0 w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <Search
             placeholder="Search by bill id, bill to..."
             allowClear
             enterButton={<SearchOutlined />}
             size="large"
+            className="w-full min-w-0 sm:flex-1 sm:max-w-md lg:max-w-xl"
+            style={{ width: "100%" }}
             onSearch={handleSearch}
             onChange={(e) => {
               if (!e.target.value) {
@@ -622,13 +624,13 @@ const BillManagement = () => {
                 handleSearch(e.target.value);
               }
             }}
-            style={{ maxWidth: 400 }}
           />
           {activeTab === "invoices" && canCreateInvoice && (
             <Button
               type="primary"
               size="large"
               icon={<PlusOutlined />}
+              className="w-full shrink-0 sm:w-auto"
               onClick={() => handleCreate("invoice")}
             >
               Create Invoice
@@ -639,6 +641,7 @@ const BillManagement = () => {
               type="primary"
               size="large"
               icon={<PlusOutlined />}
+              className="w-full shrink-0 sm:w-auto"
               onClick={() => handleCreate("quotation")}
             >
               Create Quotation
@@ -649,6 +652,7 @@ const BillManagement = () => {
               type="primary"
               size="large"
               icon={<PlusOutlined />}
+              className="w-full shrink-0 sm:w-auto"
               onClick={() => handleCreate("receipt")}
             >
               Create Receipt
@@ -660,7 +664,7 @@ const BillManagement = () => {
       <Radio.Group
         value={activeTab}
         onChange={handleTabChange}
-        className="mb-4"
+        className="mb-4 flex flex-wrap gap-2"
         buttonStyle="solid"
       >
         <Radio.Button value="invoices" disabled={!isInvoiceView}>
@@ -675,6 +679,7 @@ const BillManagement = () => {
       </Radio.Group>
 
       {activeTab === "receipts" ? (
+        <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
         <DataTable
           className="bill-management-table"
           dataSource={receiptData} // separate receipt data
@@ -694,7 +699,9 @@ const BillManagement = () => {
             }));
           }}
         />
+        </div>
       ) : (
+        <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
         <DataTable
           className="bill-management-table"
           dataSource={data[activeTab]} // invoices or quotations
@@ -714,6 +721,7 @@ const BillManagement = () => {
             }));
           }}
         />
+        </div>
       )}
 
       {activeTab === "receipts" ? (

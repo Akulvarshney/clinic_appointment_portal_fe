@@ -199,7 +199,11 @@ function App() {
   }, [isLoggedIn, role, selectedOrgId, allowedRoutes, defaultRoute]);
 
   if (!isAuthReady) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gw-surface text-gw-ink-3">
+        Loading…
+      </div>
+    );
   }
 
   return (

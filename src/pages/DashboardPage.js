@@ -224,8 +224,8 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-gw-primary-light/40 via-gw-surface to-gw-muted/30 font-sans text-gw-ink">
-      <main className="flex-1 px-6 md:px-12 py-10 animate-fadeIn">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-gw-primary-light/40 via-gw-surface to-gw-muted/30 font-sans text-gw-ink md:flex-row">
+      <main className="min-w-0 flex-1 animate-fadeIn px-4 py-6 sm:px-6 sm:py-8 md:px-12 md:py-10">
         {/* HEADER */}
         <header className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4">
           <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gw-primary-dark to-gw-primary drop-shadow-sm">

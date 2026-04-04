@@ -1,7 +1,7 @@
 import { Table } from "antd";
 
 const TABLE_CLASS =
-  "gw-data-table rounded-xl border border-gray-200 shadow-md overflow-hidden " +
+  "gw-data-table max-w-full rounded-xl border border-gray-200 shadow-md overflow-hidden " +
   "[&_.ant-table]:rounded-xl " +
   "[&_.ant-table-thead>tr>th]:bg-gw-primary-dark " +
   "[&_.ant-table-thead>tr>th]:text-white " +
@@ -53,6 +53,15 @@ function stripedRowClass(record, index) {
     : "bg-white hover:bg-gray-100 transition";
 }
 
+function mergeScroll(scroll) {
+  if (scroll === false) return undefined;
+  const fromProp = scroll && typeof scroll === "object" ? scroll : {};
+  return {
+    ...fromProp,
+    x: fromProp.x != null ? fromProp.x : "max-content",
+  };
+}
+
 function mergeRowClassName(striped, rowClassName) {
   if (!striped && rowClassName == null) return undefined;
 
@@ -82,6 +91,7 @@ function DataTable({
   bordered = false,
   striped = false,
   pagination,
+  scroll,
   ...rest
 }) {
   return (
@@ -89,6 +99,7 @@ function DataTable({
       {...rest}
       bordered={bordered}
       pagination={normalizePagination(pagination)}
+      scroll={mergeScroll(scroll)}
       className={[TABLE_CLASS, className].filter(Boolean).join(" ")}
       rowClassName={mergeRowClassName(striped, rowClassName)}
     />

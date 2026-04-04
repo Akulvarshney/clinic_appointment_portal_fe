@@ -87,16 +87,17 @@ const Settings = () => {
   };
 
   return (
-    <div className="pageCss">
+    <div className="pageCss min-w-0 max-w-full">
       <Tabs
         activeKey={activeKey}
         onChange={setActiveKey}
+        className="gw-settings-tabs min-w-0 [&_.ant-tabs-nav]:mb-2 [&_.ant-tabs-nav-wrap]:overflow-x-auto [&_.ant-tabs-nav-wrap]:pb-1 [&_.ant-tabs-nav-list]:flex-nowrap"
         items={tabs.map((feature) => ({
           key: feature.feature_unique_name,
           label: feature.feature_name,
         }))}
       />
-      <div style={{ marginTop: 20 }}>{renderActiveComponent()}</div>
+      <div className="mt-4 min-w-0 sm:mt-5">{renderActiveComponent()}</div>
     </div>
   );
 };
