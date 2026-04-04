@@ -9,7 +9,6 @@ import {
   ListItemButton,
   ListItemText,
   Stack,
-  Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -51,16 +50,23 @@ const TopBarLoggedOut = () => {
     <>
       <Box component="header" className="gwl-nav">
         <Box className="gwl-nav__inner">
-          <Typography component={RouterLink} to="/" className="gwl-nav__brand" onClick={closeMobileNav}>
+          <RouterLink to="/" className="gwl-nav__brand" onClick={closeMobileNav}>
             GloryWellnic
-          </Typography>
+          </RouterLink>
 
           <Box component="nav" className="gwl-nav__desktop" aria-label="Section links">
-            {NAV_LINKS.map((l) => (
-              <Typography key={l.href} className="gwl-nav__link" {...navLinkProps(l.href)}>
-                {l.label}
-              </Typography>
-            ))}
+            {NAV_LINKS.map((l) => {
+              const p = navLinkProps(l.href);
+              return p.component === "a" ? (
+                <a key={l.href} className="gwl-nav__link" href={p.href}>
+                  {l.label}
+                </a>
+              ) : (
+                <RouterLink key={l.href} className="gwl-nav__link" to={p.to}>
+                  {l.label}
+                </RouterLink>
+              );
+            })}
           </Box>
 
           <Stack direction="row" spacing={1} alignItems="center" className="gwl-nav__actions">
@@ -86,7 +92,7 @@ const TopBarLoggedOut = () => {
 
       <Drawer anchor="right" open={mobileNavOpen} onClose={closeMobileNav} PaperProps={{ sx: { width: 280 } }}>
         <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Typography fontWeight={700}>Menu</Typography>
+          <span className="font-bold text-base">Menu</span>
           <IconButton aria-label="Close menu" onClick={closeMobileNav} size="small">
             <CloseIcon />
           </IconButton>
@@ -103,14 +109,16 @@ const TopBarLoggedOut = () => {
                   })}
               onClick={closeMobileNav}
             >
-              <ListItemText primary={l.label} primaryTypographyProps={{ fontWeight: 500 }} />
+              <ListItemText primary={<span className="font-medium">{l.label}</span>} />
             </ListItemButton>
           ))}
           <ListItemButton component={RouterLink} to="/login" onClick={closeMobileNav}>
             <ListItemText primary="Sign in" />
           </ListItemButton>
           <ListItemButton onClick={openPartnerFlow}>
-            <ListItemText primary="Partner with us" primaryTypographyProps={{ color: "primary", fontWeight: 600 }} />
+            <ListItemText
+              primary={<span className="font-semibold text-[var(--gw-primary-dark)]">Partner with us</span>}
+            />
           </ListItemButton>
         </List>
       </Drawer>

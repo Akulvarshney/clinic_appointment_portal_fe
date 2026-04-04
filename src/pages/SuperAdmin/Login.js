@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Form, Input, Button, Alert, Card, Typography } from "antd";
+import { Form, Input, Button, Alert, Card } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../../assets/constants";
 import { useAuth } from "../../layouts/AuthContext";
-
-const { Title, Text } = Typography;
 
 const Login = () => {
   const navigate = useNavigate();
@@ -75,10 +73,10 @@ const Login = () => {
           <div className="login-content">
             {/* Header */}
             <div className="login-header">
-              <Title level={3} className="login-title">
+              <h3 className="login-title text-xl font-semibold m-0">
                 Sign in
-              </Title>
-              <Text className="login-subtitle">SuperAdmin Login Page</Text>
+              </h3>
+              <span className="login-subtitle">SuperAdmin Login Page</span>
             </div>
 
             {/* Error Alert */}

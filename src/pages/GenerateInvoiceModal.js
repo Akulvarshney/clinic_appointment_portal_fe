@@ -9,7 +9,6 @@ import {
   Divider,
   Space,
   InputNumber,
-  Typography,
   Tag,
   Tooltip,
   Switch,
@@ -35,7 +34,6 @@ import { getOrgInfo } from "../services/clientOrganizations.js";
 import DataTable from "../components/DataTable";
 
 const { TextArea } = Input;
-const { Text, Title } = Typography;
 const { Option } = Select;
 
 export default function GenerateInvoiceModal({
@@ -829,12 +827,12 @@ export default function GenerateInvoiceModal({
       dataIndex: "amount",
       width: 120,
       render: (_, record) => (
-        <Text strong>
+        <strong>
           ₹
           {((record.qty || 0) * (record.rate || 0)).toLocaleString("en-IN", {
             maximumFractionDigits: 2,
           })}
-        </Text>
+        </strong>
       ),
     },
     {
@@ -844,12 +842,12 @@ export default function GenerateInvoiceModal({
       render: (_, record, index) => {
         const taxDetails = getLineItemTaxDetails(record, index);
         return (
-          <Text strong className="text-gw-primary-dark">
+          <strong className="text-gw-primary-dark">
             ₹
             {taxDetails.taxableLineAmount.toLocaleString("en-IN", {
               maximumFractionDigits: 2,
             })}
-          </Text>
+          </strong>
         );
       },
     },
@@ -865,12 +863,12 @@ export default function GenerateInvoiceModal({
             const taxDetails = getLineItemTaxDetails(record, index);
             return (
               <div className="text-center">
-                <Text className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500">
                   ₹
                   {taxDetails.cgst.toLocaleString("en-IN", {
                     maximumFractionDigits: 2,
                   })}
-                </Text>
+                </span>
               </div>
             );
           },
@@ -882,12 +880,12 @@ export default function GenerateInvoiceModal({
             const taxDetails = getLineItemTaxDetails(record, index);
             return (
               <div className="text-center">
-                <Text className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500">
                   ₹
                   {taxDetails.sgst.toLocaleString("en-IN", {
                     maximumFractionDigits: 2,
                   })}
-                </Text>
+                </span>
               </div>
             );
           },
@@ -901,12 +899,12 @@ export default function GenerateInvoiceModal({
             const taxDetails = getLineItemTaxDetails(record, index);
             return (
               <div className="text-center">
-                <Text className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500">
                   ₹
                   {taxDetails.igst.toLocaleString("en-IN", {
                     maximumFractionDigits: 2,
                   })}
-                </Text>
+                </span>
               </div>
             );
           },
@@ -924,12 +922,12 @@ export default function GenerateInvoiceModal({
       render: (_, record, index) => {
         const taxDetails = getLineItemTaxDetails(record, index);
         return (
-          <Text strong className="text-green-600">
+          <strong className="text-green-600">
             ₹
             {taxDetails.finalAmount.toLocaleString("en-IN", {
               maximumFractionDigits: 2,
             })}
-          </Text>
+          </strong>
         );
       },
     },
@@ -1187,12 +1185,12 @@ export default function GenerateInvoiceModal({
               <div className="text-sm space-y-2">
                 <div className="flex justify-between items-center">
                   <span>Sub Total:</span>
-                  <Text strong>
+                  <strong>
                     ₹
                     {calculations.subTotal.toLocaleString("en-IN", {
                       maximumFractionDigits: 2,
                     })}
-                  </Text>
+                  </strong>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -1212,12 +1210,12 @@ export default function GenerateInvoiceModal({
                       className="w-16"
                     />
                   </div>
-                  <Text type="danger">
+                  <span className="text-red-600">
                     -₹
                     {calculations.discountAmount.toLocaleString("en-IN", {
                       maximumFractionDigits: 2,
                     })}
-                  </Text>
+                  </span>
                 </div>
 
                 <div className="flex justify-between items-center">

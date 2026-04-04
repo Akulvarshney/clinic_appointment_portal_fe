@@ -14,10 +14,6 @@
   -webkit-font-smoothing: antialiased;
 }
 
-.gwl .MuiTypography-root {
-  font-family: inherit;
-}
-
 /* ——— Nav ——— */
 .gwl-nav {
   position: fixed;
@@ -41,7 +37,7 @@
   gap: 16px;
 }
 
-.gwl-nav__brand {
+.gwl-nav a.gwl-nav__brand {
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -50,7 +46,7 @@
   white-space: nowrap;
 }
 
-.gwl-nav__brand:hover {
+.gwl-nav .gwl-nav__brand:hover {
   color: var(--gw-primary-dark);
 }
 
@@ -68,7 +64,7 @@
   }
 }
 
-.gwl-nav__link {
+.gwl-nav a.gwl-nav__link {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--gw-ink3);
@@ -76,7 +72,7 @@
   transition: color 0.15s ease;
 }
 
-.gwl-nav__link:hover {
+.gwl-nav .gwl-nav__link:hover {
   color: var(--gw-primary-dark);
 }
 
@@ -173,7 +169,8 @@
   background: var(--gw-white);
 }
 
-.gwl-kicker {
+/* Editorial type: scope under #homepage + .gwl so sizes win over global or third-party text styles. */
+.gwl#homepage .gwl-kicker {
   display: inline-block;
   font-size: 0.75rem;
   font-weight: 600;
@@ -183,7 +180,7 @@
   margin-bottom: 12px;
 }
 
-.gwl-h1 {
+.gwl#homepage h1.gwl-h1 {
   font-size: clamp(2rem, 5vw, 3.25rem);
   font-weight: 700;
   line-height: 1.12;
@@ -192,12 +189,12 @@
   color: var(--gw-ink);
 }
 
-.gwl-h1 span {
+.gwl#homepage .gwl-h1 span {
   color: var(--gw-primary-dark);
   font-weight: 700;
 }
 
-.gwl-h2 {
+.gwl#homepage h2.gwl-h2 {
   font-size: clamp(1.5rem, 3.5vw, 2.25rem);
   font-weight: 700;
   line-height: 1.2;
@@ -206,13 +203,13 @@
   color: var(--gw-ink);
 }
 
-.gwl-h2 em,
-.gwl-h1 em {
+.gwl#homepage .gwl-h2 em,
+.gwl#homepage .gwl-h1 em {
   font-style: normal;
   color: var(--gw-primary-dark);
 }
 
-.gwl-lead {
+.gwl#homepage .gwl-lead {
   font-size: 1.0625rem;
   line-height: 1.65;
   color: var(--gw-ink2);
@@ -220,7 +217,7 @@
   max-width: 36rem;
 }
 
-.gwl-body {
+.gwl#homepage .gwl-body {
   font-size: 1rem;
   line-height: 1.7;
   color: var(--gw-ink2);
@@ -281,6 +278,9 @@
 
 .gwl-hero__art {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--gwl-radius);
   min-height: 280px;
   background: linear-gradient(135deg, var(--gw-primary-light) 0%, var(--gw-white) 50%, var(--gw-accent-light) 100%);
@@ -300,10 +300,8 @@
 }
 
 .gwl-hero__card {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  position: relative;
+  z-index: 1;
   width: min(92%, 320px);
   background: var(--gw-white);
   border-radius: var(--gwl-radius-sm);
@@ -419,6 +417,7 @@
   border: 1px solid var(--gw-line);
   box-shadow: var(--gwl-shadow);
   aspect-ratio: 4 / 3;
+  cursor: default;
 }
 
 .gwl-spotlight__media img {
@@ -426,6 +425,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transform-origin: center center;
 }
 
 .gwl-spotlight__quote {
@@ -488,6 +488,7 @@
 .gwl-feature-grid {
   display: grid;
   gap: 20px;
+  perspective: 1200px;
 }
 
 @media (min-width: 640px) {
@@ -509,6 +510,7 @@
   border-radius: var(--gwl-radius-sm);
   padding: 24px;
   height: 100%;
+  transform-style: preserve-3d;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -526,7 +528,7 @@
   margin-bottom: 12px;
 }
 
-.gwl-feature-card__title {
+.gwl#homepage h3.gwl-feature-card__title {
   font-size: 1.0625rem;
   font-weight: 600;
   margin: 0 0 10px;
@@ -603,7 +605,7 @@
   margin-bottom: 12px;
 }
 
-.gwl-step-card__title {
+.gwl#homepage h3.gwl-step-card__title {
   font-size: 1.125rem;
   font-weight: 600;
   margin: 0 0 12px;
@@ -763,7 +765,7 @@
   }
 }
 
-.gwl-quote-card__text {
+.gwl#homepage .gwl-quote-card__text {
   font-size: 1.25rem;
   line-height: 1.65;
   color: var(--gw-ink2);
@@ -790,13 +792,13 @@
   justify-content: center;
 }
 
-.gwl-quote-card__name {
+.gwl#homepage .gwl-quote-card__name {
   font-weight: 600;
   font-size: 0.9375rem;
   color: var(--gw-ink);
 }
 
-.gwl-quote-card__role {
+.gwl#homepage .gwl-quote-card__role {
   font-size: 0.8125rem;
   color: var(--gw-ink3);
   margin-top: 2px;
@@ -863,13 +865,12 @@
 }
 
 .gwl-faq__toggle--open {
-  transform: rotate(45deg);
   background: var(--gw-accent-light);
   border-color: var(--gw-primary);
   color: var(--gw-primary-dark);
 }
 
-.gwl-faq__a {
+.gwl#homepage p.gwl-faq__a {
   font-size: 0.9375rem;
   line-height: 1.7;
   color: var(--gw-ink2);
@@ -890,7 +891,7 @@
   margin: 0 auto;
 }
 
-.gwl-cta__kicker {
+.gwl#homepage .gwl-cta__kicker {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.16em;
@@ -899,7 +900,7 @@
   margin-bottom: 16px;
 }
 
-.gwl-cta__title {
+.gwl#homepage h2.gwl-cta__title {
   font-size: clamp(1.75rem, 4vw, 2.5rem);
   font-weight: 700;
   line-height: 1.2;
@@ -907,7 +908,7 @@
   margin: 0 0 16px;
 }
 
-.gwl-cta__body {
+.gwl#homepage .gwl-cta__body {
   font-size: 1.0625rem;
   line-height: 1.65;
   opacity: 0.92;
@@ -987,7 +988,7 @@
   gap: 12px 24px;
 }
 
-.gwl-footer__link {
+.gwl#homepage .gwl-footer a.gwl-footer__link {
   font-size: 0.8125rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.65);
@@ -1085,7 +1086,7 @@
   background: var(--gw-white);
 }
 
-.gwl-modal-title {
+.gwl-modal-paper h2.gwl-modal-title {
   font-size: 1.375rem;
   font-weight: 700;
   color: var(--gw-ink);
@@ -1094,7 +1095,7 @@
   padding-right: 8px;
 }
 
-.gwl-modal-sub {
+.gwl-modal-paper p.gwl-modal-sub {
   font-size: 0.8125rem;
   color: var(--gw-ink3);
   margin: 6px 0 0;
@@ -1112,7 +1113,7 @@
   background: var(--gw-surface);
 }
 
-.gwl-field-label {
+.gwl-modal-body .gwl-field-label {
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.08em;

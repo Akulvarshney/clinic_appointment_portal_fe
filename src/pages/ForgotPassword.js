@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Card, Typography, Alert, Steps } from "antd";
+import { Form, Input, Button, Card, Alert, Steps } from "antd";
 import {
   MailOutlined,
   LockOutlined,
@@ -9,7 +9,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../assets/constants";
 
-const { Title, Text } = Typography;
 const { Step } = Steps;
 
 const ForgotPassword = () => {
@@ -143,14 +142,14 @@ const ForgotPassword = () => {
     <div className=" login-container  flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-2xl border-0">
         <div className="text-center mb-6">
-          <Title level={3} className="!mb-2 !text-gray-800">
+          <h3 className="!mb-2 !text-gray-800 text-xl font-semibold m-0">
             Forgot Password
-          </Title>
-          <Text type="secondary" className="text-base">
+          </h3>
+          <span className="text-base text-gray-500 block">
             {step === 1 && "Enter your Login ID to receive OTP"}
             {step === 2 && "Enter the OTP sent to your email"}
             {step === 3 && "Enter your new password"}
-          </Text>
+          </span>
         </div>
 
         {/* <div className="mb-6">
@@ -341,7 +340,7 @@ const ForgotPassword = () => {
 
         {/* Additional Info */}
         <div className="mt-6 text-center">
-          <Text type="secondary" className="text-sm">
+          <span className="text-sm text-gray-500">
             Remember your password?{" "}
             <a
               href="/login"
@@ -349,7 +348,7 @@ const ForgotPassword = () => {
             >
               Sign in
             </a>
-          </Text>
+          </span>
         </div>
       </Card>
     </div>

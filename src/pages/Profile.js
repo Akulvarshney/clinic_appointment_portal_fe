@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   Card,
   Avatar,
-  Typography,
   Button,
   Input,
   Tag,
@@ -33,7 +32,6 @@ import {
 import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
 
-const { Title, Text } = Typography;
 const { Option } = Select;
 const { Step } = Steps;
 
@@ -497,12 +495,12 @@ const Profile = () => {
       <div className="max-w-full">
         {/* Header */}
         <div className="mb-8">
-          <Title level={2} className="text-gray-800 mb-2">
+          <h2 className="text-gray-800 mb-2 text-3xl font-semibold m-0">
             Profile Settings
-          </Title>
-          <Text className="text-gray-600">
+          </h2>
+          <span className="text-gray-600 block">
             Manage your account information and preferences
-          </Text>
+          </span>
         </div>
 
         {/* Organization & Role Selector - Only show if multiple orgs/roles exist */}
@@ -510,17 +508,17 @@ const Profile = () => {
           userData?.organizations?.[0]?.roles?.length > 1 ? (
           <Card className="mb-6 shadow-sm">
             <div className="mb-4">
-              <Title level={4} className="mb-4 flex items-center">
+              <h4 className="mb-4 flex items-center text-lg font-semibold m-0">
                 <SwapOutlined className="mr-2" />
                 Switch Organization & Role
-              </Title>
+              </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {userData?.organizations?.length > 1 && (
                   <div>
-                    <Text className="block text-sm text-gray-500 mb-2">
+                    <span className="block text-sm text-gray-500 mb-2">
                       Select Organization
-                    </Text>
+                    </span>
                     <Select
                       value={selectedOrgIndex}
                       onChange={handleOrgChange}
@@ -539,9 +537,9 @@ const Profile = () => {
 
                 {currentOrg?.roles?.length > 1 && (
                   <div>
-                    <Text className="block text-sm text-gray-500 mb-2">
+                    <span className="block text-sm text-gray-500 mb-2">
                       Select Role
-                    </Text>
+                    </span>
                     <Select
                       value={selectedRoleIndex}
                       onChange={handleRoleChange}
@@ -580,12 +578,12 @@ const Profile = () => {
                 className="bg-gw-primary"
               />
               <div>
-                <Title level={3} className="mb-1">
+                <h3 className="mb-1 text-xl font-semibold m-0">
                   {userData?.full_name || "N/A"}
-                </Title>
-                <Text className="text-gray-600">
+                </h3>
+                <span className="text-gray-600 block">
                   {currentRole?.description || currentRole?.name || "N/A"}
-                </Text>
+                </span>
                 <div className="mt-2">
                   {currentRole?.name && (
                     <Tag color="blue">{currentRole.name}</Tag>
@@ -639,22 +637,22 @@ const Profile = () => {
                   <div className="flex items-center space-x-3">
                     <UserOutlined className="text-gray-500" />
                     <div>
-                      <Text className="block text-sm text-gray-500">
+                      <span className="block text-sm text-gray-500">
                         Full Name
-                      </Text>
-                      <Text className="text-base font-medium">
+                      </span>
+                      <span className="text-base font-medium block">
                         {userData?.full_name || "N/A"}
-                      </Text>
+                      </span>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-3">
                     <MailOutlined className="text-gray-500" />
                     <div>
-                      <Text className="block text-sm text-gray-500">Email</Text>
-                      <Text className="text-base font-medium">
+                      <span className="block text-sm text-gray-500">Email</span>
+                      <span className="text-base font-medium block">
                         {userData?.email || "N/A"}
-                      </Text>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -663,22 +661,22 @@ const Profile = () => {
                   <div className="flex items-center space-x-3">
                     <PhoneOutlined className="text-gray-500" />
                     <div>
-                      <Text className="block text-sm text-gray-500">Phone</Text>
-                      <Text className="text-base font-medium">
+                      <span className="block text-sm text-gray-500">Phone</span>
+                      <span className="text-base font-medium block">
                         {userData?.phone || "N/A"}
-                      </Text>
+                      </span>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-3">
                     <IdcardOutlined className="text-gray-500" />
                     <div>
-                      <Text className="block text-sm text-gray-500">
+                      <span className="block text-sm text-gray-500">
                         Login ID
-                      </Text>
-                      <Text className="text-base font-medium">
+                      </span>
+                      <span className="text-base font-medium block">
                         {userData?.login_id || "N/A"}
-                      </Text>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -689,9 +687,9 @@ const Profile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Text className="block text-sm text-gray-500 mb-1">
+                    <span className="block text-sm text-gray-500 mb-1">
                       Full Name
-                    </Text>
+                    </span>
                     <Input
                       size="large"
                       value={formData.full_name || userData?.full_name || ""}
@@ -703,9 +701,9 @@ const Profile = () => {
                   </div>
 
                   <div>
-                    <Text className="block text-sm text-gray-500 mb-1">
+                    <span className="block text-sm text-gray-500 mb-1">
                       Email
-                    </Text>
+                    </span>
                     <Input
                       size="large"
                       value={formData.email || userData?.email || ""}
@@ -719,9 +717,9 @@ const Profile = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <Text className="block text-sm text-gray-500 mb-1">
+                    <span className="block text-sm text-gray-500 mb-1">
                       Phone
-                    </Text>
+                    </span>
                     <Input
                       size="large"
                       value={formData.phone || userData?.phone || ""}
@@ -733,9 +731,9 @@ const Profile = () => {
                   </div>
 
                   <div>
-                    <Text className="block text-sm text-gray-500 mb-1">
+                    <span className="block text-sm text-gray-500 mb-1">
                       Login ID
-                    </Text>
+                    </span>
                     <Input
                       size="large"
                       disabled
@@ -759,12 +757,12 @@ const Profile = () => {
               <div className="flex items-center space-x-3">
                 <BankOutlined className="text-gray-500" />
                 <div>
-                  <Text className="block text-sm text-gray-500">
+                  <span className="block text-sm text-gray-500">
                     Organization Name
-                  </Text>
-                  <Text className="text-base font-medium">
+                  </span>
+                  <span className="text-base font-medium block">
                     {currentOrg.name || "N/A"}
-                  </Text>
+                  </span>
                 </div>
               </div>
 
@@ -772,12 +770,12 @@ const Profile = () => {
                 <div className="flex items-center space-x-3">
                   <IdcardOutlined className="text-gray-500" />
                   <div>
-                    <Text className="block text-sm text-gray-500">
+                    <span className="block text-sm text-gray-500">
                       Short Name
-                    </Text>
-                    <Text className="text-base font-medium">
+                    </span>
+                    <span className="text-base font-medium block">
                       {currentOrg.shortorgname}
-                    </Text>
+                    </span>
                   </div>
                 </div>
               )}
@@ -786,10 +784,10 @@ const Profile = () => {
                 <div className="flex items-center space-x-3">
                   <UserOutlined className="text-gray-500" />
                   <div>
-                    <Text className="block text-sm text-gray-500">Address</Text>
-                    <Text className="text-base font-medium">
+                    <span className="block text-sm text-gray-500">Address</span>
+                    <span className="text-base font-medium block">
                       {currentOrg.address}
-                    </Text>
+                    </span>
                   </div>
                 </div>
               )}
@@ -798,12 +796,12 @@ const Profile = () => {
                 <div className="flex items-center space-x-3">
                   <IdcardOutlined className="text-gray-500" />
                   <div>
-                    <Text className="block text-sm text-gray-500">
+                    <span className="block text-sm text-gray-500">
                       GST Number
-                    </Text>
-                    <Text className="text-base font-medium">
+                    </span>
+                    <span className="text-base font-medium block">
                       {currentOrg.gstnumber}
-                    </Text>
+                    </span>
                   </div>
                 </div>
               )}
@@ -822,13 +820,13 @@ const Profile = () => {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <Title level={5} className="mb-1">
+                      <h5 className="mb-1 text-base font-semibold m-0">
                         {org.name} {org.shortorgname && `(${org.shortorgname})`}
-                      </Title>
+                      </h5>
                       {org.address && (
-                        <Text className="text-gray-600 text-sm">
+                        <span className="text-gray-600 text-sm block">
                           {org.address}
-                        </Text>
+                        </span>
                       )}
                     </div>
                     {orgIndex === selectedOrgIndex && (
@@ -838,9 +836,9 @@ const Profile = () => {
 
                   {org.roles && org.roles.length > 0 && (
                     <div className="ml-4">
-                      <Text className="block text-sm text-gray-500 mb-2">
+                      <span className="block text-sm text-gray-500 mb-2">
                         Roles:
-                      </Text>
+                      </span>
                       <Space wrap>
                         {org.roles.map((role, roleIndex) => (
                           <Tag
@@ -870,27 +868,27 @@ const Profile = () => {
         <Card title="Account Information" className="shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Text className="block text-sm text-gray-500 mb-1">
+              <span className="block text-sm text-gray-500 mb-1">
                 Account Created
-              </Text>
-              <Text className="text-base font-medium">
+              </span>
+              <span className="text-base font-medium block">
                 {formatDate(userData?.created_at)}
-              </Text>
+              </span>
             </div>
 
             <div>
-              <Text className="block text-sm text-gray-500 mb-1">
+              <span className="block text-sm text-gray-500 mb-1">
                 Total Organizations
-              </Text>
-              <Text className="text-base font-medium">
+              </span>
+              <span className="text-base font-medium block">
                 {userData?.organizations?.length || 0}
-              </Text>
+              </span>
             </div>
 
             <div>
-              <Text className="block text-sm text-gray-500 mb-1">
+              <span className="block text-sm text-gray-500 mb-1">
                 Account Status
-              </Text>
+              </span>
               <Tag color={userData?.is_valid ? "green" : "red"}>
                 {userData?.is_valid ? "Active" : "Inactive"}
               </Tag>

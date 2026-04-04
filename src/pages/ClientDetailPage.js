@@ -11,7 +11,6 @@ import {
   Badge,
   Button,
   Timeline,
-  Typography,
   Statistic,
   Empty,
   Divider,
@@ -45,7 +44,6 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 
-const { Title, Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
 
@@ -369,7 +367,7 @@ const ClientDetailPage = () => {
       >
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gw-primary mx-auto mb-4" />
-          <Text className="text-gw-ink-3">Loading client details...</Text>
+          <span className="text-gw-ink-3">Loading client details...</span>
         </div>
       </Box>
     );
@@ -407,20 +405,17 @@ const ClientDetailPage = () => {
 
             {/* Client Info */}
             <div className="flex-grow">
-              <Title
-                level={2}
-                className="!mb-2 !text-gw-primary-dark !font-bold"
-              >
+              <h2 className="!mb-2 !text-gw-primary-dark !font-bold text-2xl">
                 {clientData?.first_name} {clientData?.last_name}
-              </Title>
+              </h2>
               <div className="flex gap-5 items-center">
-                <Text className="text-gw-ink-3 block mb-3">
+                <span className="text-gw-ink-3 block mb-3">
                   Client ID:{" "}
                   {clientData?.client_organization_category?.[0]?.portal_id}
-                </Text>
-                <Text className="text-gw-ink-3 block mb-3">
+                </span>
+                <span className="text-gw-ink-3 block mb-3">
                   Login ID: {clientData?.users.login_id}
-                </Text>
+                </span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Tag
@@ -501,54 +496,49 @@ const ClientDetailPage = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Client Information */}
             <div className="bg-white rounded-lg shadow border border-gw-muted/40 p-6">
-              <Title
-                level={4}
-                className="!mb-4 !text-gw-primary-dark !font-semibold"
-              >
+              <h4 className="!mb-4 !text-gw-primary-dark !font-semibold text-lg">
                 Client Information
-              </Title>
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
                   <PhoneOutlined className="text-gw-primary" />
                   <div>
-                    <Text className="text-gw-ink-3 text-sm block">Phone</Text>
-                    <Text>
-                      {isMobileView ? clientData?.phone : "**********"}
-                    </Text>
+                    <span className="text-gw-ink-3 text-sm block">Phone</span>
+                    <span>{isMobileView ? clientData?.phone : "**********"}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <MailOutlined className="text-gw-primary" />
                   <div>
-                    <Text className="text-gw-ink-3 text-sm block">Email</Text>
-                    <Text>{clientData?.email}</Text>
+                    <span className="text-gw-ink-3 text-sm block">Email</span>
+                    <span>{clientData?.email}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <HomeOutlined className="text-gw-primary" />
                   <div>
-                    <Text className="text-gw-ink-3 text-sm block">Address</Text>
-                    <Text>{clientData?.address}</Text>
+                    <span className="text-gw-ink-3 text-sm block">Address</span>
+                    <span>{clientData?.address}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <HomeOutlined className="text-gw-primary" />
                   <div>
-                    <Text className="text-gw-ink-3 text-sm block">State</Text>
-                    <Text>{clientData?.state}</Text>
+                    <span className="text-gw-ink-3 text-sm block">State</span>
+                    <span>{clientData?.state}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <CalendarOutlined className="text-gw-primary" />
                   <div>
-                    <Text className="text-gw-ink-3 text-sm block">
+                    <span className="text-gw-ink-3 text-sm block">
                       Date of Birth
-                    </Text>
-                    <Text>
+                    </span>
+                    <span>
                       {clientData?.date_of_birth
                         ? formatDate(clientData.date_of_birth)
                         : "N/A"}
-                    </Text>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -557,15 +547,12 @@ const ClientDetailPage = () => {
             {/* Appointment History */}
             <div className="bg-white rounded-lg shadow border border-gw-muted/40 p-6">
               <div className="flex items-center justify-between mb-4">
-                <Title
-                  level={4}
-                  className="!mb-0 !text-gw-primary-dark !font-semibold"
-                >
+                <h4 className="!mb-0 !text-gw-primary-dark !font-semibold text-lg">
                   Appointment History
-                </Title>
-                <Text className="text-gw-ink-3">
+                </h4>
+                <span className="text-gw-ink-3">
                   {clientData?.appointments?.length || 0} total appointments
-                </Text>
+                </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2  gap-4">
                 <Search
@@ -590,10 +577,10 @@ const ClientDetailPage = () => {
                 <div className="mb-6 space-y-4">
                   {(statusFilter !== "ALL" || searchQuery || dateFilter) && (
                     <div className="flex items-center gap-2">
-                      <Text className="text-sm text-gw-ink-3">
+                      <span className="text-sm text-gw-ink-3">
                         Showing {filteredAndPaginatedAppointments.total} of{" "}
                         {clientData?.appointments?.length} appointments
-                      </Text>
+                      </span>
                       <Button
                         size="small"
                         type="link"
@@ -624,23 +611,23 @@ const ClientDetailPage = () => {
                             <div className="flex items-start gap-3">
                               {getStatusIcon(appointment.status)}
                               <div className="flex-grow">
-                                <Text strong className="block">
+                                <strong className="block">
                                   Appointment #{appointment.portal_id}
-                                </Text>
-                                <Text className="text-gw-ink-3 text-sm block">
+                                </strong>
+                                <span className="text-gw-ink-3 text-sm block">
                                   {formatDate(appointment.start_time)} •{" "}
                                   {formatTime(appointment.start_time)} -{" "}
                                   {formatTime(appointment.end_time)}
-                                </Text>
+                                </span>
                                 {appointment.remarks && (
-                                  <Text className="text-gw-ink-2 text-sm block mt-1">
+                                  <span className="text-gw-ink-2 text-sm block mt-1">
                                     Notes: {appointment.remarks}
-                                  </Text>
+                                  </span>
                                 )}
                                 {appointment.cancel_remarks && (
-                                  <Text className="text-[#b45353] text-sm block mt-1">
+                                  <span className="text-[#b45353] text-sm block mt-1">
                                     Cancel Reason: {appointment.cancel_remarks}
-                                  </Text>
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -692,17 +679,14 @@ const ClientDetailPage = () => {
           <div className="space-y-6">
             {/* Statistics */}
             <div className="bg-white rounded-lg shadow border border-gw-muted/40 p-6">
-              <Title
-                level={4}
-                className="!mb-4 !text-gw-primary-dark !font-semibold"
-              >
+              <h4 className="!mb-4 !text-gw-primary-dark !font-semibold text-lg">
                 Appointment Statistics
                 {(statusFilter !== "ALL" || searchQuery || dateFilter) && (
-                  <Text className="text-sm text-gw-ink-3 font-normal ml-2">
+                  <span className="text-sm text-gw-ink-3 font-normal ml-2">
                     (filtered)
-                  </Text>
+                  </span>
                 )}
-              </Title>
+              </h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-gw-primary-light/30 rounded-lg border border-gw-primary-light/25">
                   <div className="text-2xl font-bold text-gw-primary-dark">
@@ -733,12 +717,9 @@ const ClientDetailPage = () => {
 
             {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow border border-gw-muted/40 p-6">
-              <Title
-                level={4}
-                className="!mb-4 !text-gw-primary-dark !font-semibold"
-              >
+              <h4 className="!mb-4 !text-gw-primary-dark !font-semibold text-lg">
                 Quick Actions
-              </Title>
+              </h4>
               <div className="space-y-3">
                 <Button
                   fullWidth

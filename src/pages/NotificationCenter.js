@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Switch, Typography, message, Spin } from "antd";
+import { Switch, message, Spin } from "antd";
 import DataTable from "../components/DataTable";
 import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
-
-const { Text } = Typography;
 
 const NotificationCenter = () => {
   const [notifications, setNotifications] = useState([]);
@@ -72,7 +70,7 @@ const NotificationCenter = () => {
       title: "Notification Name",
       dataIndex: "name",
       key: "name",
-      render: (text) => <Text strong>{text}</Text>,
+      render: (text) => <strong>{text}</strong>,
     },
     {
       title: "Description",
