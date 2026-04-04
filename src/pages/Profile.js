@@ -33,7 +33,12 @@ import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
 
 const { Option } = Select;
-const { Step } = Steps;
+
+const RESET_PASSWORD_STEP_ITEMS = [
+  { title: "Send code", icon: <MailOutlined /> },
+  { title: "Verify", icon: <KeyOutlined /> },
+  { title: "New password", icon: <LockOutlined /> },
+];
 
 const Profile = () => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -195,7 +200,7 @@ const Profile = () => {
     try {
       setResetPasswordLoading(true);
       const response = await axios.post(
-        `${BACKEND_URL}noAuth/auth/forgotPassword`,
+        `${BACKEND_URL}/noAuth/auth/forgotPassword`,
         {
           identifier: values.identifier,
         },
@@ -295,6 +300,9 @@ const Profile = () => {
   };
 
   const renderResetPasswordModalContent = () => {
+    const formActionsClass =
+      "flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-2 pt-2 border-t border-gw-muted/80";
+
     switch (resetPasswordStep) {
       case 0:
         return (
@@ -302,10 +310,16 @@ const Profile = () => {
             form={resetPasswordForm}
             onFinish={handleForgotPassword}
             layout="vertical"
+            requiredMark={false}
+            className="reset-password-modal-form"
           >
+            <p className="mb-4 mt-0 text-sm text-gw-ink-3">
+              We will send a one-time code to the email or phone linked to this
+              account. Use the identifier below, then check your inbox or SMS.
+            </p>
             <Form.Item
               name="identifier"
-              label="Email or Login ID"
+              label={<span className="font-medium">Email or login ID</span>}
               rules={[
                 {
                   required: true,
@@ -316,17 +330,21 @@ const Profile = () => {
               <Input
                 size="large"
                 disabled
-                placeholder="Enter your email or login ID"
-                prefix={<MailOutlined />}
+                placeholder="Your account email or login ID"
+                prefix={<MailOutlined className="text-gw-ink-3" />}
+                className="rounded-lg"
               />
             </Form.Item>
-            <div className="flex justify-end space-x-2">
-              <Button onClick={closeResetPasswordModal}>Cancel</Button>
+            <div className={formActionsClass}>
+              <Button onClick={closeResetPasswordModal} size="large">
+                Cancel
+              </Button>
               <Button
                 type="primary"
                 htmlType="submit"
                 loading={resetPasswordLoading}
-                className="bg-gw-primary-dark hover:opacity-90"
+                size="large"
+                className="bg-gw-primary-dark hover:!bg-gw-primary-dark/90 sm:min-w-[120px]"
               >
                 Send OTP
               </Button>
@@ -340,38 +358,46 @@ const Profile = () => {
             form={resetPasswordForm}
             onFinish={handleVerifyOTP}
             layout="vertical"
+            requiredMark={false}
+            className="reset-password-modal-form"
           >
             <Alert
-              message={`OTP sent to: ${resetIdentifier}`}
+              message="Check your messages"
+              description={
+                <span className="break-all">
+                  We sent a 6-digit code for:{" "}
+                  <strong className="text-gw-ink">{resetIdentifier}</strong>
+                </span>
+              }
               type="info"
-              className="mb-4"
               showIcon
+              className="mb-5 rounded-lg border-gw-primary-light/50 bg-gw-primary-light/20"
             />
             <Form.Item
               name="otp"
-              label="Enter OTP"
+              label={<span className="font-medium">Enter verification code</span>}
               rules={[
                 {
                   required: true,
-                  message: "Please enter the OTP!",
+                  message: "Please enter the code!",
                 },
                 {
                   len: 6,
-                  message: "OTP must be 6 digits!",
+                  message: "Code must be 6 digits!",
                 },
               ]}
             >
-              <Input
+              <Input.OTP
+                length={6}
                 size="large"
-                placeholder="Enter 6-digit OTP"
-                maxLength={6}
-                prefix={<KeyOutlined />}
+                className="gap-2 [&_.ant-input-otp-input]:!rounded-lg [&_.ant-input-otp-input]:!h-11 [&_.ant-input-otp-input]:!w-10 sm:[&_.ant-input-otp-input]:!w-11"
               />
             </Form.Item>
-            <div className="flex justify-end space-x-2">
+            <div className={formActionsClass}>
               <Button
                 onClick={() => setResetPasswordStep(0)}
                 disabled={resetPasswordLoading}
+                size="large"
               >
                 Back
               </Button>
@@ -379,9 +405,10 @@ const Profile = () => {
                 type="primary"
                 htmlType="submit"
                 loading={resetPasswordLoading}
-                className="bg-gw-primary-dark hover:opacity-90"
+                size="large"
+                className="bg-gw-primary-dark hover:!bg-gw-primary-dark/90 sm:min-w-[120px]"
               >
-                Verify OTP
+                Verify
               </Button>
             </div>
           </Form>
@@ -393,10 +420,19 @@ const Profile = () => {
             form={resetPasswordForm}
             onFinish={handleResetPassword}
             layout="vertical"
+            requiredMark={false}
+            className="reset-password-modal-form"
           >
+            <Alert
+              message="Choose a strong password"
+              description="At least 8 characters with uppercase, lowercase, a number, and a special character (@$!%*?&)."
+              type="warning"
+              showIcon
+              className="mb-5 rounded-lg"
+            />
             <Form.Item
               name="newPassword"
-              label="New Password"
+              label={<span className="font-medium">New password</span>}
               rules={[
                 {
                   required: true,
@@ -410,19 +446,20 @@ const Profile = () => {
                   pattern:
                     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
                   message:
-                    "Password must contain uppercase, lowercase, number and special character!",
+                    "Use uppercase, lowercase, a number, and a special character.",
                 },
               ]}
             >
               <Input.Password
                 size="large"
                 placeholder="Enter new password"
-                prefix={<LockOutlined />}
+                prefix={<LockOutlined className="text-gw-ink-3" />}
+                className="rounded-lg"
               />
             </Form.Item>
             <Form.Item
               name="confirmPassword"
-              label="Confirm New Password"
+              label={<span className="font-medium">Confirm new password</span>}
               dependencies={["newPassword"]}
               rules={[
                 {
@@ -441,14 +478,16 @@ const Profile = () => {
             >
               <Input.Password
                 size="large"
-                placeholder="Confirm new password"
-                prefix={<LockOutlined />}
+                placeholder="Re-enter new password"
+                prefix={<LockOutlined className="text-gw-ink-3" />}
+                className="rounded-lg"
               />
             </Form.Item>
-            <div className="flex justify-end space-x-2">
+            <div className={formActionsClass}>
               <Button
                 onClick={() => setResetPasswordStep(1)}
                 disabled={resetPasswordLoading}
+                size="large"
               >
                 Back
               </Button>
@@ -456,9 +495,10 @@ const Profile = () => {
                 type="primary"
                 htmlType="submit"
                 loading={resetPasswordLoading}
-                className="bg-green-600 hover:bg-green-700"
+                size="large"
+                className="bg-gw-primary-dark hover:!bg-gw-primary-dark/90 sm:min-w-[140px]"
               >
-                Reset Password
+                Save password
               </Button>
             </div>
           </Form>
@@ -899,25 +939,61 @@ const Profile = () => {
         {/* Reset Password Modal */}
         <Modal
           title={
-            <div className="flex items-center">
-              <LockOutlined className="mr-2" />
-              Reset Password
+            <div className="flex items-center gap-4 min-w-0 pr-2">
+              <span
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white text-xl shadow-inner ring-1 ring-white/20"
+                aria-hidden
+              >
+                <LockOutlined />
+              </span>
+              <div className="min-w-0 flex-1 py-0.5">
+                <div className="text-lg font-semibold text-white leading-snug tracking-tight m-0">
+                  Reset password
+                </div>
+                <span className="text-sm block mt-1 text-white/80 leading-snug">
+                  Secure your account in three quick steps
+                </span>
+              </div>
             </div>
           }
           open={resetPasswordModal}
           onCancel={closeResetPasswordModal}
           footer={null}
-          width={500}
+          width={520}
           destroyOnClose
+          centered
+          maskClosable={!resetPasswordLoading}
+          className={
+            "reset-password-modal " +
+            "[&_.ant-modal-content]:!p-0 [&_.ant-modal-content]:overflow-hidden " +
+            "[&_.ant-modal-header]:!m-0 [&_.ant-modal-header]:!p-0 [&_.ant-modal-header]:!border-0 " +
+            "[&_.ant-modal-header]:!rounded-t-[12px] " +
+            "[&_.ant-modal-header]:bg-gradient-to-br [&_.ant-modal-header]:from-gw-primary-dark [&_.ant-modal-header]:to-gw-primary " +
+            "[&_.ant-modal-title]:!m-0 [&_.ant-modal-title]:!w-full [&_.ant-modal-title]:!max-w-none " +
+            "[&_.ant-modal-title]:!text-left [&_.ant-modal-title]:!leading-normal [&_.ant-modal-title]:!font-normal " +
+            "[&_.ant-modal-title]:px-5 [&_.ant-modal-title]:py-4 [&_.ant-modal-title]:pr-12 " +
+            "[&_.ant-modal-close]:!top-4 [&_.ant-modal-close]:!right-4 [&_.ant-modal-close]:!h-10 [&_.ant-modal-close]:!w-10 " +
+            "[&_.ant-modal-close]:!rounded-lg [&_.ant-modal-close]:flex [&_.ant-modal-close]:items-center [&_.ant-modal-close]:justify-center " +
+            "[&_.ant-modal-close]:!text-white/90 hover:[&_.ant-modal-close]:!text-white " +
+            "[&_.ant-modal-close]:hover:!bg-white/10 [&_.ant-modal-close]:!transition-colors"
+          }
+          styles={{
+            content: { borderRadius: 12, overflow: "hidden", padding: 0 },
+            header: { marginBottom: 0, borderBottom: "none" },
+            body: { padding: "20px 24px 24px" },
+          }}
         >
-          <div className="mb-6">
-            <Steps current={resetPasswordStep} size="small">
-              <Step title="Send OTP" description="Enter identifier" />
-              <Step title="Verify OTP" description="Enter OTP code" />
-              <Step title="New Password" description="Set new password" />
-            </Steps>
+          <div className="mb-5 pb-5 border-b border-gw-muted">
+            <Steps
+              current={resetPasswordStep}
+              size="small"
+              items={RESET_PASSWORD_STEP_ITEMS}
+              className="[&_.ant-steps-item-title]:!text-xs sm:[&_.ant-steps-item-title]:!text-sm"
+            />
           </div>
-          {renderResetPasswordModalContent()}
+          <div className="rounded-xl border border-gw-muted bg-gw-surface/40 p-4 sm:p-5">
+            {renderResetPasswordModalContent()}
+          </div>
         </Modal>
       </div>
     </div>

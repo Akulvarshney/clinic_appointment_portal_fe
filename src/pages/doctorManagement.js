@@ -10,9 +10,12 @@ import {
   DatePicker,
   message,
   Alert,
+  Spin,
+  Pagination,
+  Card,
+  Avatar,
 } from "antd";
-import DataTable from "../components/DataTable";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, UserOutlined } from "@ant-design/icons";
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 import { PALETTE } from "../theme/palette";
 
@@ -31,7 +34,7 @@ const DoctorManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(9);
 
   const [isNewDoctor, setIsNewDoctor] = useState(false);
 
@@ -139,11 +142,6 @@ const DoctorManagement = () => {
     }
   };
 
-  const handleTableChange = (pagination) => {
-    setCurrentPage(pagination.current);
-    setPageSize(pagination.pageSize);
-  };
-
   const handleAddDoctor = () => {
     setIsModalVisible(true);
     setErrorMsg("");
@@ -213,50 +211,15 @@ const DoctorManagement = () => {
     }
   };
 
-  const columns = [
-    {
-      title: "ID",
-      dataIndex: "portalid",
-      key: "portalid",
-      width: 80,
-    },
-    {
-      title: "Name",
-      key: "name",
-      width: 180,
-      render: (_, record) =>
-        `${record.first_name || ""} ${record.last_name || ""}`.trim() || "-",
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-      width: 200,
-    },
-    {
-      title: "Phone",
-      dataIndex: "phone",
-      key: "phone",
-      width: 120,
-    },
-    {
-      title: "License Number",
-      dataIndex: "license_number",
-      key: "license_number",
-      width: 150,
-    },
-    {
-      title: "Login ID",
-      key: "login_id",
-      width: 150,
-      render: (_, record) => record.users?.login_id || "-",
-    },
-  ];
+  const formatField = (value) =>
+    value !== undefined && value !== null && String(value).trim() !== ""
+      ? String(value)
+      : "—";
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", background: PALETTE.surface }}>
       <div className="flex-1 p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div className="flex topbar flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
             Doctor Management
           </h1>
@@ -309,23 +272,89 @@ const DoctorManagement = () => {
           />
         )}
 
-        <div className="bg-white rounded-lg shadow">
-          <DataTable
-            columns={columns}
-            dataSource={doctors}
-            loading={tableLoading}
-            rowKey="portalid"
-            pagination={{
-              current: currentPage,
-              pageSize: pageSize,
-              total: totalRecords,
-              onChange: (page, size) => {
-                setCurrentPage(page);
-                setPageSize(size);
-              },
-            }}
-            scroll={{ x: 800 }}
-          />
+        <div className=" rounded-lg  ">
+          <Spin spinning={tableLoading}>
+            {doctors.length === 0 && !tableLoading ? (
+              <div className="text-center py-16 text-gw-ink-3">
+                <UserOutlined className="text-4xl text-gw-primary mb-3 opacity-60" />
+                <p className="text-base">No doctors found.</p>
+                <p className="text-sm mt-1 opacity-80">
+                  Try adjusting your search or add a new doctor.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                  {doctors.map((doc) => {
+                    const fullName =
+                      `${doc.first_name || ""} ${doc.last_name || ""}`.trim();
+                    return (
+                      <Card
+                        key={doc.portalid}
+                        hoverable
+                        className="overflow-hidden rounded-xl border-gw-muted shadow-sm cursor-default"
+                        styles={{ body: { padding: 0 } }}
+                      >
+                        {/* Accent bar */}
+                        <div style={{ height: 3, backgroundColor: PALETTE.primaryDark }} />
+
+                        {/* Header */}
+                        <div style={{ padding: "14px 16px 12px", borderBottom: `0.5px solid ${PALETTE.muted}`, display: "flex", alignItems: "center", gap: 12 }}>
+                          <Avatar size={44} icon={<UserOutlined />} style={{ backgroundColor: "#EAF0F9", color: PALETTE.primaryDark, flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontWeight: 500, fontSize: 14 }}>{formatField(fullName)}</div>
+                            <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>ID · {formatField(doc.portalid)}</div>
+                          </div>
+                        </div>
+
+                        {/* Body — 2-col grid */}
+                        <div style={{ padding: "14px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                          {[
+                            { label: "Email", value: doc.email },
+                            { label: "Phone", value: doc.phone },
+                            { label: "License", value: doc.license_number },
+                            { label: "Login ID", value: doc.users?.login_id },
+                          ].map(({ label, value }) => (
+                            <div key={label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                              <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: "#aaa", fontWeight: 500 }}>{label}</span>
+                              <span style={{ fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{formatField(value)}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{ padding: "10px 16px", borderTop: `0.5px solid ${PALETTE.muted}`, background: "#F8F9FA", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: 11, color: "#3B6D11", fontWeight: 500 }}>
+                            <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "#3B6D11", marginRight: 5 }} />
+                            Active
+                          </span>
+                          <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: "#EAF0F9", color: PALETTE.primaryDark, fontWeight: 500 }}>
+                            {formatField(doc.specialty || "Doctor")}
+                          </span>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+                {totalRecords > 0 && (
+                  <div className="mt-6 flex justify-center">
+                    <Pagination
+                      current={currentPage}
+                      pageSize={pageSize}
+                      total={totalRecords}
+                      // showSizeChanger
+                      // pageSizeOptions={[10, 20, 50]}
+                      showTotal={(total) => `${total} doctor${total !== 1 ? "s" : ""}`}
+                      onChange={(page, size) => {
+                        setCurrentPage(page);
+                        setPageSize(size);
+                      }}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </Spin>
         </div>
 
         <Modal
