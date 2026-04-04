@@ -1,9 +1,10 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
-import { Select } from "antd";
+import { Select, Spin } from "antd";
 import { Link } from "react-router-dom";
-import Sidebar from "../components/SideBar.js";
+import dayjs from "dayjs";
 import { BACKEND_URL } from "../assets/constants";
+import { apiGet } from "../utils/axiosCalls";
 import {
   BarChart,
   Bar,
@@ -21,8 +22,31 @@ import {
   CalendarOutlined,
   PieChartOutlined,
   DollarOutlined,
+  RightOutlined,
+  FieldTimeOutlined,
 } from "@ant-design/icons";
 import { CHART_COLORS, PALETTE } from "../theme/palette";
+
+function getStatusColor(status) {
+  switch (status) {
+    case "BOOKED":
+      return "rgba(170, 205, 220, 0.55)";
+    case "CONFIRMED":
+      return "#c5f0dd";
+    case "VISITED":
+      return "#b2f5a6";
+    case "NO_SHOW":
+      return "#f2e59b";
+    case "CANCELLED":
+      return "#f5a17a";
+    case "CLOSED":
+      return "#97989c";
+    default:
+      return "#ffffff";
+  }
+}
+
+const UPCOMING_PREVIEW_LIMIT = 6;
 
 const DashboardPage = () => {
   const orgId = localStorage.getItem("selectedOrgId");
@@ -30,6 +54,8 @@ const DashboardPage = () => {
   const [pieData, setPieData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [barData, setbarData] = useState([]);
+  const [upcomingToday, setUpcomingToday] = useState([]);
+  const [upcomingLoading, setUpcomingLoading] = useState(false);
   const { Option } = Select;
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -137,6 +163,66 @@ const DashboardPage = () => {
     fetchClientCategories();
   }, [selectedMonth, selectedYear]);
 
+  useEffect(() => {
+    async function fetchTodayUpcoming() {
+      if (!orgId) return;
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const basic_config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+
+      try {
+        setUpcomingLoading(true);
+        const date = dayjs().startOf("day").toISOString();
+        const response = await apiGet(
+          `/appointments/appt/getActiveAppointments?orgId=${orgId}&date=${date}`,
+          basic_config
+        );
+
+        const apptsFromAPI = response?.response || [];
+        const now = new Date();
+
+        const formatted = apptsFromAPI.map((appt) => ({
+          id: appt.id,
+          title: appt.title || "Appointment",
+          start: new Date(appt.start_time),
+          end: new Date(appt.end_time),
+          client: appt.clients?.first_name || "",
+          service: appt.services?.name || "",
+          status: appt.status || "",
+          employeeName: appt.employees?.first_name || "",
+          doctorName: appt.doctors?.first_name || "",
+          color: getStatusColor(appt.status) || PALETTE.accentLight,
+        }));
+
+        const upcoming = formatted
+          .filter((a) => a.end > now)
+          .sort((a, b) => a.start - b.start)
+          .slice(0, UPCOMING_PREVIEW_LIMIT);
+
+        setUpcomingToday(upcoming);
+      } catch (err) {
+        console.error("Error fetching today's appointments:", err);
+        setUpcomingToday([]);
+      } finally {
+        setUpcomingLoading(false);
+      }
+    }
+
+    const t = setTimeout(fetchTodayUpcoming, 50);
+    return () => clearTimeout(t);
+  }, [orgId]);
+
+  const formatTimeRange = (start, end) => {
+    const opts = { hour: "2-digit", minute: "2-digit" };
+    return `${start.toLocaleTimeString([], opts)} – ${end.toLocaleTimeString(
+      [],
+      opts
+    )}`;
+  };
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-gw-primary-light/40 via-gw-surface to-gw-muted/30 font-sans text-gw-ink">
       <main className="flex-1 px-6 md:px-12 py-10 animate-fadeIn">
@@ -168,6 +254,100 @@ const DashboardPage = () => {
             </Link>
           ))}
         </div>
+
+        {/* Today's upcoming appointments */}
+        <section className="mb-12">
+          <div className="relative overflow-hidden rounded-2xl border border-gw-primary/15 bg-gradient-to-br from-white/90 via-white/75 to-gw-primary-light/20 backdrop-blur-md shadow-lg">
+            <div
+              className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gw-primary/10 blur-2xl"
+              aria-hidden
+            />
+            <div className="relative flex flex-col gap-4 p-6 sm:p-7 md:flex-row md:items-start md:justify-between">
+              <div className="flex items-start gap-3">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gw-primary text-white shadow-md">
+                  <FieldTimeOutlined className="text-xl" />
+                </span>
+                <div>
+                  <h3 className="text-xl font-bold text-gw-ink sm:text-2xl">
+                    Today&apos;s lineup
+                  </h3>
+                  <p className="mt-1 max-w-xl text-sm text-gray-600">
+                    Upcoming visits for your organization on{" "}
+                    <span className="font-semibold text-gw-primary-dark">
+                      {dayjs().format("dddd, MMM D")}
+                    </span>
+                    .
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/appointments"
+                className="inline-flex items-center gap-1 self-start rounded-full border border-gw-primary/30 bg-white/60 px-4 py-2 text-sm font-semibold text-gw-primary-dark shadow-sm transition hover:border-gw-primary hover:bg-white"
+              >
+                Open calendar
+                <RightOutlined className="text-xs" />
+              </Link>
+            </div>
+
+            <div className="relative border-t border-gw-primary/10 bg-white/40 px-4 py-4 sm:px-6 sm:py-5">
+              {upcomingLoading ? (
+                <div className="flex justify-center py-10">
+                  <Spin size="large" />
+                </div>
+              ) : upcomingToday.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-gw-primary/25 bg-white/50 px-6 py-10 text-center">
+                  <p className="text-base font-medium text-gray-700">
+                    No upcoming appointments left today
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    You&apos;re caught up—or nothing is scheduled from here on.
+                  </p>
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {upcomingToday.map((appt) => (
+                    <li
+                      key={appt.id}
+                      className="group flex gap-3 rounded-xl border border-gray-100/80 bg-white/80 p-3 shadow-sm transition hover:border-gw-primary/25 hover:shadow-md sm:gap-4 sm:p-4 animate-fadeIn"
+                    >
+                      <div
+                        className="w-1 shrink-0 rounded-full"
+                        style={{ backgroundColor: appt.color }}
+                        aria-hidden
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <span className="font-mono text-sm font-semibold tabular-nums text-gw-primary-dark">
+                            {formatTimeRange(appt.start, appt.end)}
+                          </span>
+                          {appt.status && (
+                            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-gray-600">
+                              {appt.status}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 truncate text-base font-semibold text-gray-900">
+                          {appt.title}
+                        </p>
+                        <p className="mt-0.5 text-sm text-gray-600">
+                          {[appt.client, appt.service].filter(Boolean).join(" · ") ||
+                            "No client or service details"}
+                        </p>
+                        {(appt.employeeName || appt.doctorName) && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            {[appt.employeeName, appt.doctorName]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
 
         {/* CHARTS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
