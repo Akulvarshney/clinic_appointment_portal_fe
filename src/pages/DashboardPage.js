@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Select } from "antd";
-import { useNavigate } from "react-router-dom"; // ✅ navigation
+import { Link } from "react-router-dom";
 import Sidebar from "../components/SideBar.js";
 import { BACKEND_URL } from "../assets/constants";
 import {
@@ -31,8 +31,6 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [barData, setbarData] = useState([]);
   const { Option } = Select;
-  const navigate = useNavigate(); // ✅ for navigation
-
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
@@ -155,10 +153,10 @@ const DashboardPage = () => {
         {/* KPI CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {stats.map(({ title, amount, badge }, i) => (
-            <div
+            <Link
               key={i}
-              onClick={() => navigate(kpiRoutes[title] || "/")}
-              className="cursor-pointer relative bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl border-l-4 border-gw-primary hover:border-gw-primary-dark transition-all duration-300 transform hover:-translate-y-1"
+              to={kpiRoutes[title] || "/"}
+              className="cursor-pointer relative bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl border-l-4 border-gw-primary hover:border-gw-primary-dark transition-all duration-300 transform hover:-translate-y-1 block no-underline text-inherit"
             >
               <div className="absolute top-4 right-4 text-gw-primary text-2xl">
                 {icons[i % icons.length]}
@@ -167,7 +165,7 @@ const DashboardPage = () => {
               <p className="text-3xl font-bold text-gray-900 mt-2">
                 {amount} {badge}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
 

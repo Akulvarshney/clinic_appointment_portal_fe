@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../layouts/AuthContext";
 import { useEffect, useState } from "react";
 import Sidebar from "../components/SideBar";
@@ -6,7 +6,6 @@ import TopBarWithDrawer from "../components/TopBarWithDrawer";
 
 const LoggedInLayout = () => {
   const { logout } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const [organizations, setOrganizations] = useState([]);
@@ -48,7 +47,6 @@ const LoggedInLayout = () => {
           selectedOrgId={selectedOrgId}
           onOrgChange={handleOrgChange}
           tabs={tabs}
-          navigate={navigate}
           location={location}
           logout={logout}
         />
@@ -60,7 +58,6 @@ const LoggedInLayout = () => {
           selectedOrgId={selectedOrgId}
           onOrgChange={handleOrgChange}
           tabs={tabs}
-          navigate={navigate}
           location={location}
           logout={logout}
         />

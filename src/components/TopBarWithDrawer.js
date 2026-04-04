@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button, Drawer } from "antd";
 import { MenuOutlined } from "@ant-design/icons";
 import { FaChartBar, FaUser } from "react-icons/fa";
@@ -8,7 +9,6 @@ const TopBarWithDrawer = ({
   selectedOrgId,
   onOrgChange,
   tabs,
-  navigate,
   location,
   logout,
 }) => {
@@ -51,21 +51,20 @@ const TopBarWithDrawer = ({
               .slice()
               .sort((a, b) => a.tab_number - b.tab_number)
               .map((tab) => (
-                <li
-                  key={tab.tab_id}
-                  onClick={() => {
-                    navigate(`${tab.tab_path}`);
-                    setOpen(false);
-                  }}
-                  className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-300 cursor-pointer ${location.pathname === tab.tab_path
-                      ? "bg-gw-primary-light/40 text-gw-primary-dark shadow-inner"
-                      : "hover:bg-gw-surface hover:shadow-md"
-                    }`}
-                >
-                  <span className="p-2 rounded-full bg-gw-primary-light/50 text-gw-primary-dark">
-                    <FaChartBar />
-                  </span>
-                  <span className="font-semibold">{tab.tab_name}</span>
+                <li key={tab.tab_id}>
+                  <Link
+                    to={tab.tab_path}
+                    onClick={() => setOpen(false)}
+                    className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-300 cursor-pointer no-underline text-inherit ${location.pathname === tab.tab_path
+                        ? "bg-gw-primary-light/40 text-gw-primary-dark shadow-inner"
+                        : "hover:bg-gw-surface hover:shadow-md"
+                      }`}
+                  >
+                    <span className="p-2 rounded-full bg-gw-primary-light/50 text-gw-primary-dark">
+                      <FaChartBar />
+                    </span>
+                    <span className="font-semibold">{tab.tab_name}</span>
+                  </Link>
                 </li>
               ))}
           </ul>

@@ -1142,44 +1142,44 @@ export default function GenerateInvoiceModal({
                 />
               </Form.Item>
 
-              <Form.Item
-                label="Advanced Options"
-                style={{ marginBottom: "12px" }}
-              >
-                <Switch
-                  checked={showAdvanced}
-                  onChange={setShowAdvanced}
-                  checkedChildren="Show"
-                  unCheckedChildren="Hide"
-                />
-              </Form.Item>
-
-              {showAdvanced && (
-                <div className="space-y-3">
-                  {/* ✅ Bank Charges (2%) Toggle */}
-                  <Form.Item
-                    label="Bank Charges (2%)"
-                    style={{ marginBottom: "12px" }}
-                  >
-                    <Switch
-                      checked={bankChargesEnabled}
-                      onChange={setBankChargesEnabled}
-                      checkedChildren="On"
-                      unCheckedChildren="Off"
-                    />
-                  </Form.Item>
-
-                  {/* ✅ Round Off */}
-                  <Form.Item label="Round Off" style={{ marginBottom: 0 }}>
-                    <Switch
-                      checked={roundOff}
-                      onChange={setRoundOff}
-                      checkedChildren="Yes"
-                      unCheckedChildren="No"
-                    />
-                  </Form.Item>
+              <div className="rounded-md border border-gray-200 bg-gray-50/60 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 min-h-[32px]">
+                  <span className="text-sm font-medium text-gray-800">
+                    Advanced Options
+                  </span>
+                  <Switch
+                    checked={showAdvanced}
+                    onChange={setShowAdvanced}
+                    checkedChildren="Show"
+                    unCheckedChildren="Hide"
+                  />
                 </div>
-              )}
+
+                {showAdvanced && (
+                  <div className="mt-3 border-t border-gray-200 pt-3 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                      <span className="text-sm text-gray-700">
+                        Bank Charges (2%)
+                      </span>
+                      <Switch
+                        checked={bankChargesEnabled}
+                        onChange={setBankChargesEnabled}
+                        checkedChildren="On"
+                        unCheckedChildren="Off"
+                      />
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                      <span className="text-sm text-gray-700">Round Off</span>
+                      <Switch
+                        checked={roundOff}
+                        onChange={setRoundOff}
+                        checkedChildren="Yes"
+                        unCheckedChildren="No"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </Card>
 
             {/* Summary */}

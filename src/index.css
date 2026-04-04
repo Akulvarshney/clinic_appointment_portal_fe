@@ -39,3 +39,23 @@ body {
   border: 1px solid var(--gw-line);
   border-radius: 8px;
 }
+
+/* Bill management — wrap long column titles instead of one line */
+.bill-management-table.ant-table-wrapper .ant-table-thead > tr > th,
+.bill-management-table.ant-table-wrapper
+  .ant-table-thead
+  > tr
+  > th
+  .ant-table-column-title {
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.35;
+  vertical-align: top;
+}
+
+
+.ant-table-cell{
+  white-space: nowrap !important;
+  word-break: normal !important;
+}

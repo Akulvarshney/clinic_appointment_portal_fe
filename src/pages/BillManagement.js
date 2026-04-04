@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Button, Radio, message, Modal, Input } from "antd";
+import { Button, Radio, message, Modal, Input, Tooltip, Dropdown, Menu } from "antd";
 import DataTable from "../components/DataTable";
-import { Dropdown, Menu } from "antd";
-import { DownOutlined, EditOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  PlusOutlined,
+  PrinterOutlined,
+  SaveOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import debounce from "lodash/debounce";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 
 import GenerateInvoiceModal from "./GenerateInvoiceModal";
 import { isFeatureValid } from "../assets/constants";
@@ -438,6 +442,9 @@ const BillManagement = () => {
     {
       title: "Action",
       key: "action",
+      width: 72,
+      fixed: "right",
+      align: "center",
       render: (_, record) => {
         const printMenu = (
           <Menu
@@ -456,11 +463,18 @@ const BillManagement = () => {
         );
 
         return (
-          <Dropdown overlay={printMenu} trigger={["click"]}>
-            <Button type="primary" size="small">
-              Print <DownOutlined />
-            </Button>
-          </Dropdown>
+          <Tooltip title="Print receipt">
+            <span className="inline-flex">
+              <Dropdown overlay={printMenu} trigger={["click"]}>
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<PrinterOutlined />}
+                  aria-label="Print receipt"
+                />
+              </Dropdown>
+            </span>
+          </Tooltip>
         );
       },
     },
@@ -489,6 +503,9 @@ const BillManagement = () => {
     {
       title: "Action",
       key: "action",
+      width: 148,
+      fixed: "right",
+      align: "center",
       render: (_, record) => {
         const printMenu = (
           <Menu
@@ -506,55 +523,78 @@ const BillManagement = () => {
           />
         );
 
-        return (
-          <div className="flex gap-2">
-            {activeTab === "quotations" && !record.invoiceReference ? (
-              <Button
-                type="default"
-                size="small"
-                icon={<EditOutlined />}
-                onClick={() => handleEdit(record)}
-                loading={loadingBillDetails}
-                disabled={!canEditQuotation}
-              >
-                Edit
-              </Button>
-            ) : null}
-            {/* <Button
-              type="default"
-              size="small"
-              onClick={() => handleView(record)}
-            >
-              View
-            </Button> */}
-            {activeTab === "invoices" && (
-              <Dropdown
-                overlay={printMenu}
-                trigger={["click"]}
-                disabled={!canPrintInvoice}
-              >
-                <Button type="primary" size="small">
-                  Print <DownOutlined />
-                </Button>
-              </Dropdown>
-            )}
-            {activeTab === "quotations" && (
+        const printTrigger = (
+          <Tooltip title="Print (A4 or thermal)">
+            <span className="inline-flex">
               <Dropdown overlay={printMenu} trigger={["click"]}>
-                <Button type="primary" size="small">
-                  Print <DownOutlined />
-                </Button>
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<PrinterOutlined />}
+                  aria-label="Print bill"
+                />
               </Dropdown>
+            </span>
+          </Tooltip>
+        );
+
+        return (
+          <div className="flex flex-nowrap items-center justify-center gap-1">
+            {activeTab === "quotations" && !record.invoiceReference ? (
+              <Tooltip title="Edit quotation">
+                <span className="inline-flex">
+                  <Button
+                    type="default"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => handleEdit(record)}
+                    loading={loadingBillDetails}
+                    disabled={!canEditQuotation}
+                    aria-label="Edit quotation"
+                  />
+                </span>
+              </Tooltip>
+            ) : null}
+            {activeTab === "invoices" && (
+              <Tooltip
+                title={
+                  canPrintInvoice
+                    ? "Print (A4 or thermal)"
+                    : "You do not have permission to print"
+                }
+              >
+                <span className="inline-flex">
+                  <Dropdown
+                    overlay={printMenu}
+                    trigger={["click"]}
+                    disabled={!canPrintInvoice}
+                  >
+                    <Button
+                      type="primary"
+                      size="small"
+                      icon={<PrinterOutlined />}
+                      disabled={!canPrintInvoice}
+                      aria-label="Print invoice"
+                    />
+                  </Dropdown>
+                </span>
+              </Tooltip>
             )}
+            {activeTab === "quotations" && printTrigger}
 
             {activeTab === "quotations" && !record.invoiceReference && (
-              <Button
-                type="primary"
-                size="small"
-                onClick={() => handleConvert(record)}
-                disabled={!canSaveAsInvoice}
-              >
-                Save as Invoice
-              </Button>
+              <Tooltip title="Save as invoice">
+                <span className="inline-flex">
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<SaveOutlined />}
+                    onClick={() => handleConvert(record)}
+                    disabled={!canSaveAsInvoice}
+                    aria-label="Save as invoice"
+                  />
+                </span>
+              </Tooltip>
             )}
           </div>
         );
@@ -564,66 +604,83 @@ const BillManagement = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
-        Bill Management
-      </h1>
-
-      <div className="flex justify-between items-center">
-        <Radio.Group
-          value={activeTab}
-          onChange={handleTabChange}
-          style={{ margin: "16px 0" }}
-          buttonStyle="solid"
-        >
-          <Radio.Button value="invoices" disabled={!isInvoiceView}>
-            Invoices
-          </Radio.Button>
-          <Radio.Button value="quotations" disabled={!isQuotationView}>
-            Quotations
-          </Radio.Button>
-          <Radio.Button value="receipts" disabled={!isReceiptView}>
-            Receipts
-          </Radio.Button>
-        </Radio.Group>
-        <Search
-          placeholder="Search by bill id , bill to "
-          allowClear
-          enterButton={<SearchOutlined />}
-          size="large"
-          onSearch={handleSearch}
-          onChange={(e) => {
-            if (!e.target.value) {
-              handleSearch("");
-            } else {
-              handleSearch(e.target.value);
-            }
-          }}
-          style={{ maxWidth: 400 }}
-        />
-        <div style={{ marginBottom: 16 }}>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gw-primary-dark">
+          Bill Management
+        </h1>
+        <div className="flex gap-3 items-center">
+          <Search
+            placeholder="Search by bill id, bill to..."
+            allowClear
+            enterButton={<SearchOutlined />}
+            size="large"
+            onSearch={handleSearch}
+            onChange={(e) => {
+              if (!e.target.value) {
+                handleSearch("");
+              } else {
+                handleSearch(e.target.value);
+              }
+            }}
+            style={{ maxWidth: 400 }}
+          />
           {activeTab === "invoices" && canCreateInvoice && (
-            <Button type="primary" onClick={() => handleCreate("invoice")}>
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={() => handleCreate("invoice")}
+            >
               Create Invoice
             </Button>
           )}
           {activeTab === "quotations" && canCreateQuotation && (
-            <Button type="primary" onClick={() => handleCreate("quotation")}>
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={() => handleCreate("quotation")}
+            >
               Create Quotation
             </Button>
           )}
           {activeTab === "receipts" && canCreateReceipt && (
-            <Button type="primary" onClick={() => handleCreate("receipt")}>
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={() => handleCreate("receipt")}
+            >
               Create Receipt
             </Button>
           )}
         </div>
       </div>
 
+      <Radio.Group
+        value={activeTab}
+        onChange={handleTabChange}
+        className="mb-4"
+        buttonStyle="solid"
+      >
+        <Radio.Button value="invoices" disabled={!isInvoiceView}>
+          Invoices
+        </Radio.Button>
+        <Radio.Button value="quotations" disabled={!isQuotationView}>
+          Quotations
+        </Radio.Button>
+        <Radio.Button value="receipts" disabled={!isReceiptView}>
+          Receipts
+        </Radio.Button>
+      </Radio.Group>
+
       {activeTab === "receipts" ? (
         <DataTable
+          className="bill-management-table"
           dataSource={receiptData} // separate receipt data
           columns={ReceiptColumns} // separate receipt columns
           rowKey="receiptId"
+          scroll={{ x: "max-content" }}
           pagination={{
             current: pagination.current,
             pageSize: pagination.limit,
@@ -639,9 +696,11 @@ const BillManagement = () => {
         />
       ) : (
         <DataTable
+          className="bill-management-table"
           dataSource={data[activeTab]} // invoices or quotations
           columns={columns}
           rowKey="billId"
+          scroll={{ x: "max-content" }}
           pagination={{
             current: pagination.current,
             pageSize: pagination.limit,

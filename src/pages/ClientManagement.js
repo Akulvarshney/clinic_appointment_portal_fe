@@ -328,7 +328,7 @@ const ClientManagement = () => {
         return (
           <Link
             to={`/clients/detail/${record.id}`}
-            style={{ cursor: "pointer" }}
+            className="font-medium text-gw-primary hover:text-gw-primary-dark underline-offset-2 hover:underline"
           >
             {fullName}
           </Link>

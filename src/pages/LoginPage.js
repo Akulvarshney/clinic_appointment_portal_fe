@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
 import { PALETTE } from "../theme/palette";
@@ -9,7 +9,6 @@ import { Form, Input, Button, Typography, Card, Alert, Space } from "antd";
 const { Title, Text } = Typography;
 
 const LoginPage = () => {
-  const navigate = useNavigate();
   const { login } = useAuth();
 
   const [loginId, setLoginId] = useState("");
@@ -107,11 +106,7 @@ const LoginPage = () => {
               htmlType="submit"
               loading={loading}
               block
-              style={{
-                background: `linear-gradient(to right, ${PALETTE.primary}, ${PALETTE.primaryDark})`,
-                border: "none",
-                fontWeight: "600",
-              }}
+              className="login-button"
             >
               {loading ? "Signing in..." : "Sign in"}
             </Button>
@@ -126,20 +121,18 @@ const LoginPage = () => {
             marginTop: "10px",
           }}
         >
-          <Button
-            type="link"
-            size="small"
-            onClick={() => navigate("/forgetpassword")}
+          <Link
+            to="/forgetpassword"
+            className="text-sm text-gw-primary hover:text-gw-primary-dark"
           >
             Forgot your password?
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => navigate("/superAdmin/login")}
+          </Link>
+          <Link
+            to="/superAdmin/login"
+            className="text-sm text-gw-primary hover:text-gw-primary-dark"
           >
             Login as Super Admin
-          </Button>
+          </Link>
         </Space>
       </Card>
     </div>

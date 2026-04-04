@@ -36,7 +36,34 @@ body {
 
 /* Button hover transition (optional) */
 .button-gradient-hover:hover {
-  background: linear-gradient(to right, var(--gw-primary-dark), #355a8f) !important;
+  background: var(--gw-primary-dark) !important;
+}
+
+/* Primary CTAs — solid brand primary only (no gradient) */
+.ant-btn.ant-btn-primary:not(:disabled):not(.ant-btn-dangerous):not(
+    .ant-btn-background-ghost
+  ) {
+  background: var(--gw-primary) !important;
+  border-color: var(--gw-primary) !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.ant-btn.ant-btn-primary:not(:disabled):not(.ant-btn-dangerous):not(
+    .ant-btn-background-ghost
+  ):hover {
+  background: var(--gw-primary-hover) !important;
+  border-color: var(--gw-primary-hover) !important;
+  color: #fff !important;
+}
+
+.ant-btn.ant-btn-primary:not(:disabled):not(.ant-btn-dangerous):not(
+    .ant-btn-background-ghost
+  ):active {
+  background: var(--gw-primary-dark) !important;
+  border-color: var(--gw-primary-dark) !important;
+  color: #fff !important;
 }
 
 /* Error alert */
@@ -138,23 +165,21 @@ body {
 }
 
 .login-button {
-  background: linear-gradient(to right, var(--gw-primary), var(--gw-primary-dark)) !important;
+  background: var(--gw-primary) !important;
   border: none !important;
   border-radius: 10px !important;
   font-weight: 600 !important;
   height: 44px !important;
-  box-shadow: 0 4px 14px 0 rgba(129, 166, 198, 0.35) !important;
-  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+  transition: background-color 0.2s ease !important;
 }
 
 .login-button:hover {
-  background: linear-gradient(to right, var(--gw-primary-hover), var(--gw-primary-dark)) !important;
-  box-shadow: 0 6px 20px 0 rgba(129, 166, 198, 0.4) !important;
-  transform: translateY(-1px) !important;
+  background: var(--gw-primary-hover) !important;
 }
 
 .login-button:active {
-  transform: translateY(0) !important;
+  background: var(--gw-primary-dark) !important;
 }
 
 .login-button:disabled {
@@ -179,7 +204,7 @@ body {
 }
 
 .action-button:hover {
-  color: #4a6578 !important;
+  color: var(--gw-primary) !important;
   text-decoration: underline !important;
 }
 

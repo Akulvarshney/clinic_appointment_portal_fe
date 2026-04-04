@@ -7,6 +7,7 @@ import {
   FaBuilding,
 } from "react-icons/fa";
 import { Dropdown, Tooltip } from "antd";
+import { Link } from "react-router-dom";
 
 import { ROUTE_COMPONENTS } from "../App";
 
@@ -23,7 +24,6 @@ const Sidebar = ({
   selectedOrgId,
   onOrgChange,
   tabs,
-  navigate,
   location,
   logout,
 }) => {
@@ -180,20 +180,10 @@ const Sidebar = ({
                   : "border-transparent text-white/85 hover:border-white/12 hover:bg-white/10 hover:text-white",
               ].join(" ");
 
-              const go = () => navigate(`${tab.tab_path}`);
-
               const inner = (
-                <div
-                  role="button"
-                  tabIndex={0}
-                  className={itemClasses}
-                  onClick={go}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      go();
-                    }
-                  }}
+                <Link
+                  to={tab.tab_path}
+                  className={`${itemClasses} no-underline`}
                   aria-current={active ? "page" : undefined}
                 >
                   <span
@@ -218,7 +208,7 @@ const Sidebar = ({
                       aria-hidden
                     />
                   )}
-                </div>
+                </Link>
               );
 
               return (
