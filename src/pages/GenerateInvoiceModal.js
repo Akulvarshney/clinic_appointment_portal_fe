@@ -950,6 +950,7 @@ export default function GenerateInvoiceModal({
     <Modal
       open={visible}
       onCancel={onClose}
+      width="min(1350px, calc(100vw - 24px))"
       footer={[
         <Button key="cancel" onClick={onClose}>
           Cancel
@@ -967,8 +968,6 @@ export default function GenerateInvoiceModal({
       centered
       styles={{
         content: {
-          width: "min(1400px, calc(100vw - 16px))",
-          maxWidth: "100%",
           top: 2,
         },
         body: {

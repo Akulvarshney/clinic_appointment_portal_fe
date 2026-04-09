@@ -80,14 +80,21 @@ export default function AppointmentPage() {
   const [isAllowedToAddAppointment, setIsAllowedToAddAppointment] =
     useState(false);
 
+    const [isAllowedToAddPastDateAppointment, setIsAllowedToAddPastDateAppointment] =
+    useState(false);
+
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const response1 = isFeatureValid("APPOINTMENT", "ADD_APPOINTMENT");
+    const response2 = isFeatureValid("APPOINTMENT", "ADD_PAST_DATE_APPOINTMENT");
 
     setIsAllowedToAddAppointment(response1);
 
+    setIsAllowedToAddPastDateAppointment(response2);
+
     console.log("isFeatureValid response:", response1);
+    console.log("isFeatureValid response:", response2);
   }, []);
 
   const [Employees, setEmployees] = useState([]); // resources / columns
@@ -649,6 +656,7 @@ export default function AppointmentPage() {
   };
 
   const onDoubleClickCol = (e, resourceId) => {
+    //alert("onDoubleClickCol");
     // Check if user is allowed to add appointments
     if (!isAllowedToAddAppointment) {
       messageApi.error("You are not allowed to add an appointment.");
@@ -659,7 +667,9 @@ export default function AppointmentPage() {
     const today = dayjs().startOf("day");
     const currentDateDayjs = dayjs(currentDate).startOf("day");
 
-    if (currentDateDayjs.isBefore(today, "day")) {
+    console.log("isAllowedToAddPastDateAppointment", isAllowedToAddPastDateAppointment);
+
+    if (currentDateDayjs.isBefore(today, "day") && !isAllowedToAddPastDateAppointment) {
       messageApi.error(
         "Cannot create appointments for past dates. Please select today or a future date."
       );
@@ -714,7 +724,8 @@ export default function AppointmentPage() {
       //console.log("values formmmm ", valuesFromForm);
       const today = dayjs().startOf("day");
       const date = valuesFromForm.date || "";
-      if (date.isBefore(today, "day")) {
+      console.log("isAllowedToAddPastDateAppointment", isAllowedToAddPastDateAppointment);
+      if (date.isBefore(today, "day") && !isAllowedToAddPastDateAppointment) {
         //message.error("Cannot pick a past date. Please select today or a future date.");
         console.log(
           "Cannot pick a past date. Please select today or a future date."

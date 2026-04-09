@@ -509,10 +509,9 @@ const ClientManagement = () => {
           onCancel={handleModalCancel}
           footer={null}
           centered
+          width="min(1000px, calc(100vw - 24px))"
           styles={{
             content: {
-              width: "min(800px, calc(100vw - 24px))",
-              maxWidth: "100%",
             },
           }}
         >
