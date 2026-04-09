@@ -80,14 +80,14 @@ export default function AppointmentPage() {
   const [isAllowedToAddAppointment, setIsAllowedToAddAppointment] =
     useState(false);
 
-    const [isAllowedToAddPastDateAppointment, setIsAllowedToAddPastDateAppointment] =
+  const [isAllowedToAddPastDateAppointment, setIsAllowedToAddPastDateAppointment] =
     useState(false);
 
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const response1 = isFeatureValid("APPOINTMENT", "ADD_APPOINTMENT");
-    const response2 = isFeatureValid("APPOINTMENT", "ADD_PAST_DATE_APPOINTMENT");
+    const response2 = isFeatureValid("APPOINTMENT", "ADD_PAST_APPOINTMENT");
 
     setIsAllowedToAddAppointment(response1);
 
@@ -1469,13 +1469,13 @@ export default function AppointmentPage() {
       >
         {detailAppt && !isEditing && (
           <div>
-            <h2 style={{ marginBottom: 16, color: PALETTE.primary }}>
+            {/* <h2 style={{ marginBottom: 16, color: PALETTE.primary }}>
               {detailAppt.title}
-            </h2>
+            </h2> */}
 
             <Descriptions
               bordered
-              column={{ xs: 1, sm: 2 }}
+              column={1}
               size="middle"
               labelStyle={{ fontWeight: "bold", width: 150 }}
             >
@@ -1562,7 +1562,7 @@ export default function AppointmentPage() {
                 danger
                 type="primary"
                 block
-                style={{ marginTop: 12 }}
+                // style={{ marginTop: 12 }}
                 onClick={() => setShowCancelInput(true)}
               >
                 Cancel Appointment
