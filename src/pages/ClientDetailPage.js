@@ -93,6 +93,7 @@ const ClientDetailPage = () => {
           },
         }
       );
+      console.log("response", response.data.data);
       setClientData(response.data.data);
     } catch (error) {
       console.error(
@@ -290,19 +291,27 @@ const ClientDetailPage = () => {
         return false;
       }
 
-      // Search filter (portal_id, remarks, cancel_remarks)
+      // Search filter (portal_id, service, remarks, cancel_remarks)
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesPortalId = apt.portal_id
           ?.toString()
           .toLowerCase()
           .includes(query);
+        const matchesServiceName = apt.services?.name
+          ?.toLowerCase()
+          .includes(query);
         const matchesRemarks = apt.remarks?.toLowerCase().includes(query);
         const matchesCancelRemarks = apt.cancel_remarks
           ?.toLowerCase()
           .includes(query);
 
-        if (!matchesPortalId && !matchesRemarks && !matchesCancelRemarks) {
+        if (
+          !matchesPortalId &&
+          !matchesServiceName &&
+          !matchesRemarks &&
+          !matchesCancelRemarks
+        ) {
           return false;
         }
       }
@@ -631,9 +640,23 @@ const ClientDetailPage = () => {
                                 )}
                               </div>
                             </div>
-                            <Tag color={getStatusColor(appointment.status)}>
-                              {appointment.status.replace("_", " ")}
-                            </Tag>
+                            <div className="flex flex-col items-end gap-2">
+                              <Tag color={getStatusColor(appointment.status)}>
+                                {appointment.status.replace("_", " ")}
+                              </Tag>
+                              {appointment.services?.name && (
+                                <Tag
+                                  bordered={false}
+                                  style={{
+                                    backgroundColor: "rgba(129, 166, 198, 0.18)",
+                                    color: PALETTE.primaryDark,
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  {appointment.services.name}
+                                </Tag>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )
