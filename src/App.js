@@ -28,6 +28,8 @@ import ClientManagement from "./pages/ClientManagement";
 import ClientDetailPage from "./pages/ClientDetailPage";
 import NotificationManagement from "./pages/SuperAdmin/NotificationCreation";
 import FeedbackManagement from "./pages/FeedbackManagement";
+import InventoryManagement from "./pages/InventoryManagement";
+import InventoryItemDetailPage from "./pages/InventoryItemDetailPage";
 
 // ✅ Import icons
 import {
@@ -42,6 +44,7 @@ import {
   FaBell,
   FaUserFriends,
   FaCog,
+  FaBoxes,
 } from "react-icons/fa";
 
 // ✅ Updated route config with icons + labels
@@ -106,8 +109,11 @@ export const ROUTE_COMPONENTS = {
     icon: <FaUserFriends />,
     label: "Feedback",
   },
-
-
+  "/inventoryManagement": {
+    component: InventoryManagement,
+    icon: <FaBoxes />,
+    label: "Inventory",
+  },
 
 };
 
@@ -235,6 +241,18 @@ function App() {
                     <Route
                       path="detail/:clientId"
                       element={<ClientDetailPage />}
+                    />
+                  </Route>
+                );
+              }
+
+              if (routePath === "/inventoryManagement") {
+                return (
+                  <Route key={routePath} path="inventoryManagement">
+                    <Route index element={<InventoryManagement />} />
+                    <Route
+                      path="item/:itemId"
+                      element={<InventoryItemDetailPage />}
                     />
                   </Route>
                 );
