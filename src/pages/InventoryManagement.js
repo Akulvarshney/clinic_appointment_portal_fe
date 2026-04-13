@@ -162,7 +162,7 @@ const InventoryManagement = () => {
 
   const handleAdd = () => {
     form.resetFields();
-    form.setFieldsValue({ unit: "unit", gstPercentage: 18, initialQuantity: 0 });
+    form.setFieldsValue({ unit: "unit", initialQuantity: 0 });
     setIsModalVisible(true);
   };
 
@@ -183,9 +183,6 @@ const InventoryManagement = () => {
         unit: values.unit || "unit",
         initialQuantity: initialQty,
         reorderLevel: values.reorderLevel,
-        costPrice: values.costPrice,
-        sellingPrice: values.sellingPrice,
-        gstPercentage: values.gstPercentage ?? 18,
       };
       if (initialQty > 0) {
         body.batchNumber = values.batchNumber;
@@ -346,24 +343,18 @@ const InventoryManagement = () => {
       render: (v) => (v != null && v !== "" ? v : "—"),
     },
     {
-      title: "Cost",
-      dataIndex: "costPrice",
-      key: "costPrice",
-      width: 100,
-      render: (v) => (v != null && v !== "" ? `₹${Number(v).toFixed(2)}` : "—"),
+      title: "Cost (batch)",
+      dataIndex: "costPricingSummary",
+      key: "costPricingSummary",
+      width: 120,
+      render: (v) => v || "—",
     },
     {
-      title: "Sale",
-      dataIndex: "sellingPrice",
-      key: "sellingPrice",
-      width: 100,
-      render: (v) => (v != null && v !== "" ? `₹${Number(v).toFixed(2)}` : "—"),
-    },
-    {
-      title: "GST %",
-      dataIndex: "gstPercentage",
-      key: "gstPercentage",
-      width: 80,
+      title: "Sale (batch)",
+      dataIndex: "sellPricingSummary",
+      key: "sellPricingSummary",
+      width: 120,
+      render: (v) => v || "—",
     },
     {
       title: "Batches",
@@ -508,7 +499,7 @@ const InventoryManagement = () => {
               layout="vertical"
               onFinish={handleSubmit}
               autoComplete="off"
-              initialValues={{ unit: "unit", gstPercentage: 18, initialQuantity: 0 }}
+              initialValues={{ unit: "unit", initialQuantity: 0 }}
             >
               <Form.Item
                 label="Name"
@@ -552,36 +543,11 @@ const InventoryManagement = () => {
               <Form.Item label="Reorder level" name="reorderLevel">
                 <InputNumber min={0} className="w-full" />
               </Form.Item>
-              <Form.Item label="Cost price (per unit)" name="costPrice">
-                <InputNumber
-                  min={0}
-                  className="w-full"
-                  addonBefore="₹"
-                  placeholder="Optional"
-                />
-              </Form.Item>
-              <Form.Item label="Selling price (per unit)" name="sellingPrice">
-                <InputNumber
-                  min={0}
-                  className="w-full"
-                  addonBefore="₹"
-                  placeholder="Optional"
-                />
-              </Form.Item>
-              <Form.Item
-                label="GST %"
-                name="gstPercentage"
-                rules={[
-                  {
-                    type: "number",
-                    min: 0,
-                    max: 100,
-                    message: "0–100",
-                  },
-                ]}
-              >
-                <InputNumber min={0} max={100} className="w-full" />
-              </Form.Item>
+              <p className="mb-0 text-sm text-gray-500">
+                Create SKU does not set cost, selling price, or MRP. Set those per batch on the
+                item page (Add batch, or Edit lot on an existing batch). If you enter opening
+                stock here, the first lot is created without prices until you update that lot.
+              </p>
 
               <div className="mt-6 flex justify-end gap-2">
                 <Button onClick={handleModalCancel}>Cancel</Button>

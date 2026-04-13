@@ -11,6 +11,33 @@ export function normalizeInventoryItem(raw) {
   const batchNums = batches
     .map((b) => b.batch_number ?? b.batchNumber)
     .filter(Boolean);
+  const sellPrices = batches
+    .map((b) => Number(b.selling_price ?? b.sellingPrice))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  const costPrices = batches
+    .map((b) => Number(b.cost_price ?? b.costPrice))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  const sellSummary =
+    sellPrices.length > 0
+      ? sellPrices.length === 1
+        ? `₹${sellPrices[0].toFixed(2)}`
+        : `₹${Math.min(...sellPrices).toFixed(2)}–₹${Math.max(...sellPrices).toFixed(2)}`
+      : "";
+  const costSummary =
+    costPrices.length > 0
+      ? costPrices.length === 1
+        ? `₹${costPrices[0].toFixed(2)}`
+        : `₹${Math.min(...costPrices).toFixed(2)}–₹${Math.max(...costPrices).toFixed(2)}`
+      : "";
+  const mrpVals = batches
+    .map((b) => Number(b.mrp ?? b.MRP))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  const mrpSummary =
+    mrpVals.length > 0
+      ? mrpVals.length === 1
+        ? `₹${mrpVals[0].toFixed(2)}`
+        : `₹${Math.min(...mrpVals).toFixed(2)}–₹${Math.max(...mrpVals).toFixed(2)}`
+      : "";
   return {
     id: raw.id,
     organizationId: raw.organization_id ?? raw.organizationId,
@@ -20,9 +47,13 @@ export function normalizeInventoryItem(raw) {
     unit: raw.unit ?? "unit",
     quantity: Number(total) || 0,
     reorderLevel: raw.reorderLevel ?? raw.reorder_level ?? undefined,
-    costPrice: raw.costPrice ?? raw.cost_price,
-    sellingPrice: raw.sellingPrice ?? raw.selling_price,
-    gstPercentage: raw.gstPercentage ?? raw.gst_percentage ?? 18,
+    /** Legacy / display hints — economics are per batch in API v2 */
+    sellingPrice: sellPrices.length ? Math.min(...sellPrices) : undefined,
+    costPrice: costPrices.length ? Math.min(...costPrices) : undefined,
+    sellPricingSummary: sellSummary || "—",
+    costPricingSummary: costSummary || "—",
+    mrpPricingSummary: mrpSummary || "—",
+    gstPercentage: raw.gst_percentage ?? raw.gstPercentage,
     isValid: raw.is_valid ?? raw.isValid ?? true,
     createdAt: raw.created_at ?? raw.createdAt,
     updatedAt: raw.updated_at ?? raw.updatedAt,
@@ -41,6 +72,9 @@ export function normalizeInventoryBatch(raw) {
     batchNumber: raw.batch_number ?? raw.batchNumber ?? "",
     expiryDate: raw.expiry_date ?? raw.expiryDate ?? null,
     quantityOnHand: Number(raw.quantity_on_hand ?? raw.quantityOnHand) || 0,
+    costPrice: raw.cost_price ?? raw.costPrice,
+    sellingPrice: raw.selling_price ?? raw.sellingPrice,
+    mrp: raw.mrp ?? raw.MRP,
     isValid: raw.is_valid ?? raw.isValid ?? true,
   };
 }
@@ -94,15 +128,69 @@ export function inventoryGetErrorMessage(err, fallback) {
 /** Map a bill row from getItemFullDetails `bills[]` to the detail table shape. */
 export function mapBillToInvoiceRow(entry, index) {
   if (!entry || typeof entry !== "object") return null;
-  const id = entry.invoice_id ?? entry.id ?? `bill-${index}`;
+  // API can return either:
+  // - legacy flat bill rows (invoice_number, bill_type, ...)
+  // - new wrapper: { bill: { ... }, inventory_lines: [...] }
+  const bill = entry.bill && typeof entry.bill === "object" ? entry.bill : entry;
+  const invLinesRaw = entry.inventory_lines ?? entry.inventoryLines ?? [];
+  const invLines = Array.isArray(invLinesRaw) ? invLinesRaw : [];
+  const totalQty = invLines.reduce((s, l) => s + (Number(l?.quantity) || 0), 0);
+  const totalFinalAmount = invLines.reduce(
+    (s, l) => s + (Number(l?.final_amount ?? l?.finalAmount) || 0),
+    0
+  );
+  const uniqueRates = Array.from(
+    new Set(invLines.map((l) => Number(l?.rate)).filter((n) => Number.isFinite(n)))
+  );
+  const itemRate =
+    uniqueRates.length === 0
+      ? null
+      : uniqueRates.length === 1
+        ? uniqueRates[0]
+        : uniqueRates;
+  const batchTuples = invLines
+    .map((l) => ({
+      batch:
+        l?.inventory_batch_number ??
+        l?.inventoryBatchNumber ??
+        l?.inventory_batches?.batch_number ??
+        l?.inventory_batches?.batchNumber ??
+        "—",
+      qty: Number(l?.quantity) || 0,
+      rate: Number(l?.rate) || 0,
+      finalAmount: Number(l?.final_amount ?? l?.finalAmount) || 0,
+    }))
+    .filter((t) => t.batch && t.batch !== "—");
+  const batch = batchTuples.map((t) => t.batch).join(", ");
+  const rateSummary = batchTuples.length
+    ? batchTuples
+      .map((t) => `${t.batch}: ₹${Number(t.rate).toFixed(2)}`)
+      .join(", ")
+    : "—";
+  const id = bill.invoice_id ?? bill.id ?? `bill-${index}`;
+  const c = bill.clients || bill.client || {};
+  const clientName =
+    bill.client_name ??
+    bill.clientName ??
+    [c.first_name, c.last_name].filter(Boolean).join(" ").trim() ??
+    "—";
   return {
     key: id,
     id,
-    invoiceNumber: entry.invoice_number ?? entry.invoiceNumber ?? "—",
-    clientName: entry.client_name ?? entry.clientName ?? "—",
-    amount: entry.final_amount ?? entry.finalAmount,
-    date: entry.invoice_date ?? entry.invoiceDate,
-    reference: entry.invoice_reference ?? entry.invoiceReference ?? "—",
+    invoiceNumber: bill.invoice_number ?? bill.invoiceNumber ?? "—",
+    clientName: clientName || "—",
+    amount:
+      bill.grand_total ??
+      bill.final_amount ??
+      bill.finalAmount ??
+      bill.grandTotal,
+    date: bill.invoice_date ?? bill.invoiceDate,
+    reference: bill.invoice_reference ?? bill.invoiceReference ?? "—",
+    batch,
+    itemQuantity: totalQty || 0,
+    rateSummary,
+    itemRate,
+    itemFinalAmount: totalFinalAmount || 0,
   };
 }
 
@@ -155,9 +243,12 @@ export function parseItemFullDetailsResponse(responseBody) {
 
   const billsRaw = root.bills;
   const billsArray = Array.isArray(billsRaw) ? billsRaw : [];
-  const invoiceRows = billsArray.filter(
-    (b) => b && (!b.bill_type || b.bill_type === "INVOICE")
-  );
+  const invoiceRows = billsArray.filter((wrap) => {
+    if (!wrap) return false;
+    const bill = wrap.bill && typeof wrap.bill === "object" ? wrap.bill : wrap;
+    const t = bill.bill_type ?? bill.billType;
+    return !t || t === "INVOICE";
+  });
   const billsCount =
     Number(root.billsCount ?? root.bills_count) || invoiceRows.length;
 

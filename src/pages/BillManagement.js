@@ -141,7 +141,11 @@ const BillManagement = () => {
         items:
           billDetails.bill_line_items?.map((item) => ({
             id: item.id,
+            kind: item.line_kind || (item.inventory_item_id ? "INVENTORY" : "SERVICE"),
             serviceId: item.service_id,
+            inventoryItemId: item.inventory_item_id,
+            inventoryBatchId: item.inventory_batch_id,
+            inventoryBatchNumber: item.inventory_batch_number,
             description: item.description,
             qty: Number(item.quantity) || 1,
             rate: Number(item.rate) || 0,

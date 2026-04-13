@@ -2,12 +2,15 @@ import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
 
 import toast from "react-hot-toast";
+import { clearPersistedAuth } from "../layouts/AuthContext";
 
 function handleError(error) {
   if (error.response) {
     if (error.response.status === 401) {
       toast.error("Unauthorized or Session Expired, please Sign In again");
       console.log("Unauthorized or Session Expired, please Sign In again");
+      clearPersistedAuth();
+      window.location.reload();
     } else if (error.response.status === 500) {
       toast.error("Internal Server Error Occurred");
       console.log("Internal Server Error Occurred");
@@ -41,12 +44,9 @@ export async function apiGet(url, config = {}) {
 // POST request
 export async function apiPost(url, body = {}, config = {}) {
   try {
-    //console.log("siddddddddddddddddd");
     const res = await axios.post(BACKEND_URL + url, body, config);
-    //console.log("ghgghghghgghhghghgh");
     return res.data;
   } catch (error) {
-    //alert("alert here");
     console.error(error);
     handleError(error);
   }

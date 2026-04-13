@@ -10,7 +10,6 @@ import {
   Radio,
   Select,
   DatePicker,
-  Descriptions,
   Card,
   Typography,
   Tag,
@@ -51,6 +50,7 @@ const InventoryItemDetailPage = () => {
   const [form] = Form.useForm();
   const [adjustForm] = Form.useForm();
   const [addBatchForm] = Form.useForm();
+  const [updateBatchForm] = Form.useForm();
 
   const [item, setItem] = useState(null);
   const [pageLoading, setPageLoading] = useState(true);
@@ -59,6 +59,8 @@ const InventoryItemDetailPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [addBatchOpen, setAddBatchOpen] = useState(false);
+  const [editBatchOpen, setEditBatchOpen] = useState(false);
+  const [editingBatch, setEditingBatch] = useState(null);
   const [itemBatches, setItemBatches] = useState([]);
 
   const [transactions, setTransactions] = useState([]);
@@ -147,9 +149,6 @@ const InventoryItemDetailPage = () => {
       description: item.description,
       unit: item.unit || "unit",
       reorderLevel: item.reorderLevel,
-      costPrice: item.costPrice,
-      sellingPrice: item.sellingPrice,
-      gstPercentage: item.gstPercentage ?? 18,
     });
     setEditOpen(true);
   };
@@ -167,9 +166,6 @@ const InventoryItemDetailPage = () => {
           description: values.description,
           unit: values.unit,
           reorderLevel: values.reorderLevel,
-          costPrice: values.costPrice,
-          sellingPrice: values.sellingPrice,
-          gstPercentage: values.gstPercentage,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -295,6 +291,15 @@ const InventoryItemDetailPage = () => {
       if (values.expiryDate) {
         payload.expiryDate = dayjs(values.expiryDate).format("YYYY-MM-DD");
       }
+      if (values.costPrice != null && values.costPrice !== "") {
+        payload.costPrice = values.costPrice;
+      }
+      if (values.sellingPrice != null && values.sellingPrice !== "") {
+        payload.sellingPrice = values.sellingPrice;
+      }
+      if (values.mrp != null && values.mrp !== "") {
+        payload.mrp = values.mrp;
+      }
       await axios.post(`${BACKEND_URL}/clientadmin/inventoryManagement/addBatchStock`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -311,6 +316,68 @@ const InventoryItemDetailPage = () => {
       notification.error({
         message: "Could not add batch",
         description: inventoryGetErrorMessage(err, "Add batch failed"),
+        placement: "top",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openEditBatch = (row) => {
+    setEditingBatch(row);
+    updateBatchForm.setFieldsValue({
+      costPrice:
+        row.costPrice != null && row.costPrice !== ""
+          ? Number(row.costPrice)
+          : undefined,
+      sellingPrice:
+        row.sellingPrice != null && row.sellingPrice !== ""
+          ? Number(row.sellingPrice)
+          : undefined,
+      mrp:
+        row.mrp != null && row.mrp !== "" ? Number(row.mrp) : undefined,
+      expiryDate: row.expiryDate ? dayjs(row.expiryDate) : undefined,
+    });
+    setEditBatchOpen(true);
+  };
+
+  const submitUpdateBatch = async () => {
+    if (!editingBatch?.id) return;
+    try {
+      const values = await updateBatchForm.validateFields();
+      setLoading(true);
+      const body = { orgId, batchId: editingBatch.id };
+      const assignPrice = (key, val) => {
+        if (val === undefined) return;
+        if (val === null || val === "") body[key] = null;
+        else body[key] = Number(val);
+      };
+      assignPrice("costPrice", values.costPrice);
+      assignPrice("sellingPrice", values.sellingPrice);
+      assignPrice("mrp", values.mrp);
+      const exp = values.expiryDate;
+      if (exp !== undefined) {
+        body.expiryDate = exp ? dayjs(exp).format("YYYY-MM-DD") : null;
+      }
+      await axios.put(
+        `${BACKEND_URL}/clientadmin/inventoryManagement/updateBatch`,
+        body,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      notification.success({
+        message: "Batch updated",
+        description: "Pricing and expiry were saved.",
+        placement: "top",
+      });
+      setEditBatchOpen(false);
+      setEditingBatch(null);
+      updateBatchForm.resetFields();
+      loadFullDetails(1, txPagination.pageSize, false);
+    } catch (err) {
+      if (err?.errorFields) return;
+      notification.error({
+        message: "Could not update batch",
+        description: inventoryGetErrorMessage(err, "Update batch failed"),
         placement: "top",
       });
     } finally {
@@ -383,13 +450,15 @@ const InventoryItemDetailPage = () => {
       title: "Invoice #",
       dataIndex: "invoiceNumber",
       key: "invoiceNumber",
-      width: 140,
+      width: 150,
+      ellipsis: true,
     },
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      width: 120,
+      width: 110,
+      ellipsis: true,
       render: (v) =>
         v ? new Date(v).toLocaleDateString() : "—",
     },
@@ -397,22 +466,47 @@ const InventoryItemDetailPage = () => {
       title: "Client",
       dataIndex: "clientName",
       key: "clientName",
+      width: 170,
       ellipsis: true,
+    },
+    {
+      title: "Batch",
+      dataIndex: "batch",
+      key: "batch",
+      width: 220,
+      ellipsis: true,
+      render: (v) => v || "—",
+    },
+    {
+      title: "Qty",
+      dataIndex: "itemQuantity",
+      key: "itemQuantity",
+      width: 80,
+      align: "right",
+      render: (v) => (v != null && v !== "" ? String(v) : "—"),
+    },
+    {
+      title: "Rate",
+      dataIndex: "itemRate",
+      key: "itemRate",
+      width: 120,
+      ellipsis: true,
+      render: (v) => {
+        if (v === null || v === undefined || v === "") return "—";
+        if (Array.isArray(v)) {
+          return v.map((n) => `₹${Number(n).toFixed(2)}`).join(", ");
+        }
+        return `₹${Number(v).toFixed(2)}`;
+      },
     },
     {
       title: "Amount",
-      dataIndex: "amount",
-      key: "amount",
-      width: 120,
+      dataIndex: "itemFinalAmount",
+      key: "itemFinalAmount",
+      width: 130,
       align: "right",
       render: (v) =>
         v != null && v !== "" ? `₹${Number(v).toFixed(2)}` : "—",
-    },
-    {
-      title: "Reference",
-      dataIndex: "reference",
-      key: "reference",
-      ellipsis: true,
     },
   ];
 
@@ -437,20 +531,61 @@ const InventoryItemDetailPage = () => {
       align: "right",
     },
     {
+      title: "Cost",
+      key: "cost",
+      width: 90,
+      align: "right",
+      render: (_, row) =>
+        row.costPrice != null && row.costPrice !== ""
+          ? `₹${Number(row.costPrice).toFixed(2)}`
+          : "—",
+    },
+    {
+      title: "Sell",
+      key: "sell",
+      width: 90,
+      align: "right",
+      render: (_, row) =>
+        row.sellingPrice != null && row.sellingPrice !== ""
+          ? `₹${Number(row.sellingPrice).toFixed(2)}`
+          : "—",
+    },
+    {
+      title: "MRP",
+      key: "mrp",
+      width: 90,
+      align: "right",
+      render: (_, row) =>
+        row.mrp != null && row.mrp !== "" ? `₹${Number(row.mrp).toFixed(2)}` : "—",
+    },
+    {
       title: "Actions",
       key: "ba",
-      width: 120,
-      render: (_, row) =>
-        canAdjust ? (
-          <Button
-            type="link"
-            size="small"
-            icon={<SwapOutlined />}
-            onClick={() => openAdjust(row.id)}
-          >
-            Adjust
-          </Button>
-        ) : null,
+      width: 200,
+      render: (_, row) => (
+        <Space size="small" wrap>
+          {canEdit ? (
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => openEditBatch(row)}
+            >
+              {/* Edit lot */}
+            </Button>
+          ) : null}
+          {canAdjust ? (
+            <Button
+              type="link"
+              size="small"
+              icon={<SwapOutlined />}
+              onClick={() => openAdjust(row.id)}
+            >
+              {/* Adjust */}
+            </Button>
+          ) : null}
+        </Space>
+      ),
     },
   ];
 
@@ -545,10 +680,10 @@ const InventoryItemDetailPage = () => {
           <Space size="small" wrap={false} className="mb-0 shrink-0">
             {canEdit && (
               <Button type="primary" icon={<EditOutlined />} onClick={openEdit}>
-                Edit SKU
+                {/* Edit SKU */}
               </Button>
             )}
-            {canAdjust && (
+            {/* {canAdjust && (
               <>
                 <Button icon={<PlusOutlined />} onClick={openAddBatch}>
                   Add batch
@@ -557,7 +692,7 @@ const InventoryItemDetailPage = () => {
                   Adjust stock
                 </Button>
               </>
-            )}
+            )} */}
             {canDelete && (
               <Popconfirm
                 title="Deactivate this SKU?"
@@ -567,7 +702,7 @@ const InventoryItemDetailPage = () => {
                 cancelText="No"
               >
                 <Button danger icon={<DeleteOutlined />} loading={loading}>
-                  Delete
+                  {/* Delete */}
                 </Button>
               </Popconfirm>
             )}
@@ -575,28 +710,62 @@ const InventoryItemDetailPage = () => {
         </div>
 
         <Card className="mb-6 shadow-sm" title="SKU details">
-          <Descriptions column={{ xs: 1, sm: 2, md: 3 }} size="small" bordered>
-            <Descriptions.Item label="Unit">{item.unit || "—"}</Descriptions.Item>
-            <Descriptions.Item label="Reorder level">
-              {item.reorderLevel != null && item.reorderLevel !== ""
-                ? item.reorderLevel
-                : "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="GST %">
-              {item.gstPercentage ?? "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Cost (per unit)">
-              {item.costPrice != null && item.costPrice !== ""
-                ? `₹${Number(item.costPrice).toFixed(2)}`
-                : "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Selling (per unit)">
-              {item.sellingPrice != null && item.sellingPrice !== ""
-                ? `₹${Number(item.sellingPrice).toFixed(2)}`
-                : "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Lots">{item.batchCount ?? 0}</Descriptions.Item>
-          </Descriptions>
+          <div className="overflow-hidden rounded-xl border border-gw-muted bg-gradient-to-br from-white via-gw-primary-light/20 to-white">
+            <div className="grid grid-cols-1 divide-y divide-gw-muted/70 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+              <section className="p-4 sm:p-5">
+                <h3 className="mb-3 border-l-4 border-gw-primary pl-3 text-[11px] font-semibold uppercase tracking-wider text-gw-primary-dark">
+                  {"Stock & units"}
+                </h3>
+                <dl className="space-y-0">
+                  <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-gw-muted/50 py-2.5 first:pt-0">
+                    <dt className="text-sm text-gw-ink-3">Unit</dt>
+                    <dd className="text-right text-sm font-medium text-gw-ink">
+                      {item.unit || "—"}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-gw-muted/50 py-2.5">
+                    <dt className="text-sm text-gw-ink-3">Reorder level</dt>
+                    <dd className="text-right text-sm font-medium text-gw-ink tabular-nums">
+                      {item.reorderLevel != null && item.reorderLevel !== ""
+                        ? item.reorderLevel
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4 py-2.5 last:pb-0">
+                    <dt className="text-sm text-gw-ink-3">Lots (batches)</dt>
+                    <dd className="text-right text-sm font-semibold tabular-nums text-gw-primary-dark">
+                      {item.batchCount ?? 0}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+              <section className="p-4 sm:p-5">
+                <h3 className="mb-3 border-l-4 border-gw-primary pl-3 text-[11px] font-semibold uppercase tracking-wider text-gw-primary-dark">
+                  Pricing across batches
+                </h3>
+                <dl className="space-y-0">
+                  <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-gw-muted/50 py-2.5 first:pt-0">
+                    <dt className="text-sm text-gw-ink-3">Cost</dt>
+                    <dd className="max-w-[58%] text-right text-sm font-medium text-gw-ink">
+                      {item.costPricingSummary ?? "—"}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-gw-muted/50 py-2.5">
+                    <dt className="text-sm text-gw-ink-3">Selling</dt>
+                    <dd className="max-w-[58%] text-right text-sm font-medium text-gw-ink">
+                      {item.sellPricingSummary ?? "—"}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4 py-2.5 last:pb-0">
+                    <dt className="text-sm text-gw-ink-3">MRP</dt>
+                    <dd className="max-w-[58%] text-right text-sm font-medium text-gw-ink">
+                      {item.mrpPricingSummary ?? "—"}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+          </div>
           {item.description ? (
             <Paragraph className="!mb-0 mt-4 text-gw-ink-3">{item.description}</Paragraph>
           ) : null}
@@ -610,7 +779,7 @@ const InventoryItemDetailPage = () => {
               loading={false}
               rowKey="id"
               pagination={false}
-              scroll={{ x: 640 }}
+              scroll={{ x: 980 }}
             />
           </div>
         </Card>
@@ -695,19 +864,9 @@ const InventoryItemDetailPage = () => {
             <Form.Item name="reorderLevel" label="Reorder level">
               <InputNumber min={0} className="w-full" />
             </Form.Item>
-            <Form.Item name="costPrice" label="Cost price">
-              <InputNumber min={0} className="w-full" addonBefore="₹" />
-            </Form.Item>
-            <Form.Item name="sellingPrice" label="Selling price">
-              <InputNumber min={0} className="w-full" addonBefore="₹" />
-            </Form.Item>
-            <Form.Item
-              name="gstPercentage"
-              label="GST %"
-              rules={[{ type: "number", min: 0, max: 100 }]}
-            >
-              <InputNumber min={0} max={100} className="w-full" />
-            </Form.Item>
+            <p className="mb-0 text-sm text-gray-500">
+              Cost, selling price, and MRP are set per batch when you add a batch below.
+            </p>
             <div className="flex justify-end gap-2">
               <Button onClick={() => setEditOpen(false)}>Cancel</Button>
               <Button type="primary" htmlType="submit" loading={loading}>
@@ -748,8 +907,74 @@ const InventoryItemDetailPage = () => {
             <Form.Item name="expiryDate" label="Expiry">
               <DatePicker className="w-full" format="YYYY-MM-DD" />
             </Form.Item>
+            <Form.Item name="costPrice" label="Cost price (per unit)">
+              <InputNumber min={0} className="w-full" addonBefore="₹" placeholder="Optional" />
+            </Form.Item>
+            <Form.Item name="sellingPrice" label="Selling price (per unit)">
+              <InputNumber min={0} className="w-full" addonBefore="₹" placeholder="Optional" />
+            </Form.Item>
+            <Form.Item name="mrp" label="MRP">
+              <InputNumber min={0} className="w-full" addonBefore="₹" placeholder="Optional" />
+            </Form.Item>
             <Form.Item name="remarks" label="Remarks">
               <TextArea rows={2} />
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        <Modal
+          title={
+            editingBatch
+              ? `Edit lot — ${editingBatch.batchNumber || "batch"}`
+              : "Edit lot"
+          }
+          open={editBatchOpen}
+          onCancel={() => {
+            setEditBatchOpen(false);
+            setEditingBatch(null);
+            updateBatchForm.resetFields();
+          }}
+          onOk={submitUpdateBatch}
+          okText="Save"
+          confirmLoading={loading}
+          destroyOnClose
+          centered
+          width="min(520px, calc(100vw - 24px))"
+        >
+          <p className="mb-3 text-sm text-gray-500">
+            Clear a price field and save to remove it on the server. Clear expiry to remove the
+            expiry date.
+          </p>
+          <Form form={updateBatchForm} layout="vertical">
+            <Form.Item name="costPrice" label="Cost price (per unit)">
+              <InputNumber
+                min={0}
+                className="w-full"
+                addonBefore="₹"
+                placeholder="Optional"
+                allowClear
+              />
+            </Form.Item>
+            <Form.Item name="sellingPrice" label="Selling price (per unit)">
+              <InputNumber
+                min={0}
+                className="w-full"
+                addonBefore="₹"
+                placeholder="Optional"
+                allowClear
+              />
+            </Form.Item>
+            <Form.Item name="mrp" label="MRP">
+              <InputNumber
+                min={0}
+                className="w-full"
+                addonBefore="₹"
+                placeholder="Optional"
+                allowClear
+              />
+            </Form.Item>
+            <Form.Item name="expiryDate" label="Expiry">
+              <DatePicker className="w-full" format="YYYY-MM-DD" allowClear />
             </Form.Item>
           </Form>
         </Modal>
