@@ -87,7 +87,7 @@ export default function AppointmentPage() {
 
   useEffect(() => {
     const response1 = isFeatureValid("APPOINTMENT", "ADD_APPOINTMENT");
-    const response2 = isFeatureValid("APPOINTMENT", "ADD_PAST_DATE_APPOINTMENT");
+    const response2 = isFeatureValid("APPOINTMENT", "ADD_PAST_APPOINTMENT");
 
     setIsAllowedToAddAppointment(response1);
 

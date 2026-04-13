@@ -28,6 +28,7 @@ import ClientManagement from "./pages/ClientManagement";
 import ClientDetailPage from "./pages/ClientDetailPage";
 import NotificationManagement from "./pages/SuperAdmin/NotificationCreation";
 import FeedbackManagement from "./pages/FeedbackManagement";
+import LeadsTracker from "./pages/LeadsTracker";
 
 // ✅ Import icons
 import {
@@ -105,6 +106,11 @@ export const ROUTE_COMPONENTS = {
     component: FeedbackManagement,
     icon: <FaUserFriends />,
     label: "Feedback",
+  },
+  "/leadsTracker": {
+    component: LeadsTracker,
+    icon: <FaUserFriends />,
+    label: "Leads Tracker",
   },
 
 
