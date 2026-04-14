@@ -45,10 +45,10 @@ const RoleManagement = () => {
         }
       );
       if (response.status === 200) {
-         const filteredRoles = (response.data.response || []).filter(
-          (role) => !(role.is_deletable === false && role.description === "DEFAULT ADMIN" && role.is_admin===true)
+        const filteredRoles = (response.data.response || []).filter(
+          (role) => !(role.is_deletable === false && role.description === "DEFAULT ADMIN" && role.is_admin === true)
         );
-        setRoles(filteredRoles|| []);
+        setRoles(filteredRoles || []);
       } else {
         message.error("Failed to fetch roles.");
       }
@@ -137,7 +137,7 @@ const RoleManagement = () => {
       setErrorMsg("Please try again later or with another Role Name");
       message.error(
         error.response?.data?.message ||
-          "Something went wrong. Please try again."
+        "Something went wrong. Please try again."
       );
     } finally {
       setIsSubmitting(false);
