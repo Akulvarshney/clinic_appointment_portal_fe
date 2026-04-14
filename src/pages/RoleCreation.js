@@ -5,6 +5,7 @@ import {
   Modal,
   Form,
   Input,
+  Select,
   message,
   Alert,
   Switch,
@@ -13,8 +14,10 @@ import {
 import DataTable from "../components/DataTable";
 import axios from "axios";
 import { BACKEND_URL } from "../assets/constants";
+import { useNotification } from "../utils/messageWrapper";
 
 const RoleManagement = () => {
+  const notification = useNotification();
   const [roles, setRoles] = useState([]);
   const [selectedRoleData, setSelectedRoleData] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -23,7 +26,8 @@ const RoleManagement = () => {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [editingRole, setEditingRole] = useState(null);
-  
+  const [selectedTabId, setSelectedTabId] = useState(null);
+  const [baselineRoleData, setBaselineRoleData] = useState(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
@@ -41,10 +45,10 @@ const RoleManagement = () => {
         }
       );
       if (response.status === 200) {
-         const filteredRoles = (response.data.response || []).filter(
-          (role) => !(role.is_deletable === false && role.description === "DEFAULT ADMIN" && role.is_admin===true)
+        const filteredRoles = (response.data.response || []).filter(
+          (role) => !(role.is_deletable === false && role.description === "DEFAULT ADMIN" && role.is_admin === true)
         );
-        setRoles(filteredRoles|| []);
+        setRoles(filteredRoles || []);
       } else {
         message.error("Failed to fetch roles.");
       }
@@ -66,7 +70,10 @@ const RoleManagement = () => {
         }
       );
       if (response.status === 200) {
-        setSelectedRoleData(response.data.data || []);
+        const data = response.data.data || [];
+        setSelectedRoleData(data);
+        setBaselineRoleData(data);
+        setSelectedTabId(data?.[0]?.tabId ?? null);
       } else {
         message.error("Failed to fetch role features.");
       }
@@ -130,14 +137,14 @@ const RoleManagement = () => {
       setErrorMsg("Please try again later or with another Role Name");
       message.error(
         error.response?.data?.message ||
-          "Something went wrong. Please try again."
+        "Something went wrong. Please try again."
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleSubmitRoleFeatureUpdates = async () => {
+  const handleSubmitRoleFeatureUpdates = async ({ closeAfterSave = true } = {}) => {
     setIsSubmitting(true);
     try {
       const payload = {
@@ -160,9 +167,14 @@ const RoleManagement = () => {
       );
 
       message.success("Permissions updated successfully");
-      setEditModalVisible(false);
-      setSelectedRoleData([]);
-      setEditingRole(null);
+      setBaselineRoleData(selectedRoleData);
+      if (closeAfterSave) {
+        setEditModalVisible(false);
+        setSelectedRoleData([]);
+        setEditingRole(null);
+        setSelectedTabId(null);
+        setBaselineRoleData(null);
+      }
       fetchRoles();
     } catch (error) {
       console.error("Error submitting features:", error);
@@ -172,16 +184,53 @@ const RoleManagement = () => {
     }
   };
 
-  const tableData = selectedRoleData.flatMap((tab) =>
-    tab.features.map((feature) => ({
-      key: `${tab.tabId}-${feature.featureId}`,
-      tabName: tab.tabName,
-      featureName: feature.featureName,
-      isValid: feature.isValid,
-      tabId: tab.tabId,
-      featureId: feature.featureId,
-    }))
-  );
+  const tabOptions = selectedRoleData.map((tab) => ({
+    label: tab.tabName,
+    value: tab.tabId,
+  }));
+
+  const isDirty = (() => {
+    if (!baselineRoleData) return false;
+    const pick = (data) =>
+      (data || []).map((t) => ({
+        tabId: t.tabId,
+        features: (t.features || []).map((f) => ({
+          featureId: f.featureId,
+          isValid: Boolean(f.isValid),
+        })),
+      }));
+    try {
+      return JSON.stringify(pick(selectedRoleData)) !== JSON.stringify(pick(baselineRoleData));
+    } catch {
+      return true;
+    }
+  })();
+
+  const handleTabChange = (nextTabId) => {
+    if (!isDirty) {
+      setSelectedTabId(nextTabId);
+      return;
+    }
+
+    notification?.error?.({
+      message: "Unsaved changes",
+      description: "Please save permission changes before switching tabs.",
+      placement: "topRight",
+    });
+  };
+
+  const tableData = selectedRoleData
+    .filter((tab) => (selectedTabId ? tab.tabId === selectedTabId : true))
+    .flatMap((tab) =>
+      tab.features.map((feature) => ({
+        key: `${tab.tabId}-${feature.featureId}`,
+        tabName: tab.tabName,
+        featureName: feature.featureName,
+        isValid: feature.isValid,
+        tabId: tab.tabId,
+        featureId: feature.featureId,
+      }))
+    );
 
   const roleColumns = [
     {
@@ -313,7 +362,13 @@ const RoleManagement = () => {
       <Modal
         title={`Edit Role: ${editingRole?.name}`}
         open={editModalVisible}
-        onCancel={() => setEditModalVisible(false)}
+        onCancel={() => {
+          setEditModalVisible(false);
+          setSelectedRoleData([]);
+          setEditingRole(null);
+          setSelectedTabId(null);
+          setBaselineRoleData(null);
+        }}
         centered
         styles={{
           content: {
@@ -329,20 +384,27 @@ const RoleManagement = () => {
           <Button
             key="submit"
             type="primary"
-            onClick={handleSubmitRoleFeatureUpdates}
+            onClick={() => handleSubmitRoleFeatureUpdates({ closeAfterSave: true })}
             loading={isSubmitting}
           >
             Submit Changes
           </Button>,
         ]}
       >
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm font-medium text-gray-700">Tab</div>
+          <Select
+            className="w-full sm:w-[340px]"
+            placeholder="Select a tab"
+            value={selectedTabId}
+            options={tabOptions}
+            onChange={handleTabChange}
+            showSearch
+            optionFilterProp="label"
+          />
+        </div>
         <DataTable
           columns={[
-            {
-              title: "Tab Name",
-              dataIndex: "tabName",
-              key: "tabName",
-            },
             {
               title: "Feature Name",
               dataIndex: "featureName",
