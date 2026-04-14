@@ -29,7 +29,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "npm run build && firebase deploy"
+    "deploy": "npm run build && firebase deploy --project prd",
+    "deploy:default": "npm run build && firebase deploy --project default",
+    "deploy:prd": "npm run build && firebase deploy --project prd"
   },
   "eslintConfig": {
     "extends": [
