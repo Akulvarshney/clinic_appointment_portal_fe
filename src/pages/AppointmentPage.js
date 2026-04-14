@@ -37,6 +37,7 @@ function timeLabel(h, m = 0) {
   return new Date(0, 0, 0, h, m).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: true,
   });
 }
 
@@ -122,6 +123,7 @@ export default function AppointmentPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailAppt, setDetailAppt] = useState(null);
   const [isViewClientMobile, setIsViewClientMobile] = useState(false);
+  const [now, setNow] = useState(() => new Date());
 
   const [form] = Form.useForm();
 
@@ -157,6 +159,15 @@ export default function AppointmentPage() {
     }
     return out;
   }, []);
+
+  const isCurrentDateToday = currentDate.toDateString() === now.toDateString();
+  const currentTimeOffsetMinutes =
+    (now.getHours() - START_HOUR) * 60 + now.getMinutes();
+  const showCurrentTimeMarker =
+    isCurrentDateToday &&
+    currentTimeOffsetMinutes >= 0 &&
+    currentTimeOffsetMinutes <= totalMinutes;
+  const currentTimeTopPx = (currentTimeOffsetMinutes / SLOT_MINUTES) * SLOT_HEIGHT;
   useEffect(() => {
     const initialize = async () => {
       checkAddClientFeatureValid();
@@ -451,6 +462,14 @@ export default function AppointmentPage() {
     };
     mainElem.addEventListener("scroll", syncScroll);
     return () => mainElem.removeEventListener("scroll", syncScroll);
+  }, []);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNow(new Date());
+    }, 30000);
+
+    return () => window.clearInterval(intervalId);
   }, []);
 
   // Drag start
@@ -918,29 +937,77 @@ export default function AppointmentPage() {
           userSelect: "none",
         }}
       >
-        <div style={{ height: HEADER_H, borderBottom: `1px solid ${PALETTE.muted}` }} />
-        {timeSlots.map(({ h, m }, i) => (
-          <div
-            key={i}
-            style={{
-              height: SLOT_HEIGHT,
-              borderBottom: `1px dashed ${PALETTE.muted}`,
-              paddingRight: 8,
-              textAlign: "right",
-              fontSize: 15,
-              color: PALETTE.primaryDark,
-              display: "flex",
-              alignItems: "flex-start",
-              userSelect: "none",
-            }}
-          >
-            {(m === 0 || m === 30) && (
-              <span style={{ transform: "translateY(-2px)", width: "100%" }}>
-                {timeLabel(h, m)}
+        <div style={{ position: "relative", minHeight: HEADER_H + slotCount * SLOT_HEIGHT }}>
+          <div style={{ height: HEADER_H, borderBottom: `1px solid ${PALETTE.muted}` }} />
+          {timeSlots.map(({ h, m }, i) => (
+            <div
+              key={i}
+              style={{
+                height: SLOT_HEIGHT,
+                borderBottom:
+                  m === 45
+                    ? "1px solid rgba(29, 78, 216, 0.45)"
+                    : `1px dashed ${PALETTE.muted}`,
+                paddingRight: 8,
+                textAlign: "right",
+                fontSize: 15,
+                color: PALETTE.primaryDark,
+                display: "flex",
+                alignItems: "flex-start",
+                userSelect: "none",
+              }}
+            >
+              {(m === 0 || m === 30) && (
+                <span
+                  style={{
+                    transform: "translateY(-2px)",
+                    width: "100%",
+                    color: m === 0 ? "#1d4ed8" : PALETTE.primaryDark,
+                    fontWeight: m === 0 ? 700 : 500,
+                  }}
+                >
+                  {timeLabel(h, m)}
+                </span>
+              )}
+            </div>
+          ))}
+          {showCurrentTimeMarker && (
+            <div
+              style={{
+                position: "absolute",
+                top: HEADER_H + currentTimeTopPx,
+                left: 0,
+                right: 0,
+                pointerEvents: "none",
+                zIndex: 3,
+              }}
+            >
+              <div
+                style={{
+                  borderTop: "2px solid #ef4444",
+                  boxShadow: "0 0 10px rgba(239, 68, 68, 0.25)",
+                }}
+              />
+              <span
+                style={{
+                  position: "absolute",
+                  right: 6,
+                  top: 0,
+                  transform: "translateY(-50%)",
+                  background: "#ef4444",
+                  color: "#fff",
+                  borderRadius: 999,
+                  padding: "1px 6px",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  lineHeight: 1.4,
+                }}
+              >
+                {timeLabel(now.getHours(), now.getMinutes())}
               </span>
-            )}
-          </div>
-        ))}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -1061,6 +1128,26 @@ export default function AppointmentPage() {
           userSelect: "none",
         }}
       >
+        {showCurrentTimeMarker && (
+          <div
+            style={{
+              position: "absolute",
+              top: currentTimeTopPx,
+              left: 0,
+              right: 0,
+              height: 0,
+              pointerEvents: "none",
+              zIndex: 10,
+            }}
+          >
+            <div
+              style={{
+                borderTop: "2px solid #ef4444",
+                boxShadow: "0 0 10px rgba(239, 68, 68, 0.25)",
+              }}
+            />
+          </div>
+        )}
         {Resources.length ? (
           Resources.map((r) => (
             <div
@@ -1086,12 +1173,15 @@ export default function AppointmentPage() {
               title="Double-click empty space to add appointment"
             >
               {/* empty slot lines */}
-              {Array.from({ length: slotCount }).map((_, i) => (
+              {timeSlots.map(({ h, m }, i) => (
                 <div
                   key={i}
                   style={{
                     height: SLOT_HEIGHT,
-                    borderBottom: `1px solid ${PALETTE.muted}`,
+                    borderBottom:
+                      m === 45
+                        ? "1px solid rgba(29, 78, 216, 0.45)"
+                        : `1px solid ${PALETTE.muted}`,
                   }}
                 />
               ))}
