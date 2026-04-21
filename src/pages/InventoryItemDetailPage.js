@@ -683,16 +683,16 @@ const InventoryItemDetailPage = () => {
                 {/* Edit SKU */}
               </Button>
             )}
-            {/* {canAdjust && (
+            {canAdjust && (
               <>
                 <Button icon={<PlusOutlined />} onClick={openAddBatch}>
-                  Add batch
+
                 </Button>
                 <Button icon={<SwapOutlined />} onClick={() => openAdjust(null)}>
-                  Adjust stock
+
                 </Button>
               </>
-            )} */}
+            )}
             {canDelete && (
               <Popconfirm
                 title="Deactivate this SKU?"
