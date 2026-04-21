@@ -99,7 +99,7 @@ export default function GenerateInvoiceModal({
   const [manualGrandTotal, setManualGrandTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState("");
-  const [terms, setTerms] = useState("Payment due within 30 days");
+  const [terms, setTerms] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   //const [shippingCharges, setShippingCharges] = useState(0);
   const [roundOff, setRoundOff] = useState(true);
@@ -503,13 +503,22 @@ export default function GenerateInvoiceModal({
       })
     );
 
-    if (b && b.quantityOnHand != null) {
+    if (type === "invoice" && b && b.quantityOnHand != null) {
       setInventoryItems((prev) =>
         prev.map((item, i) => {
           if (i !== index) return item;
           const qty = Number(item.qty) || 0;
           const max = Number(b.quantityOnHand) || 0;
-          if (qty > max) return { ...item, qty: Math.max(1, max) };
+          if (qty > max) {
+            if (max >= 1) {
+              notification.warning({
+                message: "Quantity limited by stock",
+                description: `This batch has ${max} on hand. Line quantity was reduced to ${max}.`,
+                placement: "top",
+              });
+            }
+            return { ...item, qty: Math.max(1, max) };
+          }
           return item;
         })
       );
@@ -602,11 +611,22 @@ export default function GenerateInvoiceModal({
     const row = inventoryItems[index];
     let next = Number(rawValue) || 0;
     if (next < 1) next = 1;
-    if (row?.inventoryItemId && row?.inventoryBatchId) {
+    if (
+      type === "invoice" &&
+      row?.inventoryItemId &&
+      row?.inventoryBatchId
+    ) {
       const batches = batchesByItemId[row.inventoryItemId] || [];
       const b = batches.find((x) => x.id === row.inventoryBatchId);
       const onHand = Number(b?.quantityOnHand);
-      if (Number.isFinite(onHand)) next = Math.min(next, onHand);
+      if (Number.isFinite(onHand) && next > onHand) {
+        notification.warning({
+          message: "Quantity limited by stock",
+          description: `Maximum for this batch is ${onHand}. Quantity set to ${onHand}.`,
+          placement: "top",
+        });
+        next = Math.max(1, onHand);
+      }
     }
     handleInventoryFieldChange(index, "qty", next);
   };
@@ -892,7 +912,7 @@ export default function GenerateInvoiceModal({
         return false;
       }
 
-      if (kind === "INVENTORY") {
+      if (kind === "INVENTORY" && type === "invoice") {
         const batches = batchesByItemId[item.inventoryItemId] || [];
         const b = batches.find((x) => x.id === item.inventoryBatchId);
         const onHand = Number(b?.quantityOnHand);
@@ -1383,35 +1403,24 @@ export default function GenerateInvoiceModal({
       title: "Qty",
       dataIndex: "qty",
       width: 88,
-      render: (qty, record, index) => {
-        let max;
-        if (record.inventoryItemId && record.inventoryBatchId) {
-          const batches = batchesByItemId[record.inventoryItemId] || [];
-          const b = batches.find((x) => x.id === record.inventoryBatchId);
-          const onHand = Number(b?.quantityOnHand);
-          if (Number.isFinite(onHand)) max = onHand;
-        }
-        return (
-          <InputNumber
-            value={qty}
-            onChange={(value) => handleInventoryQtyChange(index, value)}
-            parser={(val) => {
-              const raw = String(val ?? "");
-              const cleaned = raw.replace(/[^\d.]/g, "");
-              const n = Number(cleaned);
-              if (!cleaned) return "";
-              if (!Number.isFinite(n)) return "";
-              if (Number.isFinite(max)) return String(Math.min(n, max));
-              return cleaned;
-            }}
-            min={1}
-            max={max}
-            step={1}
-            controls={false}
-            style={{ width: "100%" }}
-          />
-        );
-      },
+      render: (qty, record, index) => (
+        <InputNumber
+          value={qty}
+          onChange={(value) => handleInventoryQtyChange(index, value)}
+          parser={(val) => {
+            const raw = String(val ?? "");
+            const cleaned = raw.replace(/[^\d.]/g, "");
+            const n = Number(cleaned);
+            if (!cleaned) return "";
+            if (!Number.isFinite(n)) return "";
+            return cleaned;
+          }}
+          min={1}
+          step={1}
+          controls={false}
+          style={{ width: "100%" }}
+        />
+      ),
     },
     {
       title: "Rate",

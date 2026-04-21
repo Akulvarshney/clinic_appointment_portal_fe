@@ -291,15 +291,9 @@ const InventoryItemDetailPage = () => {
       if (values.expiryDate) {
         payload.expiryDate = dayjs(values.expiryDate).format("YYYY-MM-DD");
       }
-      if (values.costPrice != null && values.costPrice !== "") {
-        payload.costPrice = values.costPrice;
-      }
-      if (values.sellingPrice != null && values.sellingPrice !== "") {
-        payload.sellingPrice = values.sellingPrice;
-      }
-      if (values.mrp != null && values.mrp !== "") {
-        payload.mrp = values.mrp;
-      }
+      payload.costPrice = values.costPrice;
+      payload.sellingPrice = values.sellingPrice;
+      payload.mrp = values.mrp;
       await axios.post(`${BACKEND_URL}/clientadmin/inventoryManagement/addBatchStock`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -862,7 +856,7 @@ const InventoryItemDetailPage = () => {
               <Input />
             </Form.Item>
             <Form.Item name="reorderLevel" label="Reorder level">
-              <InputNumber min={0} className="w-full" />
+              <InputNumber min={0} className="w-full" controls={false} />
             </Form.Item>
             <p className="mb-0 text-sm text-gray-500">
               Cost, selling price, and MRP are set per batch when you add a batch below.
@@ -902,19 +896,40 @@ const InventoryItemDetailPage = () => {
                 { type: "number", min: 0.0001, message: "Must be positive" },
               ]}
             >
-              <InputNumber min={0.0001} className="w-full" />
+              <InputNumber min={0.0001} className="w-full" controls={false} />
             </Form.Item>
             <Form.Item name="expiryDate" label="Expiry">
               <DatePicker className="w-full" format="YYYY-MM-DD" />
             </Form.Item>
-            <Form.Item name="costPrice" label="Cost price (per unit)">
-              <InputNumber min={0} className="w-full" addonBefore="₹" placeholder="Optional" />
+            <Form.Item
+              name="costPrice"
+              label="Cost price (per unit)"
+              rules={[
+                { required: true, message: "Enter cost price" },
+                { type: "number", min: 0, message: "Must be ≥ 0" },
+              ]}
+            >
+              <InputNumber min={0} className="w-full" addonBefore="₹" controls={false} />
             </Form.Item>
-            <Form.Item name="sellingPrice" label="Selling price (per unit)">
-              <InputNumber min={0} className="w-full" addonBefore="₹" placeholder="Optional" />
+            <Form.Item
+              name="sellingPrice"
+              label="Selling price (per unit)"
+              rules={[
+                { required: true, message: "Enter selling price" },
+                { type: "number", min: 0, message: "Must be ≥ 0" },
+              ]}
+            >
+              <InputNumber min={0} className="w-full" addonBefore="₹" controls={false} />
             </Form.Item>
-            <Form.Item name="mrp" label="MRP">
-              <InputNumber min={0} className="w-full" addonBefore="₹" placeholder="Optional" />
+            <Form.Item
+              name="mrp"
+              label="MRP"
+              rules={[
+                { required: true, message: "Enter MRP" },
+                { type: "number", min: 0, message: "Must be ≥ 0" },
+              ]}
+            >
+              <InputNumber min={0} className="w-full" addonBefore="₹" controls={false} />
             </Form.Item>
             <Form.Item name="remarks" label="Remarks">
               <TextArea rows={2} />
@@ -953,6 +968,7 @@ const InventoryItemDetailPage = () => {
                 addonBefore="₹"
                 placeholder="Optional"
                 allowClear
+                controls={false}
               />
             </Form.Item>
             <Form.Item name="sellingPrice" label="Selling price (per unit)">
@@ -962,6 +978,7 @@ const InventoryItemDetailPage = () => {
                 addonBefore="₹"
                 placeholder="Optional"
                 allowClear
+                controls={false}
               />
             </Form.Item>
             <Form.Item name="mrp" label="MRP">
@@ -971,6 +988,7 @@ const InventoryItemDetailPage = () => {
                 addonBefore="₹"
                 placeholder="Optional"
                 allowClear
+                controls={false}
               />
             </Form.Item>
             <Form.Item name="expiryDate" label="Expiry">
@@ -1034,7 +1052,7 @@ const InventoryItemDetailPage = () => {
                   { type: "number", min: 0.0001, message: "Positive" },
                 ]}
               >
-                <InputNumber min={0} className="w-full" />
+                <InputNumber min={0} className="w-full" controls={false} />
               </Form.Item>
             )}
             {txType === "ADJUSTMENT" && (
@@ -1046,7 +1064,7 @@ const InventoryItemDetailPage = () => {
                   { type: "number", min: 0, message: "≥ 0" },
                 ]}
               >
-                <InputNumber min={0} className="w-full" />
+                <InputNumber min={0} className="w-full" controls={false} />
               </Form.Item>
             )}
             <Form.Item name="remarks" label="Remarks">
