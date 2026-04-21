@@ -63,6 +63,8 @@ const BillManagement = () => {
   const [canEditQuotation, setCanEditQuotation] = useState(false);
   const [editingBill, setEditingBill] = useState(null);
   const [loadingBillDetails, setLoadingBillDetails] = useState(false);
+  const [convertConfirmOpen, setConvertConfirmOpen] = useState(false);
+  const [quotationPendingConvert, setQuotationPendingConvert] = useState(null);
 
   useEffect(() => {
     const getinfo = async () => {
@@ -344,23 +346,22 @@ const BillManagement = () => {
     setModalType(type);
   };
 
-  const handleConvert = async (record) => {
+  const openConvertConfirm = (record) => {
+    setQuotationPendingConvert(record);
+    setConvertConfirmOpen(true);
+  };
+
+  const performConvertToInvoice = async (record) => {
     try {
-      console.log("save as invoice ", record);
-
-      saveAsInvoice(record, setRefresh);
-
-      // if (!res.ok) throw new Error("Failed to convert quotation");
-
-      // message.success("Quotation converted to Invoice");
-
-      // // Refresh bills
-      // const updatedBills = await fetchBills();
-      // re-trigger the useEffect logic
-      setActiveTab("invoices"); // optional: directly switch to invoices tab
+      await saveAsInvoice(record, setRefresh);
+      setActiveTab("invoices");
+      message.success("Quotation saved as invoice");
+      setConvertConfirmOpen(false);
+      setQuotationPendingConvert(null);
     } catch (err) {
       console.error(err);
       message.error("Error converting quotation");
+      throw err;
     }
   };
 
@@ -471,9 +472,12 @@ const BillManagement = () => {
             <span className="inline-flex">
               <Dropdown overlay={printMenu} trigger={["click"]}>
                 <Button
-                  type="primary"
+                  type="default"
                   size="small"
-                  icon={<PrinterOutlined />}
+                  className="border-cyan-200 bg-cyan-50 text-cyan-700 hover:border-cyan-300 hover:bg-cyan-100 hover:text-cyan-800"
+                  icon={
+                    <PrinterOutlined className="text-cyan-600" />
+                  }
                   aria-label="Print receipt"
                 />
               </Dropdown>
@@ -532,9 +536,12 @@ const BillManagement = () => {
             <span className="inline-flex">
               <Dropdown overlay={printMenu} trigger={["click"]}>
                 <Button
-                  type="primary"
+                  type="default"
                   size="small"
-                  icon={<PrinterOutlined />}
+                  className="border-cyan-200 bg-cyan-50 text-cyan-700 hover:border-cyan-300 hover:bg-cyan-100 hover:text-cyan-800"
+                  icon={
+                    <PrinterOutlined className="text-cyan-600" />
+                  }
                   aria-label="Print bill"
                 />
               </Dropdown>
@@ -550,7 +557,10 @@ const BillManagement = () => {
                   <Button
                     type="default"
                     size="small"
-                    icon={<EditOutlined />}
+                    className="border-indigo-200 bg-indigo-50 text-indigo-700 hover:border-indigo-300 hover:bg-indigo-100 hover:text-indigo-800"
+                    icon={
+                      <EditOutlined className="text-indigo-600" />
+                    }
                     onClick={() => handleEdit(record)}
                     loading={loadingBillDetails}
                     disabled={!canEditQuotation}
@@ -574,9 +584,12 @@ const BillManagement = () => {
                     disabled={!canPrintInvoice}
                   >
                     <Button
-                      type="primary"
+                      type="default"
                       size="small"
-                      icon={<PrinterOutlined />}
+                      className="border-cyan-200 bg-cyan-50 text-cyan-700 hover:border-cyan-300 hover:bg-cyan-100 hover:text-cyan-800 disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-400"
+                      icon={
+                        <PrinterOutlined className="text-cyan-600" />
+                      }
                       disabled={!canPrintInvoice}
                       aria-label="Print invoice"
                     />
@@ -590,10 +603,13 @@ const BillManagement = () => {
               <Tooltip title="Save as invoice">
                 <span className="inline-flex">
                   <Button
-                    type="primary"
+                    type="default"
                     size="small"
-                    icon={<SaveOutlined />}
-                    onClick={() => handleConvert(record)}
+                    className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100 hover:text-emerald-800"
+                    icon={
+                      <SaveOutlined className="text-emerald-600" />
+                    }
+                    onClick={() => openConvertConfirm(record)}
                     disabled={!canSaveAsInvoice}
                     aria-label="Save as invoice"
                   />
@@ -761,6 +777,30 @@ const BillManagement = () => {
           editData={editingBill}
         />
       )}
+
+      <Modal
+        title="Save quotation as invoice?"
+        open={convertConfirmOpen}
+        onCancel={() => {
+          setConvertConfirmOpen(false);
+          setQuotationPendingConvert(null);
+        }}
+        onOk={async () => {
+          if (quotationPendingConvert) {
+            await performConvertToInvoice(quotationPendingConvert);
+          }
+        }}
+        okText="Save as invoice"
+        cancelText="Cancel"
+        okButtonProps={{ className: "bg-emerald-600 hover:bg-emerald-700" }}
+      >
+        <p className="m-0 text-gray-700">
+          This will create an invoice from quotation{" "}
+          <strong>{quotationPendingConvert?.billId}</strong> for{" "}
+          <strong>{quotationPendingConvert?.clientName}</strong>. You can review
+          it on the Invoices tab after conversion.
+        </p>
+      </Modal>
 
       <Modal
         title="Print Preview"
