@@ -12,35 +12,297 @@ html {
   min-width: 0;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Glory WellNic design tokens — design.md §3
+   ───────────────────────────────────────────────────────────── */
 :root {
-  --gw-primary: #8fabd4;
-  --gw-primary-light: #c4d4ef;
-  --gw-surface: #efece3;
-  --gw-muted: #dad6cc;
-  --gw-primary-dark: #4a70a9;
-  --gw-ink: #000000;
-  --gw-ink2: #333333;
-  --gw-ink3: #666666;
-  --gw-ink4: #999999;
+  /* Surfaces */
+  --gw-bg: #f7f5ef;
+  --gw-bg-2: #f0ede5;
+  --gw-bg-3: #e8e5dc;
+
+  /* Ink */
+  --gw-ink: #2b2722;
+  --gw-ink-2: #5c5751;
+  --gw-ink-3: #8b857d;
+
+  /* Lines */
+  --gw-line: #dcd8cf;
+  --gw-line-2: #cfcabf;
+
+  /* Accent — terracotta */
+  --gw-accent: #c46c48;
+  --gw-accent-hover: #b45d3a;
+  --gw-accent-soft: #f5e2d5;
+
+  /* Status */
+  --gw-success: #5ba876;
+  --gw-success-soft: #e0f0e2;
+  --gw-warning: #d4a640;
+  --gw-warning-soft: #f8ebc8;
+  --gw-danger: #c24a2e;
+  --gw-danger-soft: #f7ddd3;
+
   --gw-white: #ffffff;
-  --gw-line: rgba(0, 0, 0, 0.1);
-  --gw-accent-light: rgba(143, 171, 212, 0.28);
-  --gw-primary-hover: #6b8fc4;
+
+  /* Radii */
+  --r-1: 6px;
+  --r-2: 10px;
+  --r-3: 14px;
+  --r-4: 20px;
+  --r-pill: 999px;
+
+  /* Shadows */
+  --shadow-1: 0 1px 2px rgba(43, 39, 34, 0.04);
+  --shadow-2: 0 4px 16px rgba(43, 39, 34, 0.06);
+  --shadow-3: 0 12px 36px rgba(43, 39, 34, 0.08);
+
+  /* Spacing */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+
+  /* Typography stacks */
+  --font-display: "Instrument Serif", "Iowan Old Style", "Apple Garamond",
+    Georgia, serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Legacy aliases — kept so un-migrated pages keep rendering */
+  --gw-primary: var(--gw-accent);
+  --gw-primary-light: var(--gw-accent-soft);
+  --gw-primary-dark: #9e5436;
+  --gw-primary-hover: var(--gw-accent-hover);
+  --gw-surface: var(--gw-bg);
+  --gw-muted: var(--gw-line);
+  --gw-ink2: var(--gw-ink-2);
+  --gw-ink3: var(--gw-ink-3);
+  --gw-ink4: #a8a29a;
 }
 
 body {
-  background-color: var(--gw-surface);
+  background-color: var(--gw-bg);
   color: var(--gw-ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   margin: 0;
   overflow-x: hidden;
   max-width: 100%;
 }
 
-/* Wide tables scroll inside their wrapper instead of expanding the page */
+/* ─────────────────────────────────────────────────────────────
+   Editorial typography utilities
+   ───────────────────────────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  color: var(--gw-ink-3);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Motion — design.md §3.4
+   ───────────────────────────────────────────────────────────── */
+@keyframes gw-rise {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes gw-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gw-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes gw-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes gw-bar {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.gw-rise {
+  animation: gw-rise 700ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.gw-fade {
+  animation: gw-fade 400ms ease-out both;
+}
+
+.gw-float {
+  animation: gw-float 5.5s ease-in-out infinite;
+}
+
+.gw-pulse {
+  animation: gw-pulse 1.5s ease-in-out infinite;
+}
+
+.rise-d1 {
+  animation-delay: 80ms;
+}
+.rise-d2 {
+  animation-delay: 160ms;
+}
+.rise-d3 {
+  animation-delay: 240ms;
+}
+.rise-d4 {
+  animation-delay: 320ms;
+}
+.rise-d5 {
+  animation-delay: 400ms;
+}
+.rise-d6 {
+  animation-delay: 480ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gw-rise,
+  .gw-fade,
+  .gw-float,
+  .gw-pulse {
+    animation: none !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Cards & chips — shared primitives
+   ───────────────────────────────────────────────────────────── */
+.gw-card {
+  background: var(--gw-white);
+  border: 1px solid var(--gw-line);
+  border-radius: var(--r-3);
+  box-shadow: var(--shadow-1);
+}
+
+.gw-card-hover {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.gw-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+}
+
+.gw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--r-2);
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--gw-bg-2);
+  color: var(--gw-ink-2);
+}
+.gw-chip::before {
+  content: "•";
+  font-size: 14px;
+  line-height: 1;
+}
+.gw-chip-success {
+  background: var(--gw-success-soft);
+  color: #2f6a44;
+}
+.gw-chip-accent {
+  background: var(--gw-accent-soft);
+  color: #9e5436;
+}
+.gw-chip-warn {
+  background: var(--gw-warning-soft);
+  color: #876716;
+}
+.gw-chip-danger {
+  background: var(--gw-danger-soft);
+  color: #8b2e1c;
+}
+.gw-chip-ink {
+  background: var(--gw-ink);
+  color: var(--gw-bg);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   AntD overrides to consume the palette
+   ───────────────────────────────────────────────────────────── */
 .ant-table-wrapper {
   max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  background: var(--gw-bg-2) !important;
+  color: var(--gw-ink-2) !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500 !important;
+  border-bottom: 1px solid var(--gw-line) !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--gw-line) !important;
+  color: var(--gw-ink) !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:hover > td {
+  background: var(--gw-bg-2) !important;
 }
 
 @media (max-width: 767px) {
@@ -57,7 +319,6 @@ body {
   }
 }
 
-/* ── Uniform pagination (tables + standalone) — same bar on cream or white parents */
 .ant-table-wrapper .ant-table-pagination {
   margin: 0 !important;
   padding: 12px 16px;
@@ -65,7 +326,6 @@ body {
   border-top: 1px solid var(--gw-line);
 }
 
-/* Standalone Pagination (e.g. appointment lists) — match table footer bar */
 .gw-pagination-uniform.ant-pagination {
   margin: 0;
   padding: 12px 16px;
@@ -74,7 +334,6 @@ body {
   border-radius: 8px;
 }
 
-/* Table cell nowrap for shared DataTable — use scroll.x (see DataTable) so columns do not overlap */
 .gw-data-table.ant-table-wrapper .ant-table-tbody > tr > td,
 .gw-data-table.ant-table-wrapper .ant-table-thead > tr > th {
   white-space: nowrap !important;
@@ -87,7 +346,6 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Bill management — wrap long column titles (must follow gw-data-table so it wins) */
 .bill-management-table.ant-table-wrapper .ant-table-thead > tr > th,
 .bill-management-table.ant-table-wrapper
   .ant-table-thead

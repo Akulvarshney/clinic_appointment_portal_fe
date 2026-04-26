@@ -4,7 +4,7 @@ import { Button } from "antd";
 import dayjs from "dayjs";
 import debounce from "lodash/debounce";
 import { isFeatureValid } from "../assets/constants";
-import { Divider, Descriptions, } from "antd";
+import { Divider, Descriptions } from "antd";
 import { apiGet, apiPost, apiPatch } from "../utils/axiosCalls";
 import { PALETTE } from "../theme/palette";
 
@@ -81,8 +81,10 @@ export default function AppointmentPage() {
   const [isAllowedToAddAppointment, setIsAllowedToAddAppointment] =
     useState(false);
 
-  const [isAllowedToAddPastDateAppointment, setIsAllowedToAddPastDateAppointment] =
-    useState(false);
+  const [
+    isAllowedToAddPastDateAppointment,
+    setIsAllowedToAddPastDateAppointment,
+  ] = useState(false);
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -143,7 +145,7 @@ export default function AppointmentPage() {
     const newDate = new Date(
       today.getFullYear(),
       today.getMonth(),
-      today.getDate()
+      today.getDate(),
     );
     console.log("Going to today:", newDate);
     setCurrentDate(newDate);
@@ -167,7 +169,8 @@ export default function AppointmentPage() {
     isCurrentDateToday &&
     currentTimeOffsetMinutes >= 0 &&
     currentTimeOffsetMinutes <= totalMinutes;
-  const currentTimeTopPx = (currentTimeOffsetMinutes / SLOT_MINUTES) * SLOT_HEIGHT;
+  const currentTimeTopPx =
+    (currentTimeOffsetMinutes / SLOT_MINUTES) * SLOT_HEIGHT;
   useEffect(() => {
     const initialize = async () => {
       checkAddClientFeatureValid();
@@ -186,7 +189,7 @@ export default function AppointmentPage() {
       try {
         const response = await apiGet(
           `/clientAdmin/userMgmt/getEmployees?orgId=${orgId}&status=ENABLED`,
-          basic_config
+          basic_config,
         );
 
         const employees = response.response.data || [];
@@ -210,7 +213,7 @@ export default function AppointmentPage() {
       try {
         const response = await apiGet(
           `/clientAdmin/userMgmt/getDoctors?orgId=${orgId}`,
-          basic_config
+          basic_config,
         );
 
         // console.log("siddhant> ", response.data);
@@ -236,7 +239,7 @@ export default function AppointmentPage() {
       try {
         const response = await apiGet(
           `/clientAdmin/serviceManagement/getActiveServices?orgId=${orgId}`,
-          basic_config
+          basic_config,
         );
         const services = response.data || [];
         //console.log("services "   , services)
@@ -261,7 +264,7 @@ export default function AppointmentPage() {
       try {
         const response = await apiGet(
           `/clientAdmin/resourceManagement/getResources?orgId=${orgId}&status=ENABLED`,
-          basic_config
+          basic_config,
         );
 
         const appts = response.response || [];
@@ -310,7 +313,7 @@ export default function AppointmentPage() {
   // Debounced search function
   const debouncedFetchClients = useMemo(
     () => debounce(fetchClients, 300),
-    [orgId, token]
+    [orgId, token],
   );
 
   // Initial client fetch on component mount
@@ -342,13 +345,13 @@ export default function AppointmentPage() {
       const res = await apiPatch(
         `/appointments/appt/changeAppointmentStatus?id=${appId}&status=${status}`,
         {},
-        basic_config
+        basic_config,
       );
 
       setAppointments((prevAppointments) =>
         prevAppointments.map((app) =>
-          app.id === appId ? { ...app, status: status } : app
-        )
+          app.id === appId ? { ...app, status: status } : app,
+        ),
       );
       setTimeout(() => {
         setShowDetailModal(false);
@@ -372,7 +375,7 @@ export default function AppointmentPage() {
         {
           Cancel_remarks: cancelRemarks,
         },
-        basic_config
+        basic_config,
       );
 
       setDetailAppt((prev) => ({
@@ -410,7 +413,7 @@ export default function AppointmentPage() {
 
         const response = await apiGet(
           `/appointments/appt/getActiveAppointments?orgId=${orgId}&date=${date}`,
-          basic_config
+          basic_config,
         );
 
         const apptsFromAPI = response.response || [];
@@ -479,7 +482,7 @@ export default function AppointmentPage() {
     const offsetY = e.clientY - rect.top;
     e.dataTransfer.setData(
       "text/plain",
-      JSON.stringify({ id: appt.id, duration, offsetY })
+      JSON.stringify({ id: appt.id, duration, offsetY }),
     );
     e.dataTransfer.effectAllowed = "move";
   };
@@ -518,7 +521,7 @@ export default function AppointmentPage() {
       currentDate.getMonth(),
       currentDate.getDate(),
       pos.startH,
-      pos.startM
+      pos.startM,
     );
 
     const newEnd = new Date(newStart.getTime() + duration * 60000);
@@ -528,7 +531,7 @@ export default function AppointmentPage() {
       currentDate.getMonth(),
       currentDate.getDate(),
       END_HOUR,
-      0
+      0,
     );
 
     const finalEnd = newEnd > dayEnd ? dayEnd : newEnd;
@@ -538,7 +541,7 @@ export default function AppointmentPage() {
     //console.log("Proposed>>> " , proposed);
     if (isOverlapping(proposed, appointments)) {
       messageApi.error(
-        "Cannot move: appointment overlaps an existing appointment."
+        "Cannot move: appointment overlaps an existing appointment.",
       );
       //alert("Cannot move: appointment overlaps an existing appointment.");
       return;
@@ -547,8 +550,10 @@ export default function AppointmentPage() {
     rescheduleAppointment(proposed);
     setAppointments((prev) =>
       prev.map((a) =>
-        a.id === id ? { ...a, resourceId, start: finalStart, end: finalEnd } : a
-      )
+        a.id === id
+          ? { ...a, resourceId, start: finalStart, end: finalEnd }
+          : a,
+      ),
     );
   };
 
@@ -563,7 +568,7 @@ export default function AppointmentPage() {
     const response = await apiPost(
       `/appointments/appt/rescheduleAppointments`,
       proposed,
-      basic_config
+      basic_config,
     );
     console.log(response);
   };
@@ -595,7 +600,7 @@ export default function AppointmentPage() {
           currentDate.getMonth(),
           currentDate.getDate(),
           START_HOUR,
-          0
+          0,
         );
         if (newStart < dayStart) newStart = dayStart;
       } else {
@@ -607,7 +612,7 @@ export default function AppointmentPage() {
           currentDate.getMonth(),
           currentDate.getDate(),
           END_HOUR,
-          0
+          0,
         );
         if (newEnd > dayEnd) newEnd = dayEnd;
       }
@@ -621,7 +626,7 @@ export default function AppointmentPage() {
           currentDate.getMonth(),
           currentDate.getDate(),
           H,
-          M
+          M,
         );
       };
 
@@ -637,7 +642,7 @@ export default function AppointmentPage() {
 
       if (isOverlapping(proposed, appointments)) {
         messageApi.error(
-          "Cannot move: appointment overlaps an existing appointment."
+          "Cannot move: appointment overlaps an existing appointment.",
         );
         //alert("Cannot move: appointment overlaps an existing appointment.");
         return;
@@ -649,12 +654,12 @@ export default function AppointmentPage() {
         prev.map((a) =>
           a.id === id
             ? {
-              ...a,
-              start: direction === "top" ? newStart : a.start,
-              end: direction === "bottom" ? newEnd : a.end,
-            }
-            : a
-        )
+                ...a,
+                start: direction === "top" ? newStart : a.start,
+                end: direction === "bottom" ? newEnd : a.end,
+              }
+            : a,
+        ),
       );
     };
 
@@ -686,11 +691,17 @@ export default function AppointmentPage() {
     const today = dayjs().startOf("day");
     const currentDateDayjs = dayjs(currentDate).startOf("day");
 
-    console.log("isAllowedToAddPastDateAppointment", isAllowedToAddPastDateAppointment);
+    console.log(
+      "isAllowedToAddPastDateAppointment",
+      isAllowedToAddPastDateAppointment,
+    );
 
-    if (currentDateDayjs.isBefore(today, "day") && !isAllowedToAddPastDateAppointment) {
+    if (
+      currentDateDayjs.isBefore(today, "day") &&
+      !isAllowedToAddPastDateAppointment
+    ) {
       messageApi.error(
-        "Cannot create appointments for past dates. Please select today or a future date."
+        "Cannot create appointments for past dates. Please select today or a future date.",
       );
       return;
     }
@@ -711,7 +722,7 @@ export default function AppointmentPage() {
       currentDate.getMonth(),
       currentDate.getDate(),
       h,
-      m
+      m,
     );
     const end = new Date(start.getTime() + SLOT_MINUTES * 60000);
 
@@ -743,18 +754,21 @@ export default function AppointmentPage() {
       //console.log("values formmmm ", valuesFromForm);
       const today = dayjs().startOf("day");
       const date = valuesFromForm.date || "";
-      console.log("isAllowedToAddPastDateAppointment", isAllowedToAddPastDateAppointment);
+      console.log(
+        "isAllowedToAddPastDateAppointment",
+        isAllowedToAddPastDateAppointment,
+      );
       if (date.isBefore(today, "day") && !isAllowedToAddPastDateAppointment) {
         //message.error("Cannot pick a past date. Please select today or a future date.");
         console.log(
-          "Cannot pick a past date. Please select today or a future date."
+          "Cannot pick a past date. Please select today or a future date.",
         );
         return;
       }
       const values = valuesFromForm || form.getFieldsValue();
       if (!values.clientId || !values.service) {
         messageApi.error(
-          "Please enter Mandatory Fields.( Client and Service )"
+          "Please enter Mandatory Fields.( Client and Service )",
         );
         return;
       }
@@ -801,7 +815,7 @@ export default function AppointmentPage() {
       const response = await apiPost(
         `/appointments/appt/bookappointment`,
         newAppt,
-        basic_config
+        basic_config,
       );
       setAppointments((prev) => [...prev, response]);
 
@@ -937,8 +951,18 @@ export default function AppointmentPage() {
           userSelect: "none",
         }}
       >
-        <div style={{ position: "relative", minHeight: HEADER_H + slotCount * SLOT_HEIGHT }}>
-          <div style={{ height: HEADER_H, borderBottom: `1px solid ${PALETTE.muted}` }} />
+        <div
+          style={{
+            position: "relative",
+            minHeight: HEADER_H + slotCount * SLOT_HEIGHT,
+          }}
+        >
+          <div
+            style={{
+              height: HEADER_H,
+              borderBottom: `1px solid ${PALETTE.muted}`,
+            }}
+          />
           {timeSlots.map(({ h, m }, i) => (
             <div
               key={i}
@@ -1166,7 +1190,7 @@ export default function AppointmentPage() {
                   onDoubleClickCol(e, r.id);
                 } else {
                   messageApi.error(
-                    "You are not allowed to add an appointment."
+                    "You are not allowed to add an appointment.",
                   );
                 }
               }}
@@ -1233,7 +1257,7 @@ export default function AppointmentPage() {
           : [{ id: "loading", name: "Loading..." }]
         ).map((r, i) => {
           const appointmentCount = appointments.filter(
-            (a) => a.resourceId === r.id
+            (a) => a.resourceId === r.id,
           ).length;
 
           return (
@@ -1247,7 +1271,9 @@ export default function AppointmentPage() {
                 fontWeight: 450,
                 color: PALETTE.ink2,
                 borderRight:
-                  i === Resources.length - 1 ? "none" : `1px solid ${PALETTE.muted}`,
+                  i === Resources.length - 1
+                    ? "none"
+                    : `1px solid ${PALETTE.muted}`,
                 height: "100%",
                 userSelect: "none",
               }}
@@ -1267,7 +1293,11 @@ export default function AppointmentPage() {
                 {r.name}
               </span>
               <span
-                style={{ fontSize: 14, color: PALETTE.ink3, paddingBottom: "3px" }}
+                style={{
+                  fontSize: 14,
+                  color: PALETTE.ink3,
+                  paddingBottom: "3px",
+                }}
               >
                 ({appointmentCount})
               </span>
@@ -1366,7 +1396,7 @@ export default function AppointmentPage() {
             .then((vals) => {
               saveNewAppointment(vals);
             })
-            .catch(() => { });
+            .catch(() => {});
         }}
         onCancel={closeNewApptModal}
         okText="Save"
@@ -1475,12 +1505,12 @@ export default function AppointmentPage() {
             Slot:{" "}
             {newApptInfo
               ? `${timeLabel(
-                newApptInfo.start.getHours(),
-                newApptInfo.start.getMinutes()
-              )} — ${timeLabel(
-                newApptInfo.end.getHours(),
-                newApptInfo.end.getMinutes()
-              )}`
+                  newApptInfo.start.getHours(),
+                  newApptInfo.start.getMinutes(),
+                )} — ${timeLabel(
+                  newApptInfo.end.getHours(),
+                  newApptInfo.end.getMinutes(),
+                )}`
               : "not selected"}
           </div>
         </Form>
@@ -1493,23 +1523,6 @@ export default function AppointmentPage() {
             <span className="min-w-0 text-base font-bold sm:text-lg">
               🗓 Appointment Details
             </span>
-            {!isEditing && detailAppt && (
-              <Button
-                className="w-full shrink-0 sm:mr-4 sm:w-auto"
-                type="primary"
-                onClick={() => {
-                  setIsEditing(true);
-                  editForm.setFieldsValue({
-                    doctorId: detailAppt.doctorId || null,
-                    employeeId: detailAppt.employeeId || null,
-                    serviceId: detailAppt.serviceId || null,
-                    notes: detailAppt.remarks || "",
-                  });
-                }}
-              >
-                Edit
-              </Button>
-            )}
           </div>
         }
         open={showDetailModal}
@@ -1521,28 +1534,15 @@ export default function AppointmentPage() {
         footer={
           isEditing
             ? [
-              <Button
-                key="cancel"
-                onClick={() => {
-                  setIsEditing(false);
-                  editForm.resetFields();
-                }}
-              >
-                Cancel
-              </Button>,
-              <Button
-                key="save"
-                type="primary"
-                onClick={() => editForm.submit()}
-              >
-                Save
-              </Button>,
-            ]
-            : [
-              <Button key="close" type="primary" onClick={closeDetailModal}>
-                Close
-              </Button>,
-            ]
+                <Button
+                  key="save"
+                  type="primary"
+                  onClick={() => editForm.submit()}
+                >
+                  Save
+                </Button>,
+              ]
+            : ""
         }
         centered
         styles={{
@@ -1576,12 +1576,12 @@ export default function AppointmentPage() {
               <Descriptions.Item label="Time">
                 {timeLabel(
                   detailAppt.start.getHours(),
-                  detailAppt.start.getMinutes()
+                  detailAppt.start.getMinutes(),
                 )}{" "}
                 —{" "}
                 {timeLabel(
                   detailAppt.end.getHours(),
-                  detailAppt.end.getMinutes()
+                  detailAppt.end.getMinutes(),
                 )}
               </Descriptions.Item>
               <Descriptions.Item label="Client Id">
@@ -1622,8 +1622,8 @@ export default function AppointmentPage() {
                         prev.map((appt) =>
                           appt.id === detailAppt.id
                             ? { ...appt, status: value }
-                            : appt
-                        )
+                            : appt,
+                        ),
                       );
                     } catch {
                       message.error("Could not update status");
@@ -1648,15 +1648,32 @@ export default function AppointmentPage() {
             <Divider />
 
             {!showCancelInput ? (
-              <Button
-                danger
-                type="primary"
-                block
-                // style={{ marginTop: 12 }}
-                onClick={() => setShowCancelInput(true)}
-              >
-                Cancel Appointment
-              </Button>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <Button
+                  danger
+                  type="primary"
+                  // block
+                  // style={{ marginTop: 12 }}
+                  onClick={() => setShowCancelInput(true)}
+                >
+                  Cancel Appointment
+                </Button>
+                <Button
+                  className="w-full shrink-0 sm:mr-4 sm:w-auto"
+                  type="primary"
+                  onClick={() => {
+                    setIsEditing(true);
+                    editForm.setFieldsValue({
+                      doctorId: detailAppt.doctorId || null,
+                      employeeId: detailAppt.employeeId || null,
+                      serviceId: detailAppt.serviceId || null,
+                      notes: detailAppt.remarks || "",
+                    });
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
             ) : (
               <div style={{ marginTop: 12 }}>
                 <Input.TextArea
@@ -1712,7 +1729,7 @@ export default function AppointmentPage() {
                 await apiPatch(
                   `/appointments/appt/updateAppointmentDetails`,
                   payload,
-                  basic_config
+                  basic_config,
                 );
 
                 setDetailAppt((prev) => ({
@@ -1734,23 +1751,23 @@ export default function AppointmentPage() {
                   prev.map((appt) =>
                     appt.id === detailAppt.id
                       ? {
-                        ...appt,
-                        doctorId: values.doctorId,
-                        employeeId: values.employeeId,
-                        serviceId: values.serviceId,
-                        remarks: values.notes,
-                        doctorName:
-                          Doctor.find((d) => d.id === values.doctorId)
-                            ?.name || "",
-                        employeeName:
-                          Employees.find((e) => e.id === values.employeeId)
-                            ?.name || "",
-                        service:
-                          Services.find((s) => s.id === values.serviceId)
-                            ?.name || "",
-                      }
-                      : appt
-                  )
+                          ...appt,
+                          doctorId: values.doctorId,
+                          employeeId: values.employeeId,
+                          serviceId: values.serviceId,
+                          remarks: values.notes,
+                          doctorName:
+                            Doctor.find((d) => d.id === values.doctorId)
+                              ?.name || "",
+                          employeeName:
+                            Employees.find((e) => e.id === values.employeeId)
+                              ?.name || "",
+                          service:
+                            Services.find((s) => s.id === values.serviceId)
+                              ?.name || "",
+                        }
+                      : appt,
+                  ),
                 );
 
                 message.success("Appointment updated successfully");

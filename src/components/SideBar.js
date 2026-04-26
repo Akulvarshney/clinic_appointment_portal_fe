@@ -5,6 +5,7 @@ import {
   FaChevronRight,
   FaSignOutAlt,
   FaBuilding,
+  FaRegCommentDots,
 } from "react-icons/fa";
 import { Dropdown, Tooltip } from "antd";
 import { Link } from "react-router-dom";
@@ -50,40 +51,37 @@ const Sidebar = ({
     [organizations, selectedOrgId]
   );
 
-  const onOrgMenuClick = ({ key }) => {
-    onOrgChange(key);
-  };
+  const onOrgMenuClick = ({ key }) => onOrgChange(key);
 
-  const expandedWidth = 280;
-  const collapsedWidth = 76;
+  const expandedWidth = 240;
+  const collapsedWidth = 72;
 
   return (
     <aside
-      className="relative z-30 flex h-screen shrink-0 flex-col border-r border-black/8 bg-[linear-gradient(180deg,#5c82bc_0%,#4a70a9_48%,#3a5d91_100%)] shadow-[4px_0_24px_-8px_rgba(0,0,0,0.12)] transition-[width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)]"
+      className="relative z-30 flex h-screen shrink-0 flex-col border-r border-gw-line bg-gw-bg-2 transition-[width] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)]"
       style={{ width: collapsed ? collapsedWidth : expandedWidth }}
       aria-label="Application navigation"
     >
-      {/* Top: brand + collapse — collapse control sits on the edge for a “dock” affordance */}
+      {/* Brand + collapse */}
       <div
-        className={`flex shrink-0 items-center gap-2 border-b border-white/10 ${collapsed ? "flex-col px-2 py-3" : "px-4 py-3 pr-2"
-          }`}
+        className={`flex shrink-0 items-center gap-2 border-b border-gw-line ${collapsed ? "flex-col px-2 py-4" : "px-4 py-4 pr-2"}`}
       >
         <div
           className={`flex min-w-0 flex-1 items-center gap-3 ${collapsed ? "flex-col" : ""}`}
         >
           <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/12 text-sm font-semibold tracking-tight text-white shadow-inner ring-1 ring-white/15"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-gw-2 bg-gw-ink text-[12px] font-semibold tracking-tight text-gw-bg"
             aria-hidden
           >
             GW
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[11px] font-medium uppercase tracking-[0.14em] text-white/55">
+              <p className="m-0 truncate text-[10px] font-medium uppercase tracking-eyebrow text-gw-ink-3">
                 Clinic OS
               </p>
-              <p className="truncate text-base font-semibold leading-tight text-white">
-                GloryWellnic
+              <p className="m-0 truncate font-display text-[18px] leading-tight text-gw-ink">
+                Glory WellNic
               </p>
             </div>
           )}
@@ -98,13 +96,12 @@ const Sidebar = ({
             onClick={() => setCollapsed((c) => !c)}
             aria-expanded={!collapsed}
             aria-controls="sidebar-main-nav"
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-white transition hover:bg-white/18 focus:outline-none focus-visible:ring-2 focus-visible:ring-gw-primary-light focus-visible:ring-offset-2 focus-visible:ring-offset-[#4a70a9] ${collapsed ? "mt-1" : ""
-              }`}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-gw-1 border border-gw-line bg-gw-bg text-gw-ink-2 transition hover:bg-gw-bg-3 hover:text-gw-ink focus:outline-none ${collapsed ? "mt-1" : ""}`}
           >
             {collapsed ? (
-              <FaChevronRight className="text-xs opacity-95" aria-hidden />
+              <FaChevronRight className="text-[10px]" aria-hidden />
             ) : (
-              <FaChevronLeft className="text-xs opacity-95" aria-hidden />
+              <FaChevronLeft className="text-[10px]" aria-hidden />
             )}
           </button>
         </Tooltip>
@@ -112,24 +109,21 @@ const Sidebar = ({
 
       {/* Organization */}
       <div
-        className={`shrink-0 border-b border-white/10 ${collapsed ? "px-2 py-3" : "px-3 py-3"}`}
+        className={`shrink-0 border-b border-gw-line ${collapsed ? "px-2 py-3" : "px-3 py-3"}`}
       >
         {collapsed ? (
           <Tooltip title={selectedOrgLabel} placement="right">
             <Dropdown
-              menu={{
-                items: orgMenuItems,
-                onClick: onOrgMenuClick,
-              }}
+              menu={{ items: orgMenuItems, onClick: onOrgMenuClick }}
               trigger={["click"]}
               placement="bottomRight"
             >
               <button
                 type="button"
-                className="flex h-11 w-full items-center justify-center rounded-xl border border-white/12 bg-white/8 text-white transition hover:bg-white/14 focus:outline-none focus-visible:ring-2 focus-visible:ring-gw-primary-light"
+                className="flex h-10 w-full items-center justify-center rounded-gw-2 border border-gw-line bg-gw-bg text-gw-ink-2 transition hover:bg-gw-bg-3 hover:text-gw-ink focus:outline-none"
                 aria-label={`Switch organization. Current: ${selectedOrgLabel}`}
               >
-                <FaBuilding className="text-lg opacity-90" aria-hidden />
+                <FaBuilding className="text-[14px]" aria-hidden />
               </button>
             </Dropdown>
           </Tooltip>
@@ -137,7 +131,7 @@ const Sidebar = ({
           <div>
             <label
               htmlFor="sidebar-org-select"
-              className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-white/50"
+              className="mb-1.5 block text-[10px] font-medium uppercase tracking-eyebrow text-gw-ink-3"
             >
               Organization
             </label>
@@ -145,7 +139,7 @@ const Sidebar = ({
               id="sidebar-org-select"
               value={selectedOrgId}
               onChange={(e) => onOrgChange(e.target.value)}
-              className="w-full cursor-pointer rounded-xl border border-white/12 bg-white py-2.5 pl-3 pr-8 text-sm font-medium text-gw-ink shadow-sm focus:border-gw-primary-light focus:outline-none focus:ring-2 focus:ring-gw-primary-light/60"
+              className="w-full cursor-pointer appearance-none rounded-gw-2 border border-gw-line bg-gw-bg py-2.5 pl-3 pr-3 text-[13px] font-medium text-gw-ink focus:border-gw-ink focus:outline-none"
             >
               {organizations.map((org) => (
                 <option key={org.organizationId} value={org.organizationId}>
@@ -163,7 +157,7 @@ const Sidebar = ({
         className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-2 py-3"
         aria-label="Workspace"
       >
-        <ul className="m-0 flex list-none flex-col gap-1 p-0">
+        <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
           {tabs
             .slice()
             .sort((a, b) => a.tab_number - b.tab_number)
@@ -173,40 +167,32 @@ const Sidebar = ({
               const active = routeIsActive(location.pathname, tab.tab_path);
 
               const itemClasses = [
-                "group flex w-full cursor-pointer items-center rounded-xl border transition duration-200 ease-out outline-none",
-                collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5",
+                "group flex w-full cursor-pointer items-center rounded-gw-2 transition duration-150 ease-out outline-none no-underline",
+                collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-2.5 py-2",
                 active
-                  ? "border-white/20 bg-gw-surface text-gw-primary-dark shadow-md shadow-black/10 ring-1 ring-white/25"
-                  : "border-transparent text-white/85 hover:border-white/12 hover:bg-white/10 hover:text-white",
+                  ? "bg-gw-bg text-gw-ink shadow-gw-1 ring-1 ring-gw-line"
+                  : "text-gw-ink-2 hover:bg-gw-bg/70 hover:text-gw-ink",
               ].join(" ");
 
               const inner = (
                 <Link
                   to={tab.tab_path}
-                  className={`${itemClasses} no-underline`}
+                  className={itemClasses}
                   aria-current={active ? "page" : undefined}
                 >
                   <span
                     className={[
-                      "flex shrink-0 items-center justify-center transition-colors duration-200",
-                      collapsed ? "h-9 w-9 text-lg" : "h-9 w-9 text-base",
-                      active
-                        ? "text-gw-primary-dark"
-                        : "text-white/90 group-hover:text-white",
+                      "flex shrink-0 items-center justify-center transition-colors duration-150",
+                      collapsed ? "h-8 w-8 text-[16px]" : "h-7 w-7 text-[14px]",
+                      active ? "text-gw-accent" : "text-gw-ink-3 group-hover:text-gw-ink-2",
                     ].join(" ")}
                   >
                     {IconEl}
                   </span>
                   {!collapsed && (
-                    <span className="min-w-0 flex-1 truncate text-sm font-semibold leading-snug">
+                    <span className="min-w-0 flex-1 truncate text-[13px] font-medium leading-snug">
                       {tab.tab_name}
                     </span>
-                  )}
-                  {active && !collapsed && (
-                    <span
-                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-gw-primary"
-                      aria-hidden
-                    />
                   )}
                 </Link>
               );
@@ -226,30 +212,53 @@ const Sidebar = ({
         </ul>
       </nav>
 
+      {/* AI assistant card — design.md §4 sidebar */}
+      {!collapsed && (
+        <div className="shrink-0 px-3 pb-2">
+          <div className="rounded-gw-3 border border-gw-line bg-gw-accent-soft/60 p-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gw-accent text-white">
+                <FaRegCommentDots className="text-[12px]" aria-hidden />
+              </span>
+              <p className="m-0 text-[11px] font-medium uppercase tracking-eyebrow text-gw-ink-2">
+                AI Assistant
+              </p>
+            </div>
+            <p className="mt-2 mb-0 font-display text-[15px] leading-tight text-gw-ink">
+              <em>"Reschedule today's afternoon..."</em>
+            </p>
+            <button
+              type="button"
+              className="mt-2 inline-flex h-7 items-center rounded-full bg-gw-ink px-3 text-[11px] font-semibold text-gw-bg hover:bg-black"
+            >
+              Ask
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sign out */}
       <div
-        className={`mt-auto shrink-0 border-t border-white/10 bg-black/10 ${collapsed ? "p-2" : "p-3"}`}
+        className={`mt-auto shrink-0 border-t border-gw-line ${collapsed ? "p-2" : "p-3"}`}
       >
         {collapsed ? (
           <Tooltip title="Sign out" placement="right">
             <button
               type="button"
               onClick={logout}
-              className="flex h-11 w-full items-center justify-center rounded-xl border border-white/10 bg-white/8 text-white/95 transition hover:border-red-300/40 hover:bg-red-500/15 hover:text-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300/70"
+              className="flex h-10 w-full items-center justify-center rounded-gw-2 border border-gw-line bg-gw-bg text-gw-ink-2 transition hover:border-gw-danger/40 hover:bg-gw-danger-soft hover:text-gw-danger focus:outline-none"
               aria-label="Sign out"
             >
-              <FaSignOutAlt className="text-base" aria-hidden />
+              <FaSignOutAlt className="text-[14px]" aria-hidden />
             </button>
           </Tooltip>
         ) : (
           <button
             type="button"
             onClick={logout}
-            className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/8 px-3 py-2.5 text-left text-sm font-semibold text-white/95 transition hover:border-red-300/35 hover:bg-red-500/12 hover:text-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300/70"
+            className="flex w-full items-center gap-3 rounded-gw-2 border border-gw-line bg-gw-bg px-3 py-2 text-left text-[13px] font-medium text-gw-ink-2 transition hover:border-gw-danger/30 hover:bg-gw-danger-soft hover:text-gw-danger focus:outline-none"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/18 text-red-100">
-              <FaSignOutAlt aria-hidden />
-            </span>
+            <FaSignOutAlt className="text-[13px]" aria-hidden />
             <span>Sign out</span>
           </button>
         )}

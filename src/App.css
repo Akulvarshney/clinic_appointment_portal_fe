@@ -1,8 +1,8 @@
-/* Set font family globally */
+/* Glory WellNic — global page-level styles. Tokens live in src/index.css. */
+
 body {
-  font-family: "Roboto", sans-serif;
+  font-family: var(--font-ui);
   min-height: 100vh;
-  /* background: linear-gradient(135deg, #dbeafe, #f0f9ff); */
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -12,25 +12,33 @@ body {
   margin-bottom: 5px !important;
 }
 
-.ant-select-dropdown{
+.ant-select-dropdown {
   z-index: 99999999 !important;
 }
 
 * {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 *::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
-.pageCss {
+/* Page shell rhythm */
+.pageCss,
+.gw-page-content {
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  padding: clamp(0.75rem, 3vw, 2rem);
+  padding: clamp(16px, 3vw, 32px);
+}
+
+@media (min-width: 640px) {
+  .gw-page-content {
+    padding: 32px 40px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -53,52 +61,7 @@ body {
   }
 }
 
-/* Button hover transition (optional) */
-.button-gradient-hover:hover {
-  background: var(--gw-primary-dark) !important;
-}
-
-/* Primary CTAs — solid brand primary only (no gradient) */
-.ant-btn.ant-btn-primary:not(:disabled):not(.ant-btn-dangerous):not(
-    .ant-btn-background-ghost
-  ) {
-  background: var(--gw-primary) !important;
-  border-color: var(--gw-primary) !important;
-  font-weight: 600 !important;
-  color: #fff !important;
-  box-shadow: none !important;
-}
-
-.ant-btn.ant-btn-primary:not(:disabled):not(.ant-btn-dangerous):not(
-    .ant-btn-background-ghost
-  ):hover {
-  background: var(--gw-primary-hover) !important;
-  border-color: var(--gw-primary-hover) !important;
-  color: #fff !important;
-}
-
-.ant-btn.ant-btn-primary:not(:disabled):not(.ant-btn-dangerous):not(
-    .ant-btn-background-ghost
-  ):active {
-  background: var(--gw-primary-dark) !important;
-  border-color: var(--gw-primary-dark) !important;
-  color: #fff !important;
-}
-
-/* Error alert */
-.error-alert {
-  font-size: 0.85rem;
-}
-
-/* Small button text */
-.small-text-button {
-  color: var(--gw-primary);
-  font-size: 0.8rem;
-  text-transform: none;
-}
-
-/* Login.css */
-
+/* Auth screens — centered card on warm wash */
 .login-container {
   min-height: 90vh;
   display: flex;
@@ -106,7 +69,9 @@ body {
   justify-content: center;
   padding: 16px;
   padding-bottom: 80px;
-  /* background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%); */
+  background:
+    radial-gradient(60% 50% at 50% 30%, var(--gw-accent-soft) 0%, transparent 70%),
+    var(--gw-bg);
 }
 
 .login-wrapper {
@@ -115,9 +80,10 @@ body {
 }
 
 .login-card {
-  border-radius: 18px !important;
-  box-shadow: 0 12px 28px rgba(129, 166, 198, 0.2) !important;
-  border: none !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-3) !important;
+  border: 1px solid var(--gw-line) !important;
+  background: var(--gw-white) !important;
 }
 
 .login-card .ant-card-body {
@@ -136,10 +102,14 @@ body {
 
 .login-title {
   margin-bottom: 4px !important;
+  font-family: var(--font-display) !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--gw-ink) !important;
 }
 
 .login-subtitle {
-  color: #64748b !important;
+  color: var(--gw-ink-2) !important;
 }
 
 .login-form {
@@ -155,54 +125,51 @@ body {
 .form-input {
   border-radius: 10px !important;
   height: 44px !important;
-  border-color: #d1d5db !important;
+  border-color: var(--gw-line) !important;
   transition: all 0.2s ease !important;
 }
 
 .form-input:hover {
-  border-color: var(--gw-primary-light) !important;
+  border-color: var(--gw-line-2) !important;
 }
 
 .form-input:focus,
 .form-input.ant-input-focused {
-  border-color: var(--gw-primary) !important;
-  box-shadow: 0 0 0 2px rgba(129, 166, 198, 0.2) !important;
+  border-color: var(--gw-ink) !important;
+  box-shadow: none !important;
 }
 
 .form-input.ant-input-affix-wrapper:hover {
-  border-color: var(--gw-primary-light) !important;
+  border-color: var(--gw-line-2) !important;
 }
 
 .form-input.ant-input-affix-wrapper:focus,
 .form-input.ant-input-affix-wrapper-focused {
-  border-color: var(--gw-primary) !important;
-  box-shadow: 0 0 0 2px rgba(129, 166, 198, 0.2) !important;
+  border-color: var(--gw-ink) !important;
+  box-shadow: none !important;
 }
 
 .input-prefix {
-  color: #9ca3af !important;
+  color: var(--gw-ink-3) !important;
 }
 
 .login-button {
-  background: var(--gw-primary) !important;
+  background: var(--gw-ink) !important;
   border: none !important;
-  border-radius: 10px !important;
+  border-radius: 999px !important;
   font-weight: 600 !important;
   height: 44px !important;
+  color: var(--gw-bg) !important;
   box-shadow: none !important;
   transition: background-color 0.2s ease !important;
 }
 
 .login-button:hover {
-  background: var(--gw-primary-hover) !important;
-}
-
-.login-button:active {
-  background: var(--gw-primary-dark) !important;
+  background: #1c1916 !important;
 }
 
 .login-button:disabled {
-  background: #9ca3af !important;
+  background: var(--gw-ink-3) !important;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -217,110 +184,78 @@ body {
 .action-button {
   padding: 0 !important;
   height: auto !important;
-  color: var(--gw-primary-dark) !important;
+  color: var(--gw-accent) !important;
   font-size: 14px !important;
   transition: all 0.2s ease !important;
 }
 
 .action-button:hover {
-  color: var(--gw-primary) !important;
+  color: var(--gw-accent-hover) !important;
   text-decoration: underline !important;
 }
 
 .error-alert {
   margin-bottom: 8px !important;
   border-radius: 8px !important;
+  font-size: 0.85rem;
 }
 
-/* Form validation styles */
+.small-text-button {
+  color: var(--gw-accent);
+  font-size: 0.8rem;
+  text-transform: none;
+}
+
+.button-gradient-hover:hover {
+  background: var(--gw-accent-hover) !important;
+}
+
+/* Form validation */
 .ant-form-item-has-error .form-input {
-  border-color: #ef4444 !important;
+  border-color: var(--gw-danger) !important;
 }
 
 .ant-form-item-has-error .form-input:focus,
 .ant-form-item-has-error .form-input.ant-input-focused {
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+  border-color: var(--gw-danger) !important;
+  box-shadow: 0 0 0 2px rgba(194, 74, 46, 0.12) !important;
 }
 
-/* Loading state styles */
 .login-button .ant-btn-loading-icon {
   margin-right: 8px !important;
 }
 
-/* Password input specific styles */
 .form-input.ant-input-password {
   padding-right: 32px !important;
 }
 
-/* Focus outline removal for better custom styling */
 .form-input:focus,
 .form-input.ant-input-focused,
 .login-button:focus {
   outline: none !important;
 }
 
-/* Mobile responsiveness */
 @media (max-width: 640px) {
-  .login-container {
-    padding: 12px;
-    padding-bottom: 60px;
-  }
-
-  .login-wrapper {
-    max-width: 100%;
-  }
-
-  .login-card .ant-card-body {
-    padding: 24px !important;
-  }
-
-  .login-content {
-    gap: 20px;
-  }
-
-  .form-item {
-    margin-bottom: 12px !important;
-  }
+  .login-container { padding: 12px; padding-bottom: 60px; }
+  .login-wrapper { max-width: 100%; }
+  .login-card .ant-card-body { padding: 24px !important; }
+  .login-content { gap: 20px; }
+  .form-item { margin-bottom: 12px !important; }
 }
 
 @media (max-width: 480px) {
-  .login-card .ant-card-body {
-    padding: 20px !important;
-  }
-
-  .login-title {
-    font-size: 1.5rem !important;
-  }
+  .login-card .ant-card-body { padding: 20px !important; }
+  .login-title { font-size: 1.5rem !important; }
 }
 
-/* Ant Design modals — usable width on phones (desktop widths unchanged above breakpoint) */
 @media (max-width: 576px) {
-  .ant-modal-root .ant-modal-wrap {
-    padding: 8px !important;
-  }
-
+  .ant-modal-root .ant-modal-wrap { padding: 8px !important; }
   .ant-modal-root .ant-modal {
     width: calc(100vw - 16px) !important;
     max-width: calc(100vw - 16px) !important;
     margin: 0 auto !important;
     top: 8px;
     padding-bottom: 0;
-  }
-}
-
-/* Shared inner shell for logged-in pages (matches .pageCss rhythm) */
-.gw-page-content {
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  padding: clamp(0.75rem, 3vw, 1.5rem);
-}
-
-@media (min-width: 640px) {
-  .gw-page-content {
-    padding: 1.5rem 2rem;
   }
 }
 
