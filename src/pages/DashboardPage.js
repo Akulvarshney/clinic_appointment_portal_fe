@@ -105,7 +105,7 @@ const DashboardPage = () => {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          }
+          },
         );
         setStats(res.data.response);
       } catch (error) {
@@ -127,7 +127,7 @@ const DashboardPage = () => {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          }
+          },
         );
         setbarData(res.data.response);
       } catch (error) {
@@ -150,7 +150,7 @@ const DashboardPage = () => {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          }
+          },
         );
         console.log(res.data.response);
         setPieData(res.data.response);
@@ -178,7 +178,7 @@ const DashboardPage = () => {
         const date = dayjs().startOf("day").toISOString();
         const response = await apiGet(
           `/appointments/appt/getActiveAppointments?orgId=${orgId}&date=${date}`,
-          basic_config
+          basic_config,
         );
 
         const apptsFromAPI = response?.response || [];
@@ -219,7 +219,7 @@ const DashboardPage = () => {
     const opts = { hour: "2-digit", minute: "2-digit" };
     return `${start.toLocaleTimeString([], opts)} – ${end.toLocaleTimeString(
       [],
-      opts
+      opts,
     )}`;
   };
 
@@ -330,8 +330,9 @@ const DashboardPage = () => {
                           {appt.title}
                         </p>
                         <p className="mt-0.5 text-sm text-gray-600">
-                          {[appt.client, appt.service].filter(Boolean).join(" · ") ||
-                            "No client or service details"}
+                          {[appt.client, appt.service]
+                            .filter(Boolean)
+                            .join(" · ") || "No client or service details"}
                         </p>
                         {(appt.employeeName || appt.doctorName) && (
                           <p className="mt-1 text-xs text-gray-500">
@@ -361,7 +362,11 @@ const DashboardPage = () => {
                 <XAxis dataKey="name" stroke="#666" />
                 <YAxis stroke="#666" />
                 <Tooltip cursor={{ fill: PALETTE.accentLight }} />
-                <Bar dataKey="value" fill={PALETTE.primary} radius={[10, 10, 0, 0]} />
+                <Bar
+                  dataKey="value"
+                  fill={PALETTE.primary}
+                  radius={[10, 10, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -418,8 +423,7 @@ const DashboardPage = () => {
                     <Cell
                       key={`cell-${index}`}
                       fill={
-                        entry.color ||
-                        CHART_COLORS[index % CHART_COLORS.length]
+                        entry.color || CHART_COLORS[index % CHART_COLORS.length]
                       }
                     />
                   ))}

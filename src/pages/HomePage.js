@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import axios from "axios";
 import {
   Alert,
@@ -21,7 +27,13 @@ import EastIcon from "@mui/icons-material/East";
 import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
 import toast from "react-hot-toast";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { BACKEND_URL, states } from "../assets/constants";
 import "./HomePage.css";
 import {
@@ -35,6 +47,7 @@ import {
   EDITORIAL_MISSION,
   EDITORIAL_MODAL_PARTNER,
   EDITORIAL_MODAL_TRACK,
+  EDITORIAL_NAV,
   EDITORIAL_PARTNER_SPLIT,
   EDITORIAL_STATS,
   EDITORIAL_STEPS,
@@ -77,21 +90,29 @@ function useLandingMotion(reduceMotion) {
       viewportLoose: rm ? undefined : { once: true, margin: "-48px" },
       viewportHero: rm ? undefined : { once: true, margin: "-100px" },
       spring,
-      modalSpring: rm ? { duration: 0.22, ease: easeOut } : { type: "spring", stiffness: 340, damping: 30 },
+      modalSpring: rm
+        ? { duration: 0.22, ease: easeOut }
+        : { type: "spring", stiffness: 340, damping: 30 },
       heroStagger: {
         hidden: {},
-        visible: { transition: rm ? {} : { staggerChildren: 0.12, delayChildren: 0.04 } },
+        visible: {
+          transition: rm ? {} : { staggerChildren: 0.12, delayChildren: 0.04 },
+        },
       },
       heroColumn: {
         hidden: {},
-        visible: { transition: rm ? {} : { staggerChildren: 0.068, delayChildren: 0.04 } },
+        visible: {
+          transition: rm ? {} : { staggerChildren: 0.068, delayChildren: 0.04 },
+        },
       },
       heroLine: {
         hidden: { opacity: rm ? 1 : 0, y: rm ? 0 : 28 },
         visible: {
           opacity: 1,
           y: 0,
-          transition: rm ? instant : { type: "spring", stiffness: 88, damping: 19, mass: 0.75 },
+          transition: rm
+            ? instant
+            : { type: "spring", stiffness: 88, damping: 19, mass: 0.75 },
         },
       },
       reveal: {
@@ -113,11 +134,17 @@ function useLandingMotion(reduceMotion) {
       },
       listStagger: {
         hidden: {},
-        visible: { transition: rm ? {} : { staggerChildren: 0.09, delayChildren: 0.06 } },
+        visible: {
+          transition: rm ? {} : { staggerChildren: 0.09, delayChildren: 0.06 },
+        },
       },
       listItem: {
         hidden: { opacity: rm ? 1 : 0, x: rm ? 0 : -14 },
-        visible: { opacity: 1, x: 0, transition: rm ? instant : spring(115, 22) },
+        visible: {
+          opacity: 1,
+          x: 0,
+          transition: rm ? instant : spring(115, 22),
+        },
       },
     };
   }, [reduceMotion]);
@@ -133,7 +160,12 @@ function ModalShell({ children, onClose, titleId, title, subtitle }) {
           </h2>
           {subtitle && <p className="gwl-modal-sub">{subtitle}</p>}
         </Box>
-        <IconButton onClick={onClose} aria-label="Close dialog" size="small" className="gwl-modal-close">
+        <IconButton
+          onClick={onClose}
+          aria-label="Close dialog"
+          size="small"
+          className="gwl-modal-close"
+        >
           <CloseIcon fontSize="small" />
         </IconButton>
       </Box>
@@ -162,13 +194,19 @@ const HomePage = () => {
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const heroArtParallax = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : 68]);
+  const heroArtParallax = useTransform(
+    scrollYProgress,
+    [0, 1],
+    [0, reduceMotion ? 0 : 68],
+  );
 
   const [faqOpen, setFaqOpen] = useState(() => new Set());
 
   const [openNewForm, setOpenNewForm] = useState(false);
   const [openTrackForm, setOpenTrackForm] = useState(false);
-  const [applicationForm, setApplicationForm] = useState(initialApplicationForm);
+  const [applicationForm, setApplicationForm] = useState(
+    initialApplicationForm,
+  );
   const [submittingApplication, setSubmittingApplication] = useState(false);
   const [errorMsgNewApplication, setErrorMsgNewApplication] = useState("");
   const [successMsgNewApplication, setSuccessMsgNewApplication] = useState("");
@@ -216,7 +254,8 @@ const HomePage = () => {
   const submitNewApplicationRequest = async () => {
     setErrorMsgNewApplication("");
     setSuccessMsgNewApplication("");
-    const { orgName, fullName, orgShortName, phone, email, address, state } = applicationForm;
+    const { orgName, fullName, orgShortName, phone, email, address, state } =
+      applicationForm;
     if (
       !orgName?.trim() ||
       !fullName?.trim() ||
@@ -231,15 +270,18 @@ const HomePage = () => {
     }
     setSubmittingApplication(true);
     try {
-      const response = await axios.post(`${BACKEND_URL}/noAuth/newApplication/submitApplication`, {
-        org_name: orgName.trim(),
-        phone: phone.trim(),
-        org_short_name: orgShortName.trim(),
-        client_name: fullName.trim(),
-        email: email.trim(),
-        state,
-        address: address.trim(),
-      });
+      const response = await axios.post(
+        `${BACKEND_URL}/noAuth/newApplication/submitApplication`,
+        {
+          org_name: orgName.trim(),
+          phone: phone.trim(),
+          org_short_name: orgShortName.trim(),
+          client_name: fullName.trim(),
+          email: email.trim(),
+          state,
+          address: address.trim(),
+        },
+      );
       if (!response.data.success) {
         const msg = response.data.message || "Failed to submit application.";
         toast.error(msg);
@@ -247,7 +289,9 @@ const HomePage = () => {
         return;
       }
       const tid = response.data.trackingId;
-      setSuccessMsgNewApplication(`Application submitted successfully. Tracking ID: ${tid}`);
+      setSuccessMsgNewApplication(
+        `Application submitted successfully. Tracking ID: ${tid}`,
+      );
       toast.success("Application submitted");
       setTimeout(() => {
         setOpenNewForm(false);
@@ -271,13 +315,21 @@ const HomePage = () => {
     }
     setTrackingLoading(true);
     try {
-      const response = await axios.get(`${BACKEND_URL}/noAuth/newApplication/trackApplication`, {
-        params: { mobileNumber: trackingMobile.trim(), trackingId: trackingId.trim() },
-      });
+      const response = await axios.get(
+        `${BACKEND_URL}/noAuth/newApplication/trackApplication`,
+        {
+          params: {
+            mobileNumber: trackingMobile.trim(),
+            trackingId: trackingId.trim(),
+          },
+        },
+      );
       setSuccessTrackApplication(response.data.message || "Status retrieved.");
     } catch (error) {
       if (error.response?.status === 401) {
-        setErrorTrackApplication(error.response.data?.message || "Unable to verify tracking details.");
+        setErrorTrackApplication(
+          error.response.data?.message || "Unable to verify tracking details.",
+        );
       } else {
         setErrorTrackApplication("Something went wrong. Try again.");
       }
@@ -290,7 +342,53 @@ const HomePage = () => {
 
   return (
     <Box className="gwl" id="homepage">
-      <section ref={heroRef} className="gwl-hero" aria-labelledby="gwl-hero-title">
+      {/* ── Sticky nav ── */}
+      <nav className="gwl-nav" aria-label="Main navigation">
+        <div className="gwl-nav__inner">
+          <RouterLink to="/" className="gwl-nav__brand">
+            GloryWellnic
+          </RouterLink>
+          <div className="gwl-nav__desktop" role="list">
+            {EDITORIAL_NAV.links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                className="gwl-nav__link"
+                role="listitem"
+              >
+                {l.label}
+              </a>
+            ))}
+          </div>
+          <div className="gwl-nav__actions">
+            <Button
+              component={RouterLink}
+              to="/login"
+              variant="outlined"
+              disableElevation
+              className="gwl-btn gwl-btn--outline gwl-btn--sm"
+              startIcon={<LoginOutlinedIcon sx={{ fontSize: 16 }} />}
+            >
+              Sign in
+            </Button>
+            <Button
+              variant="contained"
+              disableElevation
+              onClick={openPartnerModal}
+              className="gwl-btn gwl-btn--primary gwl-btn--sm"
+            >
+              {EDITORIAL_NAV.apply}
+            </Button>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── Hero ── */}
+      <section
+        ref={heroRef}
+        className="gwl-hero"
+        aria-labelledby="gwl-hero-title"
+      >
         <div className="gwl-container">
           <motion.div
             className="gwl-hero__grid"
@@ -305,14 +403,17 @@ const HomePage = () => {
               <motion.div variants={m.heroLine}>
                 <h1 id="gwl-hero-title" className="gwl-h1">
                   {EDITORIAL_HERO.titleLine1}{" "}
-                  <span>{EDITORIAL_HERO.titleLine2Italic}</span>
+                  <em>{EDITORIAL_HERO.titleLine2Italic}</em>
                 </h1>
               </motion.div>
               <motion.p className="gwl-lead" variants={m.heroLine}>
                 {EDITORIAL_HERO.desc}
               </motion.p>
               <motion.div className="gwl-hero__cta" variants={m.heroLine}>
-                <TapScale reduceMotion={m.rm} style={{ flex: "1 1 160px", minWidth: 0 }}>
+                <TapScale
+                  reduceMotion={m.rm}
+                  style={{ flex: "1 1 160px", minWidth: 0 }}
+                >
                   <Button
                     fullWidth
                     variant="contained"
@@ -324,7 +425,10 @@ const HomePage = () => {
                     {EDITORIAL_HERO.primaryCta}
                   </Button>
                 </TapScale>
-                <TapScale reduceMotion={m.rm} style={{ flex: "1 1 160px", minWidth: 0 }}>
+                <TapScale
+                  reduceMotion={m.rm}
+                  style={{ flex: "1 1 160px", minWidth: 0 }}
+                >
                   <Button
                     fullWidth
                     variant="outlined"
@@ -339,64 +443,48 @@ const HomePage = () => {
                 {EDITORIAL_HERO.footnote}
               </motion.p>
             </motion.div>
-            <motion.div className="gwl-hero__art" aria-hidden variants={m.heroLine} style={{ y: heroArtParallax }}>
-              {!m.rm && (
-                <>
-                  <motion.div
-                    aria-hidden
-                    style={{
-                      position: "absolute",
-                      width: 200,
-                      height: 200,
-                      borderRadius: "50%",
-                      background: "radial-gradient(circle, rgba(74,112,169,0.28) 0%, transparent 72%)",
-                      top: "6%",
-                      right: "8%",
-                      pointerEvents: "none",
-                    }}
-                    animate={{ scale: [1, 1.18, 1], opacity: [0.45, 0.72, 0.45] }}
-                    transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <motion.div
-                    aria-hidden
-                    style={{
-                      position: "absolute",
-                      width: 140,
-                      height: 140,
-                      borderRadius: "50%",
-                      background: "radial-gradient(circle, rgba(143,171,212,0.35) 0%, transparent 70%)",
-                      bottom: "12%",
-                      left: "6%",
-                      pointerEvents: "none",
-                    }}
-                    animate={{ scale: [1, 1.12, 1], x: [0, 10, 0] }}
-                    transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-                  />
-                </>
-              )}
+            <motion.div
+              className="gwl-hero__art"
+              aria-hidden
+              variants={m.heroLine}
+              style={{ y: heroArtParallax }}
+            >
               <motion.div
                 className="gwl-hero__card"
-                animate={m.rm ? undefined : { y: [0, -10, 0] }}
-                transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
+                animate={m.rm ? undefined : { y: [0, -8, 0] }}
+                transition={{
+                  duration: 5.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
                 whileHover={
                   m.rm
                     ? undefined
                     : {
-                        scale: 1.04,
-                        boxShadow: "0 20px 48px rgba(74, 112, 169, 0.18)",
+                        scale: 1.03,
+                        boxShadow: "0 20px 48px oklch(0.68 0.15 48 / 0.15)",
                         transition: m.spring(320, 24),
                       }
                 }
               >
                 <div className="gwl-hero__card-title">Operations snapshot</div>
                 <div className="gwl-hero__card-metric">1 live partner</div>
-                <div className="gwl-hero__card-sub">Elaria Esthetique — appointments to billing in one stack</div>
+                <div className="gwl-hero__card-sub">
+                  Elaria Esthetique — appointments to billing in one stack
+                </div>
                 <div className="gwl-hero__dots">
                   {[0, 1, 2].map((dot) => (
                     <motion.span
                       key={dot}
-                      className={cx("gwl-hero__dot", dot === 0 && "gwl-hero__dot--on")}
-                      animate={m.rm ? undefined : { scale: [1, dot === 0 ? 1.25 : 1.08, 1] }}
+                      className={cx(
+                        "gwl-hero__dot",
+                        dot === 0 && "gwl-hero__dot--on",
+                      )}
+                      animate={
+                        m.rm
+                          ? undefined
+                          : { scale: [1, dot === 0 ? 1.22 : 1.06, 1] }
+                      }
                       transition={{
                         duration: 2.4,
                         repeat: Infinity,
@@ -418,7 +506,11 @@ const HomePage = () => {
             <motion.span
               key={`${label}-${i}`}
               className="gwl-trust__item"
-              whileHover={m.rm ? undefined : { scale: 1.06, color: "var(--gw-primary-dark)" }}
+              whileHover={
+                m.rm
+                  ? undefined
+                  : { scale: 1.06, color: "var(--gw-primary-dark)" }
+              }
               transition={{ type: "spring", stiffness: 400, damping: 22 }}
             >
               {label}
@@ -427,7 +519,10 @@ const HomePage = () => {
         </div>
       </section>
 
-      <section id={EDITORIAL_LIVE_PARTNER.sectionId} className="gwl-section gwl-section--white">
+      <section
+        id={EDITORIAL_LIVE_PARTNER.sectionId}
+        className="gwl-section gwl-section--white"
+      >
         <div className="gwl-container">
           <motion.div
             className="gwl-spotlight__grid"
@@ -439,10 +534,15 @@ const HomePage = () => {
             <div>
               <span className="gwl-kicker">{EDITORIAL_LIVE_PARTNER.label}</span>
               <h2 className="gwl-h2">{EDITORIAL_LIVE_PARTNER.title}</h2>
-              <p className="gwl-body" style={{ fontWeight: 500, color: "var(--gw-ink3)" }}>
+              <p
+                className="gwl-body"
+                style={{ fontWeight: 500, color: "var(--gw-ink3)" }}
+              >
                 {EDITORIAL_LIVE_PARTNER.meta}
               </p>
-              <blockquote className="gwl-spotlight__quote">“{EDITORIAL_LIVE_PARTNER.quote}”</blockquote>
+              <blockquote className="gwl-spotlight__quote">
+                “{EDITORIAL_LIVE_PARTNER.quote}”
+              </blockquote>
             </div>
             <motion.div
               className="gwl-spotlight__media"
@@ -450,7 +550,11 @@ const HomePage = () => {
               whileInView="visible"
               viewport={m.viewportLoose}
               variants={m.revealSoft}
-              whileHover={m.rm ? undefined : { boxShadow: "0 16px 48px rgba(74, 112, 169, 0.14)" }}
+              whileHover={
+                m.rm
+                  ? undefined
+                  : { boxShadow: "0 16px 48px oklch(0.68 0.15 48 / 0.12)" }
+              }
             >
               <motion.img
                 src={EDITORIAL_LIVE_PARTNER.image}
@@ -459,7 +563,12 @@ const HomePage = () => {
                 referrerPolicy="no-referrer"
                 whileHover={m.rm ? undefined : { scale: 1.06 }}
                 transition={m.spring(200, 22)}
-                style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
               />
             </motion.div>
           </motion.div>
@@ -480,7 +589,9 @@ const HomePage = () => {
               >
                 <motion.div
                   className="gwl-stat__n"
-                  whileHover={m.rm ? undefined : { color: "var(--gw-primary-dark)" }}
+                  whileHover={
+                    m.rm ? undefined : { color: "var(--gw-primary-dark)" }
+                  }
                 >
                   {s.n}
                 </motion.div>
@@ -525,7 +636,12 @@ const HomePage = () => {
           transition={m.spring(85, 22)}
           whileHover={m.rm ? undefined : { scale: 1.02 }}
         >
-          <img src={EDITORIAL_MISSION.image} alt={EDITORIAL_MISSION.imageAlt} loading="lazy" referrerPolicy="no-referrer" />
+          <img
+            src={EDITORIAL_MISSION.image}
+            alt={EDITORIAL_MISSION.imageAlt}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
         </motion.div>
         <motion.div
           className="gwl-split__body gwl-split__body--surface"
@@ -557,7 +673,10 @@ const HomePage = () => {
               </motion.li>
             ))}
           </motion.ul>
-          <TapScale reduceMotion={m.rm} style={{ alignSelf: "flex-start", marginTop: 4 }}>
+          <TapScale
+            reduceMotion={m.rm}
+            style={{ alignSelf: "flex-start", marginTop: 4 }}
+          >
             <Button
               variant="contained"
               disableElevation
@@ -597,7 +716,10 @@ const HomePage = () => {
                 initial={{ opacity: 0, y: 32, scale: 0.94 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={m.viewportLoose}
-                transition={{ ...m.spring(95, 25), delay: m.rm ? 0 : (idx % 6) * 0.06 }}
+                transition={{
+                  ...m.spring(95, 25),
+                  delay: m.rm ? 0 : (idx % 6) * 0.06,
+                }}
                 style={{ transformOrigin: "50% 50%" }}
                 whileHover={
                   m.rm
@@ -606,7 +728,7 @@ const HomePage = () => {
                         y: -10,
                         rotateX: 2,
                         rotateY: idx % 2 === 0 ? -6 : 6,
-                        boxShadow: "0 22px 56px rgba(74, 112, 169, 0.14)",
+                        boxShadow: "0 22px 56px oklch(0.68 0.15 48 / 0.12)",
                         borderColor: "rgba(143, 171, 212, 0.55)",
                         transition: m.spring(260, 22),
                       }
@@ -622,7 +744,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      <section id="how" className="gwl-section gwl-section--white">
+      <section id="how" className="gwl-section gwl-section--surface">
         <div className="gwl-container">
           <motion.div
             className="gwl-steps__intro"
@@ -633,32 +755,36 @@ const HomePage = () => {
           >
             <span className="gwl-kicker">{EDITORIAL_STEPS.label}</span>
             <h2 className="gwl-h2">
-              From application to active partner <em>{EDITORIAL_STEPS.titleEm}</em>
+              From application to active partner{" "}
+              <em>{EDITORIAL_STEPS.titleEm}</em>
             </h2>
           </motion.div>
-          <div className="gwl-steps__grid">
+          <div className="gwl-steps-flow">
             {EDITORIAL_STEPS.steps.map((st, i) => (
               <motion.div
                 key={st.n}
-                className="gwl-step-card"
-                initial={{ opacity: 0, y: 24, scale: 0.97 }}
+                className="gwl-step-tile"
+                initial={{ opacity: 0, y: 32, scale: 0.96 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={m.viewportLoose}
-                transition={{ ...m.spring(100, 23), delay: m.rm ? 0 : i * 0.08 }}
+                transition={{ ...m.spring(100, 23), delay: m.rm ? 0 : i * 0.1 }}
                 whileHover={
                   m.rm
                     ? undefined
                     : {
-                        y: -6,
-                        borderColor: "var(--gw-primary)",
-                        boxShadow: "0 12px 36px rgba(74, 112, 169, 0.1)",
-                        transition: m.spring(320, 24),
+                        y: -8,
+                        boxShadow: "0 20px 48px oklch(0.68 0.15 48 / 0.11)",
+                        borderColor: "rgba(180, 120, 90, 0.45)",
+                        transition: m.spring(300, 24),
                       }
                 }
               >
-                <div className="gwl-step-card__n">{st.n}</div>
-                <h3 className="gwl-step-card__title">{st.t}</h3>
-                <p className="gwl-step-card__body">{st.b}</p>
+                <div className="gwl-step-tile__head">
+                  <span className="gwl-step-tile__num">0{i + 1}</span>
+                  <span className="gwl-step-tile__label">{st.n}</span>
+                </div>
+                <h3 className="gwl-step-tile__title">{st.t}</h3>
+                <p className="gwl-step-tile__body">{st.b}</p>
               </motion.div>
             ))}
           </div>
@@ -674,7 +800,12 @@ const HomePage = () => {
           transition={m.spring(85, 22)}
           whileHover={m.rm ? undefined : { scale: 1.02 }}
         >
-          <img src={EDITORIAL_PARTNER_SPLIT.image} alt={EDITORIAL_PARTNER_SPLIT.imageAlt} loading="lazy" referrerPolicy="no-referrer" />
+          <img
+            src={EDITORIAL_PARTNER_SPLIT.image}
+            alt={EDITORIAL_PARTNER_SPLIT.imageAlt}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
         </motion.div>
         <motion.div
           className="gwl-split__body"
@@ -688,11 +819,18 @@ const HomePage = () => {
             Your operations. <em>{EDITORIAL_PARTNER_SPLIT.titleEm}</em>
           </h2>
           <div className="gwl-badge">
-            <span className="gwl-badge__n">{EDITORIAL_PARTNER_SPLIT.badgeN}</span>
-            <span className="gwl-badge__l">{EDITORIAL_PARTNER_SPLIT.badgeL}</span>
+            <span className="gwl-badge__n">
+              {EDITORIAL_PARTNER_SPLIT.badgeN}
+            </span>
+            <span className="gwl-badge__l">
+              {EDITORIAL_PARTNER_SPLIT.badgeL}
+            </span>
           </div>
           <p className="gwl-body">{EDITORIAL_PARTNER_SPLIT.p}</p>
-          <TapScale reduceMotion={m.rm} style={{ alignSelf: "flex-start", marginTop: 16 }}>
+          <TapScale
+            reduceMotion={m.rm}
+            style={{ alignSelf: "flex-start", marginTop: 16 }}
+          >
             <Button
               component={RouterLink}
               to="/login"
@@ -714,7 +852,9 @@ const HomePage = () => {
             viewport={m.viewport}
             variants={m.reveal}
           >
-            <span className="gwl-kicker">{EDITORIAL_TESTIMONIALS_HEADER.label}</span>
+            <span className="gwl-kicker">
+              {EDITORIAL_TESTIMONIALS_HEADER.label}
+            </span>
             <h2 className="gwl-h2" style={{ marginBottom: 32 }}>
               {EDITORIAL_TESTIMONIALS_HEADER.titleBefore}
               <em>{EDITORIAL_TESTIMONIALS_HEADER.titleEm}</em>
@@ -734,7 +874,7 @@ const HomePage = () => {
                   : {
                       y: -5,
                       scale: 1.015,
-                      boxShadow: "0 16px 40px rgba(74, 112, 169, 0.1)",
+                      boxShadow: "0 16px 40px oklch(0.68 0.15 48 / 0.09)",
                       transition: m.spring(300, 26),
                     }
               }
@@ -783,10 +923,17 @@ const HomePage = () => {
                     >
                       {item.q}
                       <motion.span
-                        className={cx("gwl-faq__toggle", open && "gwl-faq__toggle--open")}
+                        className={cx(
+                          "gwl-faq__toggle",
+                          open && "gwl-faq__toggle--open",
+                        )}
                         animate={{ rotate: open ? 45 : 0 }}
                         transition={m.spring(280, 24)}
-                        style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
                         +
                       </motion.span>
@@ -797,7 +944,10 @@ const HomePage = () => {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: m.rm ? 0 : 0.38, ease: easeOut }}
+                          transition={{
+                            duration: m.rm ? 0 : 0.38,
+                            ease: easeOut,
+                          }}
                           style={{ overflow: "hidden" }}
                         >
                           <p className="gwl-faq__a">{item.a}</p>
@@ -824,7 +974,9 @@ const HomePage = () => {
             <p className="gwl-cta__kicker">{EDITORIAL_CTA.label}</p>
             <h2 id="gwl-cta-title" className="gwl-cta__title">
               {EDITORIAL_CTA.titleBefore}
-              <em style={{ fontStyle: "italic", opacity: 0.95 }}>{EDITORIAL_CTA.titleEm}</em>
+              <em style={{ fontStyle: "italic", opacity: 0.95 }}>
+                {EDITORIAL_CTA.titleEm}
+              </em>
             </h2>
             <p className="gwl-cta__body">{EDITORIAL_CTA.p}</p>
             <div className="gwl-cta__actions">
@@ -840,7 +992,11 @@ const HomePage = () => {
                 </Button>
               </TapScale>
               <TapScale reduceMotion={m.rm}>
-                <Button variant="outlined" onClick={openTrackModal} className="gwl-btn gwl-btn--lg gwl-btn--outline-light">
+                <Button
+                  variant="outlined"
+                  onClick={openTrackModal}
+                  className="gwl-btn gwl-btn--lg gwl-btn--outline-light"
+                >
                   {EDITORIAL_CTA.secondary}
                 </Button>
               </TapScale>
@@ -876,11 +1032,17 @@ const HomePage = () => {
             <RouterLink to="/login" className="gwl-footer__link">
               Sign in
             </RouterLink>
-            <button type="button" className="gwl-footer__link gwl-footer__link--btn" onClick={openPartnerModal}>
+            <button
+              type="button"
+              className="gwl-footer__link gwl-footer__link--btn"
+              onClick={openPartnerModal}
+            >
               Apply
             </button>
           </nav>
-          <p className="gwl-footer__copy">© {new Date().getFullYear()} GloryWellnic</p>
+          <p className="gwl-footer__copy">
+            © {new Date().getFullYear()} GloryWellnic
+          </p>
         </div>
       </Box>
 
@@ -920,50 +1082,98 @@ const HomePage = () => {
                   size="small"
                   placeholder="e.g. City Wellness Hospital"
                   value={applicationForm.orgName}
-                  onChange={(e) => setApplicationForm((f) => ({ ...f, orgName: e.target.value }))}
+                  onChange={(e) =>
+                    setApplicationForm((f) => ({
+                      ...f,
+                      orgName: e.target.value,
+                    }))
+                  }
                   className="gwl-field"
                 />
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <span className={cx("gwl-field-label", "gwl-field-label--spaced")}>Your full name *</span>
+                    <span
+                      className={cx(
+                        "gwl-field-label",
+                        "gwl-field-label--spaced",
+                      )}
+                    >
+                      Your full name *
+                    </span>
                     <TextField
                       fullWidth
                       required
                       size="small"
                       placeholder="Dr. / Mr. / Ms."
                       value={applicationForm.fullName}
-                      onChange={(e) => setApplicationForm((f) => ({ ...f, fullName: e.target.value }))}
+                      onChange={(e) =>
+                        setApplicationForm((f) => ({
+                          ...f,
+                          fullName: e.target.value,
+                        }))
+                      }
                       className="gwl-field"
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <span className={cx("gwl-field-label", "gwl-field-label--spaced")}>Short name *</span>
+                    <span
+                      className={cx(
+                        "gwl-field-label",
+                        "gwl-field-label--spaced",
+                      )}
+                    >
+                      Short name *
+                    </span>
                     <TextField
                       fullWidth
                       required
                       size="small"
                       placeholder="CWH"
                       value={applicationForm.orgShortName}
-                      onChange={(e) => setApplicationForm((f) => ({ ...f, orgShortName: e.target.value }))}
+                      onChange={(e) =>
+                        setApplicationForm((f) => ({
+                          ...f,
+                          orgShortName: e.target.value,
+                        }))
+                      }
                       className="gwl-field"
                     />
                   </Grid>
                 </Grid>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <span className={cx("gwl-field-label", "gwl-field-label--spaced")}>Mobile *</span>
+                    <span
+                      className={cx(
+                        "gwl-field-label",
+                        "gwl-field-label--spaced",
+                      )}
+                    >
+                      Mobile *
+                    </span>
                     <TextField
                       fullWidth
                       required
                       size="small"
                       placeholder="+91 …"
                       value={applicationForm.phone}
-                      onChange={(e) => setApplicationForm((f) => ({ ...f, phone: e.target.value }))}
+                      onChange={(e) =>
+                        setApplicationForm((f) => ({
+                          ...f,
+                          phone: e.target.value,
+                        }))
+                      }
                       className="gwl-field"
                     />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <span className={cx("gwl-field-label", "gwl-field-label--spaced")}>Email *</span>
+                    <span
+                      className={cx(
+                        "gwl-field-label",
+                        "gwl-field-label--spaced",
+                      )}
+                    >
+                      Email *
+                    </span>
                     <TextField
                       fullWidth
                       required
@@ -971,7 +1181,12 @@ const HomePage = () => {
                       type="email"
                       placeholder="admin@org.in"
                       value={applicationForm.email}
-                      onChange={(e) => setApplicationForm((f) => ({ ...f, email: e.target.value }))}
+                      onChange={(e) =>
+                        setApplicationForm((f) => ({
+                          ...f,
+                          email: e.target.value,
+                        }))
+                      }
                       className="gwl-field"
                     />
                   </Grid>
@@ -985,16 +1200,31 @@ const HomePage = () => {
                   size="small"
                   placeholder="Full registered address…"
                   value={applicationForm.address}
-                  onChange={(e) => setApplicationForm((f) => ({ ...f, address: e.target.value }))}
+                  onChange={(e) =>
+                    setApplicationForm((f) => ({
+                      ...f,
+                      address: e.target.value,
+                    }))
+                  }
                   className="gwl-field"
                 />
-                <FormControl fullWidth required size="small" className="gwl-field">
+                <FormControl
+                  fullWidth
+                  required
+                  size="small"
+                  className="gwl-field"
+                >
                   <InputLabel id="gwl-state-label">State *</InputLabel>
                   <Select
                     labelId="gwl-state-label"
                     label="State *"
                     value={applicationForm.state}
-                    onChange={(e) => setApplicationForm((f) => ({ ...f, state: e.target.value }))}
+                    onChange={(e) =>
+                      setApplicationForm((f) => ({
+                        ...f,
+                        state: e.target.value,
+                      }))
+                    }
                   >
                     {states.map((s) => (
                       <MenuItem key={s.value} value={s.value}>
@@ -1004,12 +1234,20 @@ const HomePage = () => {
                   </Select>
                 </FormControl>
                 {errorMsgNewApplication && (
-                  <Alert severity="error" variant="outlined" className="gwl-modal-alert">
+                  <Alert
+                    severity="error"
+                    variant="outlined"
+                    className="gwl-modal-alert"
+                  >
                     {errorMsgNewApplication}
                   </Alert>
                 )}
                 {successMsgNewApplication && (
-                  <Alert severity="success" variant="outlined" className="gwl-modal-alert">
+                  <Alert
+                    severity="success"
+                    variant="outlined"
+                    className="gwl-modal-alert"
+                  >
                     {successMsgNewApplication}
                   </Alert>
                 )}
@@ -1081,12 +1319,20 @@ const HomePage = () => {
                   className="gwl-field"
                 />
                 {errorTrackApplication && (
-                  <Alert severity="error" variant="outlined" className="gwl-modal-alert">
+                  <Alert
+                    severity="error"
+                    variant="outlined"
+                    className="gwl-modal-alert"
+                  >
                     {errorTrackApplication}
                   </Alert>
                 )}
                 {successTrackApplication && (
-                  <Alert severity="success" variant="outlined" className="gwl-modal-alert">
+                  <Alert
+                    severity="success"
+                    variant="outlined"
+                    className="gwl-modal-alert"
+                  >
                     {successTrackApplication}
                   </Alert>
                 )}
