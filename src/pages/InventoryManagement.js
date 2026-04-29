@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Modal,
-  Form,
-  Input,
-  InputNumber,
-  DatePicker,
-} from "antd";
+import { Button, Modal, Form, Input, InputNumber, DatePicker } from "antd";
 import DataTable from "../components/DataTable";
 import {
   PlusOutlined,
@@ -69,10 +62,13 @@ const InventoryManagement = () => {
     if (!orgId || !canView) return;
     setTableLoading(true);
     try {
-      const response = await axios.get(`${BACKEND_URL}/clientadmin/inventoryManagement/getItems`, {
-        params: { orgId, page: p, limit: l, search: s || undefined },
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${BACKEND_URL}/clientadmin/inventoryManagement/getItems`,
+        {
+          params: { orgId, page: p, limit: l, search: s || undefined },
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const payload = response.data?.data ?? response.data ?? {};
       const rawList = payload.items ?? payload.data?.items ?? [];
       const totalRecords =
@@ -105,19 +101,23 @@ const InventoryManagement = () => {
     setTxLoading(true);
     try {
       const params = { orgId, page: pg, limit: lim };
-      const response = await axios.get(`${BACKEND_URL}/clientadmin/inventoryManagement/getTransactions`, {
-        params,
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${BACKEND_URL}/clientadmin/inventoryManagement/getTransactions`,
+        {
+          params,
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const payload = response.data?.data ?? response.data ?? {};
-      const rawList =
-        payload.transactions ?? payload.data?.transactions ?? [];
+      const rawList = payload.transactions ?? payload.data?.transactions ?? [];
       const totalRecords =
         payload.totalRecords ?? payload.total ?? rawList.length;
       const currentPage = payload.currentPage ?? pg;
 
       setTransactions(
-        rawList.map((r, i) => normalizeInventoryTransaction(r, i)).filter(Boolean)
+        rawList
+          .map((r, i) => normalizeInventoryTransaction(r, i))
+          .filter(Boolean),
       );
       setTxPagination((prev) => ({
         ...prev,
@@ -129,7 +129,10 @@ const InventoryManagement = () => {
       console.error("Error fetching transactions:", err);
       notification.error({
         message: "Could not load transactions",
-        description: inventoryGetErrorMessage(err, "Failed to fetch transactions"),
+        description: inventoryGetErrorMessage(
+          err,
+          "Failed to fetch transactions",
+        ),
         placement: "top",
       });
     } finally {
@@ -190,9 +193,13 @@ const InventoryManagement = () => {
           body.expiryDate = dayjs(values.expiryDate).format("YYYY-MM-DD");
         }
       }
-      await axios.post(`${BACKEND_URL}/clientadmin/inventoryManagement/createItem`, body, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post(
+        `${BACKEND_URL}/clientadmin/inventoryManagement/createItem`,
+        body,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       notification.success({
         message: "Item created",
         description: "The inventory SKU was added.",
@@ -543,11 +550,6 @@ const InventoryManagement = () => {
               <Form.Item label="Reorder level" name="reorderLevel">
                 <InputNumber min={0} className="w-full" />
               </Form.Item>
-              <p className="mb-0 text-sm text-gray-500">
-                Create SKU does not set cost, selling price, or MRP. Set those per batch on the
-                item page (Add batch, or Edit lot on an existing batch). If you enter opening
-                stock here, the first lot is created without prices until you update that lot.
-              </p>
 
               <div className="mt-6 flex justify-end gap-2">
                 <Button onClick={handleModalCancel}>Cancel</Button>
