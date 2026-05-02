@@ -41,7 +41,11 @@ const { TextArea } = Input;
 const { Option } = Select;
 
 /** Batch IDs already selected on another line for the same item (current row excluded). */
-function inventoryBatchIdsUsedElsewhere(inventoryItems, itemId, excludeRowIndex) {
+function inventoryBatchIdsUsedElsewhere(
+  inventoryItems,
+  itemId,
+  excludeRowIndex,
+) {
   const used = new Set();
   if (!itemId) return used;
   inventoryItems.forEach((row, i) => {
@@ -74,7 +78,7 @@ export default function GenerateInvoiceModal({
       ...serviceItems.map((i) => ({ ...i, kind: "SERVICE" })),
       ...inventoryItems.map((i) => ({ ...i, kind: "INVENTORY" })),
     ],
-    [serviceItems, inventoryItems]
+    [serviceItems, inventoryItems],
   );
 
   function ensureItemShape(item) {
@@ -90,7 +94,10 @@ export default function GenerateInvoiceModal({
       qty: item?.qty ?? 1,
       rate: item?.rate ?? 0,
       amount: item?.amount ?? 0,
-      gst: kind === "INVENTORY" ? 0 : Number(item?.gst ?? item?.gst_percentage ?? 0),
+      gst:
+        kind === "INVENTORY"
+          ? 0
+          : Number(item?.gst ?? item?.gst_percentage ?? 0),
     };
   }
 
@@ -129,7 +136,7 @@ export default function GenerateInvoiceModal({
         cb(items);
       }, 300),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- stable debounced wrapper; fetch uses latest org/token from localStorage
-    []
+    [],
   );
 
   const [inventoryCatalog, setInventoryCatalog] = useState([]);
@@ -147,9 +154,15 @@ export default function GenerateInvoiceModal({
       const res = await axios.get(
         `${BACKEND_URL}/clientadmin/inventoryManagement/getItems`,
         {
-          params: { orgId, page: 1, limit: 50, search: search || undefined },
+          params: {
+            orgId,
+            page: 1,
+            limit: 50,
+            search: search || undefined,
+            billingData: true,
+          },
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       const payload = res.data?.data ?? res.data ?? {};
       const raw = payload.items ?? payload.data?.items ?? [];
@@ -171,7 +184,8 @@ export default function GenerateInvoiceModal({
     const orgId = localStorage.getItem("selectedOrgId");
     if (!token || !orgId) return [];
 
-    if (batchesByItemId[inventoryItemId]) return batchesByItemId[inventoryItemId];
+    if (batchesByItemId[inventoryItemId])
+      return batchesByItemId[inventoryItemId];
 
     setBatchesLoadingByItemId((prev) => ({ ...prev, [inventoryItemId]: true }));
     try {
@@ -180,7 +194,7 @@ export default function GenerateInvoiceModal({
         {
           params: { orgId, itemId: inventoryItemId },
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       const list = res.data?.data ?? res.data ?? [];
       const batches = (Array.isArray(list) ? list : [])
@@ -196,7 +210,10 @@ export default function GenerateInvoiceModal({
       setBatchesByItemId((prev) => ({ ...prev, [inventoryItemId]: [] }));
       return [];
     } finally {
-      setBatchesLoadingByItemId((prev) => ({ ...prev, [inventoryItemId]: false }));
+      setBatchesLoadingByItemId((prev) => ({
+        ...prev,
+        [inventoryItemId]: false,
+      }));
     }
   };
 
@@ -235,14 +252,14 @@ export default function GenerateInvoiceModal({
       try {
         const selectedOrgId = localStorage.getItem("selectedOrgId");
         const orgData = JSON.parse(
-          localStorage.getItem("organizations") || "[]"
+          localStorage.getItem("organizations") || "[]",
         );
 
         // console.log("Loading org data:", { selectedOrgId, orgData }); // Debug log
 
         if (selectedOrgId && orgData.length > 0) {
           const selectedOrg = orgData.find(
-            (org) => org.organizationId === selectedOrgId
+            (org) => org.organizationId === selectedOrgId,
           );
 
           // console.log("Selected org:", selectedOrg); // Debug log
@@ -323,7 +340,10 @@ export default function GenerateInvoiceModal({
         setNotes(editData.notes || "");
         setTerms(editData.terms || "Payment due within 30 days");
         // Check if bank charges were previously applied (not null and not empty string)
-        const hasBankCharges = editData.bankCharges !== null && editData.bankCharges !== "" && editData.bankCharges !== undefined;
+        const hasBankCharges =
+          editData.bankCharges !== null &&
+          editData.bankCharges !== "" &&
+          editData.bankCharges !== undefined;
         setBankChargesEnabled(hasBankCharges);
         // If bank charges were applied, show the advanced options section
         if (hasBankCharges) {
@@ -433,15 +453,15 @@ export default function GenerateInvoiceModal({
       prev.map((item, i) =>
         i === index
           ? {
-            ...item,
-            serviceId,
-            description: service.description || service.name,
-            rate: Number(service.price) || 0,
-            gst: Number(service.tax) || 0,
-            amount: (Number(item.qty) || 1) * (Number(service.price) || 0),
-          }
-          : item
-      )
+              ...item,
+              serviceId,
+              description: service.description || service.name,
+              rate: Number(service.price) || 0,
+              gst: Number(service.tax) || 0,
+              amount: (Number(item.qty) || 1) * (Number(service.price) || 0),
+            }
+          : item,
+      ),
     );
   };
 
@@ -458,21 +478,27 @@ export default function GenerateInvoiceModal({
           gst: 0,
         };
         if (inv) {
-          next.description = next.description || inv.description || inv.name || "";
+          next.description =
+            next.description || inv.description || inv.name || "";
           const hint =
             Number(inv.sellingPrice) > 0 ? Number(inv.sellingPrice) : 0;
           next.rate = next.rate && Number(next.rate) > 0 ? next.rate : hint;
         }
         return next;
-      })
+      }),
     );
     const batches = await fetchBatchesForItem(inventoryItemId);
     setInventoryItems((prev) => {
-      const taken = inventoryBatchIdsUsedElsewhere(prev, inventoryItemId, index);
+      const taken = inventoryBatchIdsUsedElsewhere(
+        prev,
+        inventoryItemId,
+        index,
+      );
       const available = batches.filter((b) => !taken.has(b.id));
       if (available.length !== 1) return prev;
       const b0 = available[0];
-      const sell = Number(b0.sellingPrice) > 0 ? Number(b0.sellingPrice) : undefined;
+      const sell =
+        Number(b0.sellingPrice) > 0 ? Number(b0.sellingPrice) : undefined;
       return prev.map((item, i) => {
         if (i !== index) return item;
         return {
@@ -489,7 +515,8 @@ export default function GenerateInvoiceModal({
     const row = inventoryItems[index];
     const batches = batchesByItemId[row?.inventoryItemId] || [];
     const b = batches.find((x) => x.id === batchId);
-    const sell = b && Number(b.sellingPrice) > 0 ? Number(b.sellingPrice) : null;
+    const sell =
+      b && Number(b.sellingPrice) > 0 ? Number(b.sellingPrice) : null;
     setInventoryItems((prev) =>
       prev.map((item, i) => {
         if (i !== index) return item;
@@ -500,7 +527,7 @@ export default function GenerateInvoiceModal({
         };
         if (sell != null) next.rate = sell;
         return next;
-      })
+      }),
     );
 
     if (type === "invoice" && b && b.quantityOnHand != null) {
@@ -520,7 +547,7 @@ export default function GenerateInvoiceModal({
             return { ...item, qty: Math.max(1, max) };
           }
           return item;
-        })
+        }),
       );
     }
   };
@@ -580,7 +607,7 @@ export default function GenerateInvoiceModal({
           updatedItem.amount = qty * rate;
         }
         return updatedItem;
-      })
+      }),
     );
   };
 
@@ -597,7 +624,7 @@ export default function GenerateInvoiceModal({
           updatedItem.amount = qty * rate;
         }
         return updatedItem;
-      })
+      }),
     );
   };
 
@@ -611,11 +638,7 @@ export default function GenerateInvoiceModal({
     const row = inventoryItems[index];
     let next = Number(rawValue) || 0;
     if (next < 1) next = 1;
-    if (
-      type === "invoice" &&
-      row?.inventoryItemId &&
-      row?.inventoryBatchId
-    ) {
+    if (type === "invoice" && row?.inventoryItemId && row?.inventoryBatchId) {
       const batches = batchesByItemId[row.inventoryItemId] || [];
       const b = batches.find((x) => x.id === row.inventoryBatchId);
       const onHand = Number(b?.quantityOnHand);
@@ -638,11 +661,11 @@ export default function GenerateInvoiceModal({
     const lineShareOfTotal =
       calculations.subTotal > 0 ? lineAmount / calculations.subTotal : 0;
     const lineDiscountShare = roundTo2Decimals(
-      lineShareOfTotal * calculations.discountAmount
+      lineShareOfTotal * calculations.discountAmount,
     );
     const taxableLineAmount = Math.max(
       0,
-      roundTo2Decimals(lineAmount - lineDiscountShare)
+      roundTo2Decimals(lineAmount - lineDiscountShare),
     );
 
     // INVENTORY: no GST; server normalizes taxable = rate×qty − line_discount_share, final = taxable
@@ -807,7 +830,7 @@ export default function GenerateInvoiceModal({
     for (let iteration = 0; iteration < 20; iteration++) {
       const testDiscount = (lowDiscount + highDiscount) / 2;
       const testDiscountAmount = roundTo2Decimals(
-        (subTotal * testDiscount) / 100
+        (subTotal * testDiscount) / 100,
       );
       const testTaxableAmount = subTotal - testDiscountAmount;
 
@@ -817,7 +840,7 @@ export default function GenerateInvoiceModal({
         const gstRateNum = Number(gstRate);
         const groupAmount = calculations.gstGroups[gstRate];
         const groupDiscountShare = roundTo2Decimals(
-          subTotal > 0 ? (groupAmount / subTotal) * testDiscountAmount : 0
+          subTotal > 0 ? (groupAmount / subTotal) * testDiscountAmount : 0,
         );
         const groupTaxableAmount = groupAmount - groupDiscountShare;
 
@@ -848,7 +871,7 @@ export default function GenerateInvoiceModal({
 
     // Ensure discount doesn't exceed 100%
     setDiscountPercent(
-      roundTo2Decimals(Math.min(Math.max(bestDiscount, 0), 100))
+      roundTo2Decimals(Math.min(Math.max(bestDiscount, 0), 100)),
     );
   };
 
@@ -858,7 +881,7 @@ export default function GenerateInvoiceModal({
         handleGrandTotalChange(value);
         typingRef.current = false;
       }, 500),
-    [calculations.subTotal, calculations.totalTax, bankChargesEnabled]
+    [calculations.subTotal, calculations.totalTax, bankChargesEnabled],
   );
 
   useEffect(() => {
@@ -1057,18 +1080,20 @@ export default function GenerateInvoiceModal({
             line_kind: kind,
             ...(kind === "SERVICE"
               ? {
-                service_id: item.serviceId,
-                service_name:
-                  services.find((s) => s.id === item.serviceId)?.name || "",
-              }
+                  service_id: item.serviceId,
+                  service_name:
+                    services.find((s) => s.id === item.serviceId)?.name || "",
+                }
               : {
-                inventory_item_id: item.inventoryItemId,
-                inventory_batch_id: item.inventoryBatchId,
-                inventory_batch_number: item.inventoryBatchNumber,
-                service_name:
-                  inventoryCatalog.find((x) => x.id === item.inventoryItemId)
-                    ?.name || item.description || "",
-              }),
+                  inventory_item_id: item.inventoryItemId,
+                  inventory_batch_id: item.inventoryBatchId,
+                  inventory_batch_number: item.inventoryBatchNumber,
+                  service_name:
+                    inventoryCatalog.find((x) => x.id === item.inventoryItemId)
+                      ?.name ||
+                    item.description ||
+                    "",
+                }),
             description: item.description,
             quantity: Number(item.qty) || 0,
             rate: Number(item.rate) || 0,
@@ -1106,8 +1131,9 @@ export default function GenerateInvoiceModal({
       const result = response.data;
 
       notification.success({
-        message: `${type} ${result.data?.invoice_number || ""} ${editData ? "updated" : "created"
-          } successfully!`,
+        message: `${type} ${result.data?.invoice_number || ""} ${
+          editData ? "updated" : "created"
+        } successfully!`,
       });
       setRefresh(Math.random());
 
@@ -1185,7 +1211,9 @@ export default function GenerateInvoiceModal({
       render: (rate, record, index) => (
         <InputNumber
           value={rate}
-          onChange={(value) => handleServiceFieldChange(index, "rate", value || 0)}
+          onChange={(value) =>
+            handleServiceFieldChange(index, "rate", value || 0)
+          }
           min={0}
           step={0.01}
           formatter={(value) =>
@@ -1201,9 +1229,7 @@ export default function GenerateInvoiceModal({
       title: "GST %",
       dataIndex: "gst",
       width: 72,
-      render: (gst) => (
-        <Tag color="blue">{Number(gst ?? 0)}%</Tag>
-      ),
+      render: (gst) => <Tag color="blue">{Number(gst ?? 0)}%</Tag>,
     },
     {
       title: "Amount",
@@ -1233,57 +1259,57 @@ export default function GenerateInvoiceModal({
       },
     },
     ...(billTo?.state &&
-      orgState &&
-      billTo.state.toUpperCase() === orgState.toUpperCase()
+    orgState &&
+    billTo.state.toUpperCase() === orgState.toUpperCase()
       ? [
-        {
-          title: "CGST",
-          width: 80,
-          render: (_, record, index) => {
-            const taxDetails = getLineItemTaxDetails(record, index);
-            return (
-              <span className="text-xs text-gray-500">
-                ₹
-                {taxDetails.cgst.toLocaleString("en-IN", {
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            );
+          {
+            title: "CGST",
+            width: 80,
+            render: (_, record, index) => {
+              const taxDetails = getLineItemTaxDetails(record, index);
+              return (
+                <span className="text-xs text-gray-500">
+                  ₹
+                  {taxDetails.cgst.toLocaleString("en-IN", {
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              );
+            },
           },
-        },
-        {
-          title: "SGST",
-          width: 80,
-          render: (_, record, index) => {
-            const taxDetails = getLineItemTaxDetails(record, index);
-            return (
-              <span className="text-xs text-gray-500">
-                ₹
-                {taxDetails.sgst.toLocaleString("en-IN", {
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            );
+          {
+            title: "SGST",
+            width: 80,
+            render: (_, record, index) => {
+              const taxDetails = getLineItemTaxDetails(record, index);
+              return (
+                <span className="text-xs text-gray-500">
+                  ₹
+                  {taxDetails.sgst.toLocaleString("en-IN", {
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              );
+            },
           },
-        },
-      ]
+        ]
       : [
-        {
-          title: "IGST",
-          width: 80,
-          render: (_, record, index) => {
-            const taxDetails = getLineItemTaxDetails(record, index);
-            return (
-              <span className="text-xs text-gray-500">
-                ₹
-                {taxDetails.igst.toLocaleString("en-IN", {
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            );
+          {
+            title: "IGST",
+            width: 80,
+            render: (_, record, index) => {
+              const taxDetails = getLineItemTaxDetails(record, index);
+              return (
+                <span className="text-xs text-gray-500">
+                  ₹
+                  {taxDetails.igst.toLocaleString("en-IN", {
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              );
+            },
           },
-        },
-      ]),
+        ]),
     {
       title: (
         <Tooltip title="Final amount including discount and tax">
@@ -1361,16 +1387,17 @@ export default function GenerateInvoiceModal({
       title: "Batch",
       width: 240,
       render: (_, record, index) => {
-        if (!record.inventoryItemId) return <span className="text-gray-400">Select item</span>;
+        if (!record.inventoryItemId)
+          return <span className="text-gray-400">Select item</span>;
         const batches = batchesByItemId[record.inventoryItemId] || [];
         const loadingBatches = !!batchesLoadingByItemId[record.inventoryItemId];
         const takenElsewhere = inventoryBatchIdsUsedElsewhere(
           inventoryItems,
           record.inventoryItemId,
-          index
+          index,
         );
         const batchOptions = batches.filter(
-          (b) => !takenElsewhere.has(b.id) || b.id === record.inventoryBatchId
+          (b) => !takenElsewhere.has(b.id) || b.id === record.inventoryBatchId,
         );
         return (
           <Select
@@ -1389,10 +1416,11 @@ export default function GenerateInvoiceModal({
                   : "";
               return {
                 value: b.id,
-                label: `${b.batchNumber} — ${b.quantityOnHand} on hand${sp}${b.expiryDate
-                  ? ` — exp ${dayjs(b.expiryDate).format("YYYY-MM-DD")}`
-                  : ""
-                  }`,
+                label: `${b.batchNumber} — ${b.quantityOnHand} on hand${sp}${
+                  b.expiryDate
+                    ? ` — exp ${dayjs(b.expiryDate).format("YYYY-MM-DD")}`
+                    : ""
+                }`,
               };
             })}
           />
@@ -1674,8 +1702,8 @@ export default function GenerateInvoiceModal({
             bodyStyle={{ padding: "12px" }}
           >
             <p className="mb-3 text-sm text-gray-500">
-              Service lines include GST in totals. Bill discount applies across services and
-              inventory.
+              Service lines include GST in totals. Bill discount applies across
+              services and inventory.
             </p>
             <div style={{ overflowX: "auto" }}>
               <DataTable
@@ -1711,8 +1739,9 @@ export default function GenerateInvoiceModal({
             bodyStyle={{ padding: "12px" }}
           >
             <p className="mb-3 text-sm text-gray-500">
-              Inventory lines are billed without GST: total = rate × quantity minus share of
-              bill discount. Default rate comes from the selected batch when available.
+              Inventory lines are billed without GST: total = rate × quantity
+              minus share of bill discount. Default rate comes from the selected
+              batch when available.
             </p>
             <div style={{ overflowX: "auto" }}>
               <DataTable
@@ -1852,8 +1881,8 @@ export default function GenerateInvoiceModal({
                 </div>
 
                 {billTo?.state &&
-                  orgState &&
-                  billTo.state.toUpperCase() === orgState.toUpperCase() ? (
+                orgState &&
+                billTo.state.toUpperCase() === orgState.toUpperCase() ? (
                   <div className="space-y-1">
                     <div className="flex justify-between items-center">
                       <span>CGST:</span>

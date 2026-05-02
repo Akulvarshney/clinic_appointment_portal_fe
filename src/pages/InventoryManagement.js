@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, Form, Input, InputNumber, DatePicker } from "antd";
+import {
+  Button,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  DatePicker,
+  Select,
+} from "antd";
 import DataTable from "../components/DataTable";
 import {
   PlusOutlined,
@@ -65,7 +73,13 @@ const InventoryManagement = () => {
       const response = await axios.get(
         `${BACKEND_URL}/clientadmin/inventoryManagement/getItems`,
         {
-          params: { orgId, page: p, limit: l, search: s || undefined },
+          params: {
+            orgId,
+            page: p,
+            limit: l,
+            search: s,
+            billing: true || undefined,
+          },
           headers: { Authorization: `Bearer ${token}` },
         },
       );
@@ -177,11 +191,13 @@ const InventoryManagement = () => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      const initialQty = Number(values.initialQuantity) || 0;
+      const initialQty = 0;
+      // Number(values.initialQuantity) || ;
       const body = {
         orgId,
         name: values.name,
         sku: values.sku || undefined,
+        inventory_type: values.inventory_type || "RETAIL",
         description: values.description,
         unit: values.unit || "unit",
         initialQuantity: initialQty,
@@ -329,6 +345,12 @@ const InventoryManagement = () => {
       key: "sku",
       width: 120,
       render: (v) => v || "—",
+    },
+    {
+      title: "Type",
+      dataIndex: "inventory_type",
+      key: "inventory_type",
+      width: 120,
     },
     {
       title: "Unit",
@@ -521,10 +543,19 @@ const InventoryManagement = () => {
               <Form.Item label="Description" name="description">
                 <TextArea rows={2} placeholder="Description" />
               </Form.Item>
+              <Form.Item label="Type" name="inventory_type">
+                <Select
+                  placeholder="Select inventory type"
+                  defaultValue={"RETAIL"}
+                >
+                  <Select.Option value="RETAIL">RETAIL</Select.Option>
+                  <Select.Option value="CONSUMABLE">Consumable</Select.Option>
+                </Select>
+              </Form.Item>
               <Form.Item label="Unit" name="unit">
                 <Input placeholder="e.g. strip, box, unit" />
               </Form.Item>
-              <Form.Item label="Initial quantity" name="initialQuantity">
+              {/* <Form.Item label="Initial quantity" name="initialQuantity">
                 <InputNumber min={0} className="w-full" placeholder="0" />
               </Form.Item>
               {showFirstBatchFields && (
@@ -546,10 +577,10 @@ const InventoryManagement = () => {
                     <DatePicker className="w-full" format="YYYY-MM-DD" />
                   </Form.Item>
                 </>
-              )}
-              <Form.Item label="Reorder level" name="reorderLevel">
+              )} */}
+              {/* <Form.Item label="Reorder level" name="reorderLevel">
                 <InputNumber min={0} className="w-full" />
-              </Form.Item>
+              </Form.Item> */}
 
               <div className="mt-6 flex justify-end gap-2">
                 <Button onClick={handleModalCancel}>Cancel</Button>
