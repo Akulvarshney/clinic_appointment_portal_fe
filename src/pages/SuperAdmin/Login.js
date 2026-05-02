@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Form, Input, Button, Alert, Card } from "antd";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { Alert, Button, Card, Form, Input } from "antd";
+import {
+  LockOutlined,
+  SafetyCertificateOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../../assets/constants";
 import { useAuth } from "../../layouts/AuthContext";
 
@@ -24,153 +28,126 @@ const Login = () => {
         {
           login_id: values.loginId,
           password: values.password,
-        }
+        },
       );
-
-      console.log("Login success:", response.data);
 
       const { token, user } = response.data;
 
-      console.log("User data login page:", user);
-
       login(user, token, [], user.role);
-      // Save user & token
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
       if (user.role === "SUPERADMIN") {
-        console.log("Superadmin");
         navigate("/superadmin/dashboard");
       } else {
-        console.log("Non-superadmin user, redirecting to dashboard");
         navigate("/dashboard");
       }
     } catch (error) {
-      console.log(error);
       if (error.response?.status === 401) {
-        setErrorMsg(error.response.data.message);
+        setErrorMsg(
+          error.response.data?.message || "Invalid login ID or password.",
+        );
       } else {
         setErrorMsg("An error occurred. Please try again.");
       }
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  };
-
-  const handleForgotPassword = () => {
-    // Add forgot password logic here
-    navigate("/forgetpassword");
-  };
-
-  const handleClientLogin = () => {
-    navigate("/login");
   };
 
   return (
-    <div className="login-container bg-gradient-to-br from-gw-surface to-gw-primary-light/50">
-      <div className="login-wrapper">
-        <Card className="login-card">
-          <div className="login-content">
-            {/* Header */}
-            <div className="login-header">
-              <h3 className="login-title text-xl font-semibold m-0">
-                Sign in
-              </h3>
-              <span className="login-subtitle">SuperAdmin Login Page</span>
-            </div>
+    <div className="gwn-super-login-page">
+      <div className="gwn-super-orb one" />
+      <div className="gwn-super-orb two" />
 
-            {/* Error Alert */}
-            {errorMsg && (
-              <Alert
-                message={errorMsg}
-                type="error"
-                showIcon
-                className="error-alert"
-              />
-            )}
+      <div className="gwn-super-shell">
+        <Card className="gwn-super-card">
+          <div className="gwn-super-kicker">
+            <span className="gwn-super-dot" />
+            Super Admin
+          </div>
 
-            {/* Login Form */}
-            <Form
-              form={form}
-              name="login"
-              onFinish={handleLogin}
-              autoComplete="off"
-              layout="vertical"
-              className="login-form"
-              initialValues={{
-                loginId: "admin", // Default login ID
-                password: "admin123", // Default password
-              }}
+          <h1 className="gwn-super-title">Sign in</h1>
+          <span className="gwn-super-subtitle">
+            Access the GloryWellNic administrative workspace.
+          </span>
+
+          {errorMsg && (
+            <Alert
+              message={errorMsg}
+              type="error"
+              showIcon
+              className="gwn-super-alert"
+            />
+          )}
+
+          <Form
+            form={form}
+            name="superadmin-login"
+            onFinish={handleLogin}
+            autoComplete="off"
+            layout="vertical"
+            className="gwn-super-form"
+            initialValues={{
+              loginId: "admin",
+              password: "admin123",
+            }}
+          >
+            <Form.Item
+              name="loginId"
+              label="Login ID"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input your login ID!",
+                },
+              ]}
             >
-              <Form.Item
-                name="loginId"
-                label="Login ID"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input your login ID!",
-                  },
-                ]}
-                className="form-item"
-              >
-                <Input
-                  prefix={<UserOutlined className="input-prefix" />}
-                  placeholder="Enter your login ID"
-                  size="large"
-                  className="form-input"
-                />
-              </Form.Item>
+              <Input
+                prefix={<UserOutlined className="gwn-super-prefix" />}
+                placeholder="Enter your login ID"
+                size="large"
+                className="gwn-super-input"
+              />
+            </Form.Item>
 
-              <Form.Item
-                name="password"
-                label="Password"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please input your password!",
-                  },
-                ]}
-                className="form-item"
-              >
-                <Input.Password
-                  prefix={<LockOutlined className="input-prefix" />}
-                  placeholder="Enter your password"
-                  size="large"
-                  className="form-input"
-                />
-              </Form.Item>
+            <Form.Item
+              name="password"
+              label="Password"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input your password!",
+                },
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined className="gwn-super-prefix" />}
+                placeholder="Enter your password"
+                size="large"
+                className="gwn-super-input"
+              />
+            </Form.Item>
 
-              <Form.Item className="form-item">
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading}
-                  block
-                  size="large"
-                  className="login-button"
-                >
-                  {loading ? "Signing in..." : "Sign in"}
-                </Button>
-              </Form.Item>
-            </Form>
-
-            {/* Action Buttons */}
-            <div className="login-actions">
+            <Form.Item>
               <Button
-                type="link"
-                onClick={handleForgotPassword}
-                className="action-button"
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                size="large"
+                className="gwn-super-submit"
               >
-                Forgot your password?
+                {loading ? "Signing in..." : "Sign in"}
               </Button>
-              <Button
-                type="link"
-                onClick={handleClientLogin}
-                className="action-button"
-              >
-                Login as Client
-              </Button>
-            </div>
+            </Form.Item>
+          </Form>
+
+          <div className="gwn-super-actions">
+            <button type="button" onClick={() => navigate("/forgetpassword")}>
+              <SafetyCertificateOutlined /> Forgot your password?
+            </button>
+            <Link to="/login">Login as Client</Link>
           </div>
         </Card>
       </div>

@@ -278,6 +278,470 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   Dark auth screens
+   ───────────────────────────────────────────────────────────── */
+.gwn-super-login-page,
+.gwn-super-login-page *,
+.gwn-forgot-page,
+.gwn-forgot-page * {
+  box-sizing: border-box;
+}
+
+.gwn-super-login-page,
+.gwn-forgot-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 96px 24px 48px;
+  color: #f0eaff;
+  font-family: "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.gwn-super-login-page {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(123, 63, 242, 0.34) 0%, transparent 36%),
+    radial-gradient(circle at 88% 78%, rgba(91, 43, 224, 0.24) 0%, transparent 34%),
+    radial-gradient(circle at 8% 82%, rgba(168, 85, 247, 0.16) 0%, transparent 32%),
+    linear-gradient(145deg, #06040d 0%, #0d0820 62%, #06040d 100%);
+}
+
+.gwn-forgot-page {
+  background:
+    radial-gradient(circle at 48% -12%, rgba(123, 63, 242, 0.32) 0%, transparent 38%),
+    radial-gradient(circle at 8% 76%, rgba(168, 85, 247, 0.16) 0%, transparent 34%),
+    radial-gradient(circle at 94% 72%, rgba(91, 43, 224, 0.24) 0%, transparent 34%),
+    linear-gradient(145deg, #06040d 0%, #0d0820 58%, #06040d 100%);
+}
+
+.gwn-super-login-page::before,
+.gwn-forgot-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(155, 107, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(155, 107, 255, 0.07) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(circle at 50% 46%, black 0%, transparent 68%);
+  -webkit-mask-image: radial-gradient(circle at 50% 46%, black 0%, transparent 68%);
+}
+
+.gwn-forgot-page::before {
+  background-image:
+    linear-gradient(rgba(155, 107, 255, 0.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(155, 107, 255, 0.065) 1px, transparent 1px);
+  mask-image: radial-gradient(circle at 50% 48%, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle at 50% 48%, black 0%, transparent 70%);
+}
+
+.gwn-super-orb,
+.gwn-forgot-orb {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  filter: blur(4px);
+  opacity: 0.8;
+}
+
+.gwn-super-orb.one {
+  width: 520px;
+  height: 520px;
+  top: -180px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(123, 63, 242, 0.34) 0%, transparent 68%);
+}
+
+.gwn-super-orb.two {
+  width: 360px;
+  height: 360px;
+  right: -100px;
+  bottom: -90px;
+  background: radial-gradient(circle, rgba(91, 43, 224, 0.28) 0%, transparent 68%);
+}
+
+.gwn-forgot-orb.one {
+  width: 560px;
+  height: 560px;
+  top: -190px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(123, 63, 242, 0.32) 0%, transparent 68%);
+}
+
+.gwn-forgot-orb.two {
+  width: 340px;
+  height: 340px;
+  right: -90px;
+  bottom: -90px;
+  background: radial-gradient(circle, rgba(91, 43, 224, 0.28) 0%, transparent 70%);
+}
+
+.gwn-super-shell,
+.gwn-forgot-shell {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 500px);
+}
+
+.gwn-forgot-shell {
+  width: min(100%, 560px);
+}
+
+.gwn-super-back,
+.gwn-forgot-back {
+  position: absolute;
+  top: -56px;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(240, 234, 255, 0.55);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+.gwn-super-back:hover,
+.gwn-forgot-back:hover {
+  color: #c4a8ff;
+}
+
+.gwn-super-card,
+.gwn-forgot-card {
+  overflow: hidden;
+  border: 1px solid rgba(155, 107, 255, 0.22) !important;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  box-shadow:
+    0 32px 90px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.gwn-super-card .ant-card-body {
+  padding: clamp(30px, 6vw, 46px) !important;
+}
+
+.gwn-forgot-card .ant-card-body {
+  padding: 0 !important;
+}
+
+.gwn-forgot-panel {
+  display: flex;
+  align-items: center;
+  padding: clamp(30px, 6vw, 46px);
+}
+
+.gwn-forgot-inner {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.gwn-super-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin-bottom: 20px;
+  padding: 7px 14px;
+  border: 1px solid rgba(155, 107, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(155, 107, 255, 0.1);
+  color: #c4a8ff;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.gwn-super-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #9b6bff;
+  box-shadow: 0 0 18px rgba(155, 107, 255, 0.75);
+}
+
+.gwn-super-title,
+.gwn-forgot-form-title {
+  margin: 0 0 8px;
+  color: #f0eaff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.gwn-super-subtitle,
+.gwn-forgot-subtitle {
+  display: block;
+  margin-bottom: 28px;
+  color: rgba(240, 234, 255, 0.55);
+  font-size: 0.88rem;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+.gwn-forgot-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  border: 1px solid rgba(155, 107, 255, 0.14);
+  border-radius: 16px;
+  background: rgba(155, 107, 255, 0.14);
+}
+
+.gwn-forgot-step {
+  min-width: 0;
+  padding: 14px 12px;
+  background: rgba(6, 4, 13, 0.38);
+}
+
+.gwn-forgot-step.active {
+  background: rgba(155, 107, 255, 0.16);
+}
+
+.gwn-forgot-step.done {
+  background: rgba(91, 224, 138, 0.08);
+}
+
+.gwn-forgot-step-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f0eaff;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.gwn-forgot-step-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border: 1px solid rgba(155, 107, 255, 0.28);
+  border-radius: 999px;
+  color: #c4a8ff;
+  font-size: 0.68rem;
+}
+
+.gwn-forgot-step-label {
+  display: block;
+  margin-top: 7px;
+  color: rgba(240, 234, 255, 0.3);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.gwn-super-form .ant-form-item,
+.gwn-forgot-form .ant-form-item {
+  margin-bottom: 18px !important;
+}
+
+.gwn-super-form .ant-form-item-label > label,
+.gwn-forgot-form .ant-form-item-label > label {
+  color: rgba(240, 234, 255, 0.55) !important;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.gwn-super-input,
+.gwn-super-input.ant-input-affix-wrapper,
+.gwn-forgot-input,
+.gwn-forgot-input.ant-input-affix-wrapper {
+  height: 48px !important;
+  border-color: rgba(155, 107, 255, 0.18) !important;
+  border-radius: 14px !important;
+  background: rgba(6, 4, 13, 0.42) !important;
+  color: #f0eaff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.gwn-super-input:hover,
+.gwn-super-input.ant-input-affix-wrapper:hover,
+.gwn-super-input.ant-input-affix-wrapper-focused,
+.gwn-forgot-input:hover,
+.gwn-forgot-input.ant-input-affix-wrapper:hover,
+.gwn-forgot-input.ant-input-affix-wrapper-focused {
+  border-color: rgba(196, 168, 255, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.14) !important;
+}
+
+.gwn-super-input input,
+.gwn-super-input .ant-input,
+.gwn-forgot-input input,
+.gwn-forgot-input .ant-input {
+  background: transparent !important;
+  color: #f0eaff !important;
+}
+
+.gwn-super-input input::placeholder,
+.gwn-super-input .ant-input::placeholder,
+.gwn-forgot-input input::placeholder,
+.gwn-forgot-input .ant-input::placeholder {
+  color: rgba(240, 234, 255, 0.3) !important;
+}
+
+.gwn-super-prefix,
+.gwn-super-input .ant-input-password-icon,
+.gwn-forgot-prefix,
+.gwn-forgot-input .ant-input-password-icon {
+  color: #c4a8ff !important;
+}
+
+.gwn-forgot-otp input {
+  text-align: center !important;
+  font-size: 1.05rem !important;
+  letter-spacing: 0.28em !important;
+}
+
+.gwn-forgot-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.gwn-super-submit,
+.gwn-forgot-submit,
+.gwn-forgot-secondary {
+  height: 48px !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+}
+
+.gwn-super-submit,
+.gwn-forgot-submit {
+  border: 0 !important;
+  background: linear-gradient(135deg, #c4a8ff, #7b3ff2) !important;
+  color: #06040d !important;
+  box-shadow: 0 14px 42px rgba(123, 63, 242, 0.34) !important;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease !important;
+}
+
+.gwn-super-submit:hover,
+.gwn-super-submit:focus,
+.gwn-forgot-submit:hover,
+.gwn-forgot-submit:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 52px rgba(123, 63, 242, 0.44) !important;
+}
+
+.gwn-forgot-secondary {
+  border-color: rgba(155, 107, 255, 0.28) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: #f0eaff !important;
+}
+
+.gwn-super-alert,
+.gwn-forgot-alert {
+  margin-bottom: 18px;
+  border-color: rgba(255, 92, 115, 0.26) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 92, 115, 0.1) !important;
+  color: #f0eaff !important;
+}
+
+.gwn-super-alert .ant-alert-message,
+.gwn-forgot-alert .ant-alert-message {
+  color: #f0eaff !important;
+}
+
+.gwn-super-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.gwn-super-actions button,
+.gwn-super-actions a {
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #c4a8ff !important;
+  box-shadow: none !important;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.gwn-super-actions button:hover,
+.gwn-super-actions a:hover {
+  color: #f0eaff !important;
+}
+
+.gwn-forgot-footer {
+  margin-top: 26px;
+  text-align: center;
+  color: rgba(240, 234, 255, 0.55);
+  font-size: 0.82rem;
+}
+
+.gwn-forgot-footer a {
+  color: #c4a8ff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.gwn-forgot-footer a:hover {
+  color: #f0eaff;
+}
+
+@media (max-width: 860px) {
+  .gwn-forgot-page {
+    align-items: flex-start;
+    padding-top: 88px;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .gwn-super-login-page,
+  .gwn-forgot-page {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 78px 14px 28px;
+  }
+
+  .gwn-super-back,
+  .gwn-forgot-back {
+    top: -46px;
+  }
+
+  .gwn-forgot-panel {
+    padding: 26px;
+  }
+
+  .gwn-forgot-steps,
+  .gwn-forgot-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
    AntD overrides to consume the palette
    ───────────────────────────────────────────────────────────── */
 .ant-table-wrapper {
@@ -341,9 +805,180 @@ body {
   vertical-align: middle;
 }
 
+.gw-data-table.ant-table-wrapper {
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(155, 107, 255, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.gw-data-table.ant-table-wrapper .ant-spin-container,
+.gw-data-table.ant-table-wrapper .ant-table,
+.gw-data-table.ant-table-wrapper .ant-table-container,
+.gw-data-table.ant-table-wrapper .ant-table-content {
+  background: transparent !important;
+}
+
+.gw-data-table.ant-table-wrapper .ant-table {
+  border-radius: 16px !important;
+}
+
+.gw-data-table.ant-table-wrapper .ant-table-cell {
+  border-color: rgba(155, 107, 255, 0.15) !important;
+}
+
+.gw-data-table.ant-table-wrapper .ant-table-thead > tr > th {
+  background: #15102c !important;
+  border-color: rgba(155, 107, 255, 0.2) !important;
+  color: #f0eaff !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+}
+
+.gw-data-table.ant-table-wrapper .ant-table-tbody > tr > td {
+  background: #0d0820 !important;
+  border-color: rgba(155, 107, 255, 0.1) !important;
+  color: rgba(240, 234, 255, 0.78) !important;
+  font-size: 0.875rem;
+}
+
+.gw-data-table.ant-table-wrapper
+  .ant-table-tbody
+  > tr.gw-data-table-row-odd
+  > td {
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+
+.gw-data-table.ant-table-wrapper .ant-table-tbody > tr:hover > td,
+.gw-data-table.ant-table-wrapper
+  .ant-table-tbody
+  > tr.gw-data-table-row-even:hover
+  > td,
+.gw-data-table.ant-table-wrapper
+  .ant-table-tbody
+  > tr.gw-data-table-row-odd:hover
+  > td {
+  background: rgba(155, 107, 255, 0.1) !important;
+}
+
+.gw-data-table.ant-table-wrapper .ant-table-placeholder > td {
+  background: #0d0820 !important;
+}
+
+.gw-data-table.ant-table-wrapper .ant-empty-description {
+  color: rgba(240, 234, 255, 0.55) !important;
+}
+
 .gw-data-table.ant-table-wrapper .ant-table-body,
 .gw-data-table.ant-table-wrapper .ant-table-content {
   -webkit-overflow-scrolling: touch;
+}
+
+.gw-data-table.ant-table-wrapper .ant-table-pagination {
+  align-items: center;
+  gap: 8px;
+  margin: 0 !important;
+  padding: 14px 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(21, 16, 44, 0.96),
+    rgba(13, 8, 32, 0.96)
+  ) !important;
+  border-top: 1px solid rgba(155, 107, 255, 0.18);
+}
+
+.gw-data-table.ant-table-wrapper .ant-pagination-total-text {
+  margin-inline-end: auto;
+  color: rgba(240, 234, 255, 0.55);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.gw-data-table.ant-table-wrapper .ant-pagination-item,
+.gw-data-table.ant-table-wrapper .ant-pagination-prev,
+.gw-data-table.ant-table-wrapper .ant-pagination-next {
+  min-width: 32px;
+  height: 32px;
+  margin-inline: 0;
+  border-radius: 999px;
+}
+
+.gw-data-table.ant-table-wrapper .ant-pagination-item {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid rgba(155, 107, 255, 0.18) !important;
+}
+
+.gw-data-table.ant-table-wrapper .ant-pagination-item a {
+  color: rgba(240, 234, 255, 0.72) !important;
+  font-size: 12px;
+}
+
+.gw-data-table.ant-table-wrapper .ant-pagination-item:hover {
+  background: rgba(155, 107, 255, 0.14) !important;
+  border-color: rgba(196, 168, 255, 0.45) !important;
+}
+
+.gw-data-table.ant-table-wrapper .ant-pagination-item-active {
+  background: linear-gradient(135deg, #c4a8ff, #7b3ff2) !important;
+  border-color: transparent !important;
+  box-shadow: 0 8px 24px rgba(123, 63, 242, 0.28);
+}
+
+.gw-data-table.ant-table-wrapper .ant-pagination-item-active a {
+  color: #06040d !important;
+  font-weight: 700;
+}
+
+.gw-data-table.ant-table-wrapper .ant-pagination-prev .ant-pagination-item-link,
+.gw-data-table.ant-table-wrapper .ant-pagination-next .ant-pagination-item-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: rgba(240, 234, 255, 0.68) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid rgba(155, 107, 255, 0.16) !important;
+  border-radius: 999px !important;
+}
+
+.gw-data-table.ant-table-wrapper
+  .ant-pagination-prev:not(.ant-pagination-disabled):hover
+  .ant-pagination-item-link,
+.gw-data-table.ant-table-wrapper
+  .ant-pagination-next:not(.ant-pagination-disabled):hover
+  .ant-pagination-item-link {
+  color: #f0eaff !important;
+  background: rgba(155, 107, 255, 0.14) !important;
+  border-color: rgba(196, 168, 255, 0.45) !important;
+}
+
+.gw-data-table.ant-table-wrapper
+  .ant-pagination-disabled
+  .ant-pagination-item-link {
+  color: rgba(240, 234, 255, 0.22) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(155, 107, 255, 0.08) !important;
+}
+
+.gw-data-table.ant-table-wrapper .ant-pagination-jump-prev,
+.gw-data-table.ant-table-wrapper .ant-pagination-jump-next {
+  color: rgba(240, 234, 255, 0.45);
+}
+
+@media (max-width: 767px) {
+  .gw-data-table.ant-table-wrapper .ant-table-pagination {
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .gw-data-table.ant-table-wrapper .ant-pagination-total-text {
+    width: 100%;
+    margin-inline-end: 0;
+    text-align: center;
+  }
 }
 
 .bill-management-table.ant-table-wrapper .ant-table-thead > tr > th,

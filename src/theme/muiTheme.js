@@ -3,24 +3,24 @@ import { PALETTE } from "./palette";
 
 const muiTheme = createTheme({
   palette: {
-    mode: "light",
-    primary: { main: PALETTE.accent, dark: PALETTE.accentHover, contrastText: "#fff" },
-    secondary: { main: PALETTE.ink, contrastText: PALETTE.bg },
+    mode: "dark",
+    primary: { main: PALETTE.p1, dark: PALETTE.p2, light: PALETTE.p4, contrastText: "#fff" },
+    secondary: { main: PALETTE.p4, contrastText: PALETTE.bg },
     success: { main: PALETTE.success },
     warning: { main: PALETTE.warning },
     error: { main: PALETTE.danger },
-    background: { default: PALETTE.bg, paper: PALETTE.white },
-    text: { primary: PALETTE.ink, secondary: PALETTE.ink2, disabled: PALETTE.ink3 },
+    background: { default: PALETTE.bg, paper: PALETTE.bg2 },
+    text: { primary: PALETTE.txt, secondary: PALETTE.txt2, disabled: PALETTE.txt3 },
     divider: PALETTE.line,
   },
   shape: { borderRadius: 10 },
   typography: {
     fontFamily:
-      '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    h1: { fontFamily: '"Instrument Serif", Georgia, serif', letterSpacing: "-0.02em", fontWeight: 400 },
-    h2: { fontFamily: '"Instrument Serif", Georgia, serif', letterSpacing: "-0.02em", fontWeight: 400 },
-    h3: { fontFamily: '"Instrument Serif", Georgia, serif', letterSpacing: "-0.02em", fontWeight: 400 },
-    h4: { fontFamily: '"Instrument Serif", Georgia, serif', letterSpacing: "-0.02em", fontWeight: 400 },
+      '"Sora", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    h1: { fontFamily: '"Playfair Display", Georgia, serif', letterSpacing: "-0.02em", fontWeight: 400 },
+    h2: { fontFamily: '"Playfair Display", Georgia, serif', letterSpacing: "-0.02em", fontWeight: 400 },
+    h3: { fontFamily: '"Playfair Display", Georgia, serif', letterSpacing: "-0.02em", fontWeight: 400 },
+    h4: { fontFamily: '"Playfair Display", Georgia, serif', letterSpacing: "-0.02em", fontWeight: 400 },
     button: { textTransform: "none", fontWeight: 600, letterSpacing: 0 },
     body1: { fontSize: 14, letterSpacing: "-0.005em" },
     body2: { fontSize: 13 },
@@ -29,10 +29,10 @@ const muiTheme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: { borderRadius: 999, paddingInline: 18, height: 40, boxShadow: "none" },
-        contained: { "&:hover": { boxShadow: "0 4px 16px rgba(43,39,34,0.06)" } },
+        contained: { "&:hover": { boxShadow: `0 4px 18px ${PALETTE.glow}` } },
       },
     },
-    MuiPaper: { styleOverrides: { root: { backgroundImage: "none" } } },
+    MuiPaper: { styleOverrides: { root: { backgroundImage: "none", backgroundColor: PALETTE.bg2 } } },
     MuiTextField: { defaultProps: { size: "small" } },
   },
 });

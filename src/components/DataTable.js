@@ -1,16 +1,7 @@
 import { Table } from "antd";
 
-const TABLE_CLASS =
-  "gw-data-table max-w-full rounded-xl border border-gray-200 shadow-md overflow-hidden " +
-  "[&_.ant-table]:rounded-xl " +
-  "[&_.ant-table-thead>tr>th]:bg-gw-primary-dark " +
-  "[&_.ant-table-thead>tr>th]:text-white " +
-  "[&_.ant-table-thead>tr>th]:font-semibold " +
-  "[&_.ant-table-thead>tr>th]:text-center " +
-  "[&_.ant-table-tbody>tr>td]:text-gray-700 " +
-  "[&_.ant-table-tbody>tr>td]:text-sm";
+const TABLE_CLASS = "gw-data-table";
 
-/** Shared pagination copy and controls for every table. */
 function uniformShowTotal(total, range) {
   if (typeof total !== "number") return null;
   if (Array.isArray(range) && range.length === 2) {
@@ -48,9 +39,7 @@ function normalizePagination(pagination) {
 }
 
 function stripedRowClass(record, index) {
-  return index % 2 === 0
-    ? "bg-gray-50 hover:bg-gray-100 transition"
-    : "bg-white hover:bg-gray-100 transition";
+  return index % 2 === 0 ? "gw-data-table-row-even" : "gw-data-table-row-odd";
 }
 
 function mergeScroll(scroll) {
@@ -81,10 +70,6 @@ function mergeRowClassName(striped, rowClassName) {
   };
 }
 
-/**
- * App-wide Ant Design Table with consistent header, borders, row striping, and pagination.
- * Forwards other Table props; set `pagination={false}` to hide. Override `pageSize` / `current` / `total` / `onChange` as needed.
- */
 function DataTable({
   className,
   rowClassName,
