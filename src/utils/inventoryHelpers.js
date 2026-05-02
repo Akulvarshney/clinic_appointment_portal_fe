@@ -4,7 +4,7 @@ export function normalizeInventoryItem(raw) {
   const batches = raw.inventory_batches ?? raw.inventoryBatches ?? [];
   const fromBatches = batches.reduce(
     (s, b) => s + (Number(b.quantity_on_hand ?? b.quantityOnHand) || 0),
-    0
+    0,
   );
   const total =
     raw.total_quantity_on_hand ?? raw.totalQuantityOnHand ?? fromBatches;
@@ -38,6 +38,7 @@ export function normalizeInventoryItem(raw) {
         ? `₹${mrpVals[0].toFixed(2)}`
         : `₹${Math.min(...mrpVals).toFixed(2)}–₹${Math.max(...mrpVals).toFixed(2)}`
       : "";
+  const inventory_type = raw.inventory_type ?? raw.inventory_type ?? "N/A";
   return {
     id: raw.id,
     organizationId: raw.organization_id ?? raw.organizationId,
@@ -46,6 +47,7 @@ export function normalizeInventoryItem(raw) {
     description: raw.description ?? "",
     unit: raw.unit ?? "unit",
     quantity: Number(total) || 0,
+    inventory_type,
     reorderLevel: raw.reorderLevel ?? raw.reorder_level ?? undefined,
     /** Legacy / display hints — economics are per batch in API v2 */
     sellingPrice: sellPrices.length ? Math.min(...sellPrices) : undefined,
@@ -103,7 +105,7 @@ export function normalizeInventoryTransaction(raw, index) {
     quantityBefore: numOrNull(beforeRaw),
     quantityAfter: numOrNull(afterRaw),
     adjustmentToQuantity: numOrNull(
-      raw.adjustmentToQuantity ?? raw.adjustment_to_quantity
+      raw.adjustmentToQuantity ?? raw.adjustment_to_quantity,
     ),
     remarks: raw.remarks ?? "",
     createdAt: raw.created_at ?? raw.createdAt,
@@ -131,16 +133,19 @@ export function mapBillToInvoiceRow(entry, index) {
   // API can return either:
   // - legacy flat bill rows (invoice_number, bill_type, ...)
   // - new wrapper: { bill: { ... }, inventory_lines: [...] }
-  const bill = entry.bill && typeof entry.bill === "object" ? entry.bill : entry;
+  const bill =
+    entry.bill && typeof entry.bill === "object" ? entry.bill : entry;
   const invLinesRaw = entry.inventory_lines ?? entry.inventoryLines ?? [];
   const invLines = Array.isArray(invLinesRaw) ? invLinesRaw : [];
   const totalQty = invLines.reduce((s, l) => s + (Number(l?.quantity) || 0), 0);
   const totalFinalAmount = invLines.reduce(
     (s, l) => s + (Number(l?.final_amount ?? l?.finalAmount) || 0),
-    0
+    0,
   );
   const uniqueRates = Array.from(
-    new Set(invLines.map((l) => Number(l?.rate)).filter((n) => Number.isFinite(n)))
+    new Set(
+      invLines.map((l) => Number(l?.rate)).filter((n) => Number.isFinite(n)),
+    ),
   );
   const itemRate =
     uniqueRates.length === 0
@@ -164,8 +169,8 @@ export function mapBillToInvoiceRow(entry, index) {
   const batch = batchTuples.map((t) => t.batch).join(", ");
   const rateSummary = batchTuples.length
     ? batchTuples
-      .map((t) => `${t.batch}: ₹${Number(t.rate).toFixed(2)}`)
-      .join(", ")
+        .map((t) => `${t.batch}: ₹${Number(t.rate).toFixed(2)}`)
+        .join(", ")
     : "—";
   const id = bill.invoice_id ?? bill.id ?? `bill-${index}`;
   const c = bill.clients || bill.client || {};
