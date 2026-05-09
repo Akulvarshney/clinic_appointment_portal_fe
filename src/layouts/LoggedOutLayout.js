@@ -3,9 +3,9 @@ import TopBarLoggedOut from "../components/TopBarLoggedOut";
 
 const LoggedOutLayout = () => {
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden">
+    <div className="flex min-h-screen flex-col">
       <TopBarLoggedOut />
-      <div className="min-w-0 flex-1 overflow-x-hidden">
+      <div className="min-w-0 flex-1">
         <Outlet />
       </div>
     </div>

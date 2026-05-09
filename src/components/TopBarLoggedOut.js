@@ -1,127 +1,133 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
-import {
-  Box,
-  Button,
-  Drawer,
-  IconButton,
-  List,
-  ListItemButton,
-  ListItemText,
-  Stack,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import MenuIcon from "@mui/icons-material/Menu";
 import "../pages/HomePage.css";
 
 const NAV_LINKS = [
-  { label: "About", href: "#about" },
-  { label: "Platform", href: "#features" },
-  { label: "Partner story", href: "#live-partner" },
-  { label: "How it works", href: "#how" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Features", href: "#features" },
+  { label: "Upcoming", href: "#lead" },
+  { label: "Clients", href: "#testi" },
+  { label: "Pricing", href: "#pricing" },
 ];
 
 const TopBarLoggedOut = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [navScrolled, setNavScrolled] = useState(false);
+
   const isHome = location.pathname === "/";
 
-  const closeMobileNav = () => setMobileNavOpen(false);
+  useEffect(() => {
+    const onScroll = () => setNavScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  const openPartnerFlow = () => {
-    closeMobileNav();
+  const openPartnerModal = () => {
+    setMobileNavOpen(false);
     navigate("/", { state: { openPartner: true } });
   };
 
-  const navLinkProps = (href) => {
-    const hash = href.replace(/^#/, "");
-    if (isHome) {
-      return { component: "a", href };
+  const handleNavClick = (href) => {
+    if (!isHome) {
+      navigate("/", { hash: href });
     }
-    return {
-      component: RouterLink,
-      to: { pathname: "/", hash },
-    };
+    setMobileNavOpen(false);
   };
 
   return (
     <>
-      <Box component="header" className="gwl-nav">
-        <Box className="gwl-nav__inner">
-          <RouterLink to="/" className="gwl-nav__brand" onClick={closeMobileNav}>
-            GloryWellnic
+      {/* DESKTOP NAV */}
+      <nav className={`gwl-nav ${navScrolled ? "scrolled" : ""}`}>
+        <RouterLink to="/" className="gwl-nav__logo">
+          Glory<span>Well</span>Nic
+        </RouterLink>
+
+        <div className="gwl-nav__links">
+          {NAV_LINKS.map((l) =>
+            isHome ? (
+              <a key={l.href} href={l.href}>
+                {l.label}
+              </a>
+            ) : (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(l.href);
+                }}
+              >
+                {l.label}
+              </a>
+            ),
+          )}
+        </div>
+
+        <div className="gwl-nav__r">
+          <RouterLink to="/login" className="btn-ghost btn-sm">
+            Sign In
           </RouterLink>
 
-          <Box component="nav" className="gwl-nav__desktop" aria-label="Section links">
-            {NAV_LINKS.map((l) => {
-              const p = navLinkProps(l.href);
-              return p.component === "a" ? (
-                <a key={l.href} className="gwl-nav__link" href={p.href}>
-                  {l.label}
-                </a>
-              ) : (
-                <RouterLink key={l.href} className="gwl-nav__link" to={p.to}>
-                  {l.label}
-                </RouterLink>
-              );
-            })}
-          </Box>
-
-          <Stack direction="row" spacing={1} alignItems="center" className="gwl-nav__actions">
-            <Button component={RouterLink} to="/login" className="gwl-btn gwl-btn--ghost">
-              Sign in
-            </Button>
-            <Button variant="contained" disableElevation onClick={openPartnerFlow} className="gwl-btn gwl-btn--primary">
-              Partner with us
-            </Button>
-          </Stack>
-
-          <IconButton
-            className="gwl-nav__menu-btn"
-            aria-label="Open menu"
-            onClick={() => setMobileNavOpen(true)}
-            edge="end"
-            size="medium"
+          <button
+            type="button"
+            className="btn-prim btn-sm"
+            onClick={openPartnerModal}
           >
-            <MenuIcon />
-          </IconButton>
-        </Box>
-      </Box>
+            Book Demo
+          </button>
 
-      <Drawer anchor="right" open={mobileNavOpen} onClose={closeMobileNav} PaperProps={{ sx: { width: 280 } }}>
-        <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span className="font-bold text-base">Menu</span>
-          <IconButton aria-label="Close menu" onClick={closeMobileNav} size="small">
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        <List disablePadding>
+          {/* MOBILE MENU BUTTON */}
+          <button
+            className="gwl-nav__menu-btn"
+            onClick={() => setMobileNavOpen(true)}
+          >
+            ☰
+          </button>
+        </div>
+      </nav>
+
+      {/* MOBILE DRAWER (PURE CSS BASED) */}
+      <div className={`gwl-mob ${mobileNavOpen ? "open" : ""}`}>
+        <div className="gwl-mob__header">
+          <span>Menu</span>
+          <button onClick={() => setMobileNavOpen(false)}>✕</button>
+        </div>
+
+        <div className="gwl-mob__links">
           {NAV_LINKS.map((l) => (
-            <ListItemButton
+            <a
               key={l.href}
-              {...(isHome
-                ? { component: "a", href: l.href }
-                : {
-                    component: RouterLink,
-                    to: { pathname: "/", hash: l.href.replace(/^#/, "") },
-                  })}
-              onClick={closeMobileNav}
+              href={l.href}
+              onClick={(e) => {
+                if (!isHome) {
+                  e.preventDefault();
+                  handleNavClick(l.href);
+                }
+              }}
             >
-              <ListItemText primary={<span className="font-medium">{l.label}</span>} />
-            </ListItemButton>
+              {l.label}
+            </a>
           ))}
-          <ListItemButton component={RouterLink} to="/login" onClick={closeMobileNav}>
-            <ListItemText primary="Sign in" />
-          </ListItemButton>
-          <ListItemButton onClick={openPartnerFlow}>
-            <ListItemText
-              primary={<span className="font-semibold text-[var(--gw-primary-dark)]">Partner with us</span>}
-            />
-          </ListItemButton>
-        </List>
-      </Drawer>
+
+          <RouterLink to="/login" onClick={() => setMobileNavOpen(false)}>
+            Sign In
+          </RouterLink>
+
+          <button onClick={openPartnerModal} className="primary">
+            Book Demo
+          </button>
+        </div>
+      </div>
+
+      {/* OVERLAY */}
+      {mobileNavOpen && (
+        <div
+          className="gwl-mob__overlay"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
     </>
   );
 };

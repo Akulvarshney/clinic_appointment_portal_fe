@@ -26,10 +26,15 @@ export const PALETTE = {
   // Status
   success: "#5BA876",
   successSoft: "#E0F0E2",
+  successDark: "#2F6A44",
   warning: "#D4A640",
   warningSoft: "#F8EBC8",
+  warningDark: "#876716",
   danger: "#C24A2E",
   dangerSoft: "#F7DDD3",
+  dangerDark: "#8B2E1C",
+  accentDark: "#9E5436",
+
 
   // Utility
   white: "#FFFFFF",
