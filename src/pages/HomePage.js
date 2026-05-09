@@ -720,7 +720,7 @@ const HomePage = () => {
 
         <div className="gwl-container">
           <div className="gwl-hero__inner">
-            <div>
+            <div className="hero-text-content">
               <motion.div
                 className="hero-tag"
                 initial={{ opacity: 0, y: 18 }}
@@ -805,17 +805,57 @@ const HomePage = () => {
                 credentials when approved.
               </motion.p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Marquee strip ── */}
+      <div className="mstrip" aria-hidden>
+        <div className="mtrack">
+          {tickerLoop.map((it, i) => (
+            <span
+              key={`${it.label}-${i}`}
+              className={`mi ${it.hi ? "hi" : ""}`}
+            >
+              {it.label} <span className="msep">✦</span>
+            </span>
+          ))}
+        </div>
+
+        {/* ── Dashboard Preview ── */}
+
+      </div>
+
+      <section className="gwl-preview-sec">
+        <div className="gwl-container">
+          <div className="preview-inner">
+            <motion.div
+              className="preview-content"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="sec-ey">
+                <span className="sec-ey-line" />
+                <span className="sec-ey-txt">Control Center</span>
+              </div>
+              <h2 className="gwl-sec-title">
+                Your clinic, <em>at a glance.</em>
+              </h2>
+              <p className="gwl-body">
+                A comprehensive dashboard that brings scheduling, billing, and
+                staff management into a single, elegant interface built for
+                speed.
+              </p>
+            </motion.div>
 
             <motion.div
               className="hero-mockup"
-              style={{ y: mockupY }}
-              initial={{ opacity: 0, y: 60, rotateX: 8 }}
-              animate={{ opacity: 1, y: 0, rotateX: 0 }}
-              transition={
-                reduceMotion
-                  ? { duration: 0 }
-                  : { duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.4 }
-              }
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
             >
               <motion.div
                 className="fpill fp1"
@@ -859,20 +899,41 @@ const HomePage = () => {
                   <span className="mock-dot" />
                 </div>
                 <div className="mock-body">
-                  <div className="mock-grid">
-                    <div className="mock-stat">
-                      <div className="mock-stat-l">Today</div>
-                      <div className="mock-stat-n">12</div>
-                    </div>
-                    <div className="mock-stat">
-                      <div className="mock-stat-l">Revenue</div>
-                      <div className="mock-stat-n">
-                        ₹38<em>k</em>
+                  <div className="mock-left-col">
+                    <div className="mock-grid">
+                      <div className="mock-stat">
+                        <div className="mock-stat-l">Today</div>
+                        <div className="mock-stat-n">12</div>
+                      </div>
+                      <div className="mock-stat">
+                        <div className="mock-stat-l">Revenue</div>
+                        <div className="mock-stat-n">
+                          ₹38<em>k</em>
+                        </div>
+                      </div>
+                      <div className="mock-stat">
+                        <div className="mock-stat-l">Staff</div>
+                        <div className="mock-stat-n">8</div>
                       </div>
                     </div>
-                    <div className="mock-stat">
-                      <div className="mock-stat-l">Staff</div>
-                      <div className="mock-stat-n">8</div>
+
+                    <div className="mock-bill">
+                      <div className="mock-bill-row">
+                        <span>Service Total</span>
+                        <span>₹2,000</span>
+                      </div>
+                      <div className="mock-bill-row">
+                        <span>CGST 9%</span>
+                        <span>₹180</span>
+                      </div>
+                      <div className="mock-bill-row">
+                        <span>SGST 9%</span>
+                        <span>₹180</span>
+                      </div>
+                      <div className="mock-bill-row tot">
+                        <span>Total</span>
+                        <span>₹2,360</span>
+                      </div>
                     </div>
                   </div>
 
@@ -891,45 +952,12 @@ const HomePage = () => {
                       </div>
                     ))}
                   </div>
-
-                  <div className="mock-bill">
-                    <div className="mock-bill-row">
-                      <span>Service Total</span>
-                      <span>₹2,000</span>
-                    </div>
-                    <div className="mock-bill-row">
-                      <span>CGST 9%</span>
-                      <span>₹180</span>
-                    </div>
-                    <div className="mock-bill-row">
-                      <span>SGST 9%</span>
-                      <span>₹180</span>
-                    </div>
-                    <div className="mock-bill-row tot">
-                      <span>Total</span>
-                      <span>₹2,360</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </motion.div>
           </div>
         </div>
       </section>
-
-      {/* ── Marquee strip ── */}
-      <div className="mstrip" aria-hidden>
-        <div className="mtrack">
-          {tickerLoop.map((it, i) => (
-            <span
-              key={`${it.label}-${i}`}
-              className={`mi ${it.hi ? "hi" : ""}`}
-            >
-              {it.label} <span className="msep">✦</span>
-            </span>
-          ))}
-        </div>
-      </div>
 
       {/* ── ⭐ Sticky scroll-text + cards ── */}
       <ScrollTextSection reduceMotion={reduceMotion} />
@@ -1074,49 +1102,68 @@ const HomePage = () => {
       {/* ── Testimonial ── */}
       <section id="testi" className="gwl-testi">
         <div className="testi-glow" aria-hidden />
+        <div className="testi-glow-2" aria-hidden />
+
         <div className="gwl-container">
           <div className="testi-inner">
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              className="testi-quote-card"
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="sec-ey">
-                <span className="sec-ey-line" />
-                <span className="sec-ey-txt">Partner story</span>
-              </div>
-              <p className="big-quote">{TESTI.quote}</p>
-              <div className="testi-attr">
-                <div className="testi-init">{TESTI.initials}</div>
-                <div>
-                  <div className="testi-name">{TESTI.name}</div>
-                  <div className="testi-role">{TESTI.role}</div>
+              <div className="testi-card-inner">
+                <div className="sec-ey">
+                  <span className="sec-ey-line" />
+                  <span className="sec-ey-txt">Partner story</span>
+                </div>
+                <div className="quote-wrap">
+                  <span className="q-mark open">“</span>
+                  <p className="big-quote">{TESTI.quote}</p>
+                  <span className="q-mark close">”</span>
+                </div>
+                <div className="testi-attr">
+                  <div className="testi-init-wrap">
+                    <div className="testi-init">{TESTI.initials}</div>
+                    <div className="testi-init-ring" />
+                  </div>
+                  <div>
+                    <div className="testi-name">{TESTI.name}</div>
+                    <div className="testi-role">{TESTI.role}</div>
+                  </div>
                 </div>
               </div>
             </motion.div>
 
             <motion.div
-              className="t-metrics"
+              className="t-metrics-grid"
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-60px" }}
               variants={{
                 hidden: {},
                 visible: {
-                  transition: { staggerChildren: reduceMotion ? 0 : 0.08 },
+                  transition: { staggerChildren: reduceMotion ? 0 : 0.12 },
                 },
               }}
             >
-              {TESTI_METRICS.map((m) => (
+              {TESTI_METRICS.map((m, idx) => (
                 <motion.div
                   key={m.l}
-                  className="t-met"
-                  variants={reveal}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="t-met-card"
+                  variants={{
+                    hidden: { opacity: 0, y: 30 },
+                    visible: { opacity: 1, y: 0 }
+                  }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <div className="tm-n">{m.n}</div>
+                  <div className="tm-n-wrap">
+                    <div className="tm-n">{m.n}</div>
+                    <div className="tm-glow" />
+                  </div>
                   <div className="tm-l">{m.l}</div>
+                  <div className="tm-bar" />
                 </motion.div>
               ))}
             </motion.div>

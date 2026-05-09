@@ -72,7 +72,7 @@ const TopBarLoggedOut = () => {
 
           <button
             type="button"
-            className="btn-prim btn-sm"
+            className="btn-ghost btn-sm"
             onClick={openPartnerModal}
           >
             Book Demo
@@ -115,7 +115,7 @@ const TopBarLoggedOut = () => {
             Sign In
           </RouterLink>
 
-          <button onClick={openPartnerModal} className="primary">
+          <button onClick={openPartnerModal}>
             Book Demo
           </button>
         </div>
