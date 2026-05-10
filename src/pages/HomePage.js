@@ -45,9 +45,9 @@ gsap.registerPlugin(ScrollTrigger);
    ───────────────────────────────────────────────────────────── */
 const NAV_LINKS = [
   { label: "Features", href: "#features" },
-  { label: "Upcoming", href: "#lead" },
   { label: "Clients", href: "#testi" },
   { label: "Pricing", href: "#pricing" },
+  { label: "FAQ", href: "#faq" },
 ];
 
 const HERO_WORDS = ["Manage", "Your", "Entire"];
@@ -252,6 +252,25 @@ const TESTI = {
   name: "Akansha Srivastava",
   role: "Founder, Elaria Esthetique · Gurgaon",
 };
+
+const FAQS = [
+  {
+    q: "How fast can we onboard our clinic?",
+    a: "Approved partners get credentials same-day. Our setup wizard helps you configure your services, rooms, and staff in under 30 minutes.",
+  },
+  {
+    q: "Is our clinic data secure and private?",
+    a: "Absolutely. We use enterprise-grade encryption and individual data silos for every partner. Your patient data is never shared.",
+  },
+  {
+    q: "Does the billing module handle Indian GST?",
+    a: "Yes, it's built specifically for the Indian healthcare market. It automatically applies CGST+SGST for local clients and IGST for inter-state billing.",
+  },
+  {
+    q: "Can we manage multiple branches?",
+    a: "Our 'Chain' plan is designed specifically for franchises and multi-branch setups, offering a unified dashboard with branch-level permissions.",
+  },
+];
 
 const TESTI_METRICS = [
   { n: "1,300+", l: "Active clients" },
@@ -658,6 +677,8 @@ const HomePage = () => {
 
   const [activeFeature, setActiveFeature] = useState(0);
   const [isAutoPlayingFeatures, setIsAutoPlayingFeatures] = useState(true);
+
+  const [activeFaq, setActiveFaq] = useState(null);
 
   useEffect(() => {
     if (!isAutoPlayingFeatures) return;
@@ -1352,6 +1373,75 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* ── FAQ ── */}
+      <section id="faq" className="gwl-faq">
+        <div className="gwl-container">
+          <motion.div
+            className="faq-head"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="sec-ey">
+              <span className="sec-ey-line" />
+              <span className="sec-ey-txt">Common Questions</span>
+            </div>
+            <h2 className="gwl-sec-title">
+              Everything you <em>need to know.</em>
+            </h2>
+          </motion.div>
+
+          <div className="faq-list">
+            {FAQS.map((f, i) => {
+              const isOpen = activeFaq === i;
+              return (
+                <motion.div
+                  key={f.q}
+                  className={`faq-item-collapsible ${isOpen ? "is-open" : ""}`}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <button
+                    type="button"
+                    className="faq-q-btn"
+                    onClick={() => setActiveFaq(isOpen ? null : i)}
+                    aria-expanded={isOpen}
+                  >
+                    <span className="faq-q-text">{f.q}</span>
+                    <span className="faq-icon-wrap">
+                      <motion.span
+                        animate={{ rotate: isOpen ? 45 : 0 }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      >
+                        +
+                      </motion.span>
+                    </span>
+                  </button>
+
+                  <motion.div
+                    className="faq-a-wrap"
+                    initial={false}
+                    animate={{
+                      height: isOpen ? "auto" : 0,
+                      opacity: isOpen ? 1 : 0,
+                    }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div className="faq-a-inner">
+                      <p className="faq-a-text">{f.a}</p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ── Footer ── */}
       <Box component="footer" className="gwl-footer">
         <div className="gwl-footer__inner">
@@ -1362,14 +1452,14 @@ const HomePage = () => {
             <a href="#features" className="gwl-footer__link">
               Features
             </a>
-            <a href="#lead" className="gwl-footer__link">
-              Upcoming
-            </a>
             <a href="#testi" className="gwl-footer__link">
               Clients
             </a>
             <a href="#pricing" className="gwl-footer__link">
               Pricing
+            </a>
+            <a href="#faq" className="gwl-footer__link">
+              FAQ
             </a>
             <RouterLink to="/login" className="gwl-footer__link">
               Sign in

@@ -2215,3 +2215,139 @@
   backdrop-filter: blur(4px);
   z-index: 1999;
 }
+
+/* FAQ Section */
+.gwl-faq {
+  padding: 120px 0;
+  background: var(--bg);
+}
+
+.faq-head {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.faq-head .sec-ey {
+  justify-content: center;
+}
+
+.faq-list {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 6vw;
+  display: flex;
+  flex-direction: column;
+}
+
+.faq-item-collapsible {
+  border: none;
+  background: transparent;
+  width: 100%;
+}
+
+.faq-q-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 20px;
+  transition: color 0.3s ease;
+}
+
+.faq-q-text {
+  font-family: var(--fs);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--txt);
+  letter-spacing: -0.01em;
+  flex: 1;
+}
+
+.faq-icon-wrap {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--txt3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  transition: color 0.3s ease;
+}
+
+.faq-q-btn:hover .faq-q-text {
+  color: var(--p1);
+}
+
+.faq-q-btn:hover .faq-icon-wrap {
+  color: var(--p1);
+}
+
+.is-open .faq-q-text {
+  color: var(--p1);
+}
+
+.faq-a-inner {
+  padding-bottom: 24px;
+}
+
+.faq-a-text {
+  font-size: 1rem;
+  color: var(--txt2);
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 300;
+  max-width: 680px;
+}
+
+@media (max-width: 600px) {
+  .faq-q-text {
+    font-size: 1.05rem;
+  }
+}
+
+.faq-head {
+  text-align: center;
+  margin-bottom: 70px;
+}
+
+.faq-head .sec-ey {
+  justify-content: center;
+}
+
+
+
+.faq-item {
+  padding: 32px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.faq-item:hover {
+  transform: translateY(-5px);
+  border-color: var(--p2);
+}
+
+.faq-q {
+  font-family: var(--fs);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--txt);
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
+}
+
+.faq-a {
+  font-size: 0.92rem;
+  color: var(--txt2);
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 300;
+}

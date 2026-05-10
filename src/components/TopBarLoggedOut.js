@@ -4,9 +4,9 @@ import "../pages/HomePage.css";
 
 const NAV_LINKS = [
   { label: "Features", href: "#features" },
-  { label: "Upcoming", href: "#lead" },
   { label: "Clients", href: "#testi" },
   { label: "Pricing", href: "#pricing" },
+  { label: "FAQ", href: "#faq" },
 ];
 
 const TopBarLoggedOut = () => {
