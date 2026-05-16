@@ -1097,7 +1097,13 @@ export default function GenerateInvoiceModal({
             description: item.description,
             quantity: Number(item.qty) || 0,
             rate: Number(item.rate) || 0,
-            amount: taxDetails.lineAmount,
+            amount: isInv
+              ? Number(
+                  batchesByItemId[item.inventoryItemId]?.find(
+                    (b) => b.id === item.inventoryBatchId,
+                  )?.mrp || 0,
+                )
+              : taxDetails.lineAmount,
             gst_percentage: isInv ? 0 : Number(item.gst || 0),
             line_discount_share: taxDetails.lineDiscountShare,
             taxable_amount: taxDetails.taxableLineAmount,
