@@ -359,7 +359,7 @@ export default function GenerateInvoiceModal({
           // invoiceNumber: newInvoiceNumber,
           invoiceDate: currentDate,
           dueDate: dueDate,
-          terms: "Payment due within 30 days",
+          terms: "",
         });
         setBillTo(null);
         setServiceItems([
@@ -377,7 +377,7 @@ export default function GenerateInvoiceModal({
         setInventoryItems([]);
         setDiscountPercent(0);
         setNotes("");
-        setTerms("Payment due within 30 days");
+        setTerms("");
         // setShippingCharges(0);
         setBankChargesEnabled(false);
         // setInvoiceNumber(newInvoiceNumber);
