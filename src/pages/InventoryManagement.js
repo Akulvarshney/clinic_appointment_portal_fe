@@ -13,6 +13,8 @@ import {
   PlusOutlined,
   SearchOutlined,
   HistoryOutlined,
+  FilterOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import { Box } from "@mui/material";
@@ -47,10 +49,12 @@ const InventoryManagement = () => {
     total: 0,
   });
   const [searchText, setSearchText] = useState("");
+  const [inventoryType, setInventoryType] = useState(null);
+  const [downloading, setDownloading] = useState(false);
 
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
 
@@ -63,23 +67,43 @@ const InventoryManagement = () => {
   const token = localStorage.getItem("token");
   const orgId = localStorage.getItem("selectedOrgId");
 
-  const fetchItems = async (page, limit, search) => {
+  // Shared query-param builder for inventory list + download.
+  // - Always sends orgId and search (empty string when no search).
+  // - Includes inventory_type only when a type filter is selected.
+  // - Includes page/limit only when paginated (list); omitted for download.
+  const buildInventoryParams = ({ page, limit, search, type, paginated }) => {
+    const params = {
+      orgId,
+      search: search ?? "",
+    };
+    if (paginated) {
+      params.page = page;
+      params.limit = limit;
+    }
+    if (type) {
+      params.inventory_type = type;
+    }
+    return params;
+  };
+
+  const fetchItems = async (page, limit, search, type) => {
     const p = page ?? pagination.current;
     const l = limit ?? pagination.pageSize;
     const s = search !== undefined ? search : searchText;
+    const t = type !== undefined ? type : inventoryType;
     if (!orgId || !canView) return;
     setTableLoading(true);
     try {
       const response = await axios.get(
         `${BACKEND_URL}/clientadmin/inventoryManagement/getItems`,
         {
-          params: {
-            orgId,
+          params: buildInventoryParams({
             page: p,
             limit: l,
             search: s,
-            billing: true || undefined,
-          },
+            type: t,
+            paginated: true,
+          }),
           headers: { Authorization: `Bearer ${token}` },
         },
       );
@@ -154,6 +178,63 @@ const InventoryManagement = () => {
     }
   };
 
+  const handleDownload = async () => {
+    if (!orgId || !canView) return;
+    setDownloading(true);
+    try {
+      const response = await axios.get(
+        `${BACKEND_URL}/clientadmin/inventoryManagement/downloadItems`,
+        {
+          params: buildInventoryParams({
+            search: searchText,
+            type: inventoryType,
+            paginated: false,
+          }),
+          responseType: "blob",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const disposition =
+        response.headers?.["content-disposition"] ||
+        response.headers?.["Content-Disposition"] ||
+        "";
+      const match = /filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i.exec(
+        disposition,
+      );
+      const filename =
+        match && match[1]
+          ? decodeURIComponent(match[1].trim())
+          : `inventory_${dayjs().format("DD-MMM-YY_HH:mm")}.xlsx`;
+
+      const blob = new Blob([response.data], {
+        type:
+          response.data?.type ||
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading inventory:", err);
+      notification.error({
+        message: "Could not download inventory",
+        description: inventoryGetErrorMessage(
+          err,
+          "Failed to download inventory",
+        ),
+        placement: "top",
+      });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   useEffect(() => {
     const view = isFeatureValid(TAB, "VIEW_INVENTORY");
     setCanView(view);
@@ -172,7 +253,7 @@ const InventoryManagement = () => {
 
   useEffect(() => {
     if (canView && orgId) {
-      fetchItems(1, 10, "");
+      fetchItems(1, pagination.pageSize, "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- initial load only
   }, [canView, orgId]);
@@ -247,6 +328,14 @@ const InventoryManagement = () => {
   const showFirstBatchFields = Number(initialQtyWatch) > 0;
 
   const fmtQty = (v) => (v != null && v !== "" ? String(v) : "—");
+
+  const handleTypeFilter = (value, confirm) => {
+    const t = value || null;
+    setInventoryType(t);
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    fetchItems(1, pagination.pageSize, searchText, t);
+    if (confirm) confirm();
+  };
 
   const txColumns = [
     {
@@ -351,6 +440,25 @@ const InventoryManagement = () => {
       dataIndex: "inventory_type",
       key: "inventory_type",
       width: 120,
+      filteredValue: inventoryType ? [inventoryType] : null,
+      filterIcon: (filtered) => (
+        <FilterOutlined style={{ color: filtered ? "#1677ff" : undefined }} />
+      ),
+      filterDropdown: () => (
+        <div style={{ padding: 8 }}>
+          <Select
+            style={{ width: 200 }}
+            placeholder="Select type"
+            value={inventoryType}
+            onChange={(value) => handleTypeFilter(value)}
+            allowClear
+            onClear={() => handleTypeFilter(null)}
+          >
+            <Select.Option value="RETAIL">RETAIL</Select.Option>
+            <Select.Option value="CONSUMABLE">CONSUMABLE</Select.Option>
+          </Select>
+        </div>
+      ),
     },
     {
       title: "Unit",
@@ -466,6 +574,16 @@ const InventoryManagement = () => {
                 }}
               />
             </div>
+            <Button
+              size="large"
+              icon={<DownloadOutlined />}
+              onClick={handleDownload}
+              loading={downloading}
+              disabled={downloading}
+              className="w-full shrink-0 sm:w-auto"
+            >
+              Download
+            </Button>
             {canViewTx && (
               <Button
                 size="large"
@@ -554,6 +672,24 @@ const InventoryManagement = () => {
               </Form.Item>
               <Form.Item label="Unit" name="unit">
                 <Input placeholder="e.g. strip, box, unit" />
+              </Form.Item>
+              <Form.Item
+                label="Reorder level"
+                name="reorderLevel"
+                rules={[
+                  {
+                    type: "number",
+                    min: 0,
+                    message: "Reorder level must be 0 or greater",
+                  },
+                ]}
+              >
+                <InputNumber
+                  min={0}
+                  precision={0}
+                  className="w-full"
+                  placeholder="e.g. 10"
+                />
               </Form.Item>
               {/* <Form.Item label="Initial quantity" name="initialQuantity">
                 <InputNumber min={0} className="w-full" placeholder="0" />

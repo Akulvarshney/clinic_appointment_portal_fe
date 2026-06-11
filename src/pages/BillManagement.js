@@ -46,7 +46,7 @@ const BillManagement = () => {
   const [search, setSearch] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
-    limit: 10,
+    limit: 20,
     total: 0,
   });
 
@@ -156,7 +156,7 @@ const BillManagement = () => {
           })) || [],
         discountPercent: Number(billDetails.discount_percentage) || 0,
         notes: billDetails.notes || "",
-        terms: billDetails.terms || "Payment due within 30 days",
+        terms: billDetails.terms ,
         shippingCharges: Number(billDetails.shipping_charges) || 0,
         bankCharges: billDetails.bank_charges || null,
         billToText: billDetails.bill_to_text || "",

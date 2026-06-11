@@ -91,13 +91,12 @@ export default function AppointmentPage() {
   useEffect(() => {
     const response1 = isFeatureValid("APPOINTMENT", "ADD_APPOINTMENT");
     const response2 = isFeatureValid("APPOINTMENT", "ADD_PAST_APPOINTMENT");
-
+    const response3 = isFeatureValid("APPOINTMENT", "EDIT_APPOINTMENT");
+    const response4 = isFeatureValid("APPOINTMENT", "DELETE_APPOINTMENT");
     setIsAllowedToAddAppointment(response1);
-
     setIsAllowedToAddPastDateAppointment(response2);
-
-    console.log("isFeatureValid response:", response1);
-    console.log("isFeatureValid response:", response2);
+    setIsAllowedToEditAppointment(response3);
+    setDeleteAppointment(response4);
   }, []);
 
   const [Employees, setEmployees] = useState([]); // resources / columns
@@ -109,6 +108,9 @@ export default function AppointmentPage() {
   const [refreshAppointments, setRefreshAppointments] = useState(false);
   const [showCancelInput, setShowCancelInput] = useState(false);
   const [cancelRemarks, setCancelRemarks] = useState("");
+  const [showClinicalInput, setShowClinicalInput] = useState(false);
+  const [clinicalRemarks, setClinicalRemarks] = useState("");
+  const [savingClinical, setSavingClinical] = useState(false);
 
   const [clientOptions, setClientOptions] = useState([]);
   const [clientLoading, setClientLoading] = useState(false);
@@ -125,6 +127,10 @@ export default function AppointmentPage() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailAppt, setDetailAppt] = useState(null);
   const [isViewClientMobile, setIsViewClientMobile] = useState(false);
+  const [isAddClinicalNotes, setIsAddClinicalNotes] = useState(false);
+  const [isAllowedToEditAppointment, setIsAllowedToEditAppointment] = useState(false);
+  const [deleteAppointment, setDeleteAppointment] = useState(false);
+
   const [now, setNow] = useState(() => new Date());
 
   const [form] = Form.useForm();
@@ -174,6 +180,7 @@ export default function AppointmentPage() {
   useEffect(() => {
     const initialize = async () => {
       checkAddClientFeatureValid();
+      checkAddClinicalFeatureValid();
     };
     initialize();
   }, []);
@@ -181,6 +188,11 @@ export default function AppointmentPage() {
   const checkAddClientFeatureValid = () => {
     const response = isFeatureValid("APPOINTMENT", "VIEW_CLIENT_MOBILE");
     setIsViewClientMobile(response);
+    return response;
+  };
+  const checkAddClinicalFeatureValid = () => {
+    const response = isFeatureValid("APPOINTMENT", "ADD_CLINICAL_NOTES");
+    setIsAddClinicalNotes(response);
     return response;
   };
 
@@ -395,6 +407,43 @@ export default function AppointmentPage() {
     }
   };
 
+  const handleSaveClinicalRemarks = async () => {
+    if (!clinicalRemarks.trim()) {
+      messageApi.error("Please enter clinical remarks");
+      return;
+    }
+    try {
+      setSavingClinical(true);
+      const res = await apiPost(
+        `/appointments/appt/addClinicalRemarks?id=${detailAppt.id}`,
+        { clinicalRemarks },
+        basic_config,
+      );
+
+      const savedRemarks = res?.response?.clinical_notes ?? clinicalRemarks;
+
+      setDetailAppt((prev) => ({ ...prev, clinicalRemarks: savedRemarks }));
+      setAppointments((prev) =>
+        prev.map((appt) =>
+          appt.id === detailAppt.id
+            ? { ...appt, clinicalRemarks: savedRemarks }
+            : appt,
+        ),
+      );
+
+      messageApi.success(res?.message || "Clinical remarks saved successfully");
+      setShowClinicalInput(false);
+      setClinicalRemarks("");
+      setShowDetailModal(false);
+      setDetailAppt(null);
+    } catch (err) {
+      console.error("Error saving clinical remarks:", err);
+      messageApi.error("Failed to save clinical remarks");
+    } finally {
+      setSavingClinical(false);
+    }
+  };
+
   // FIXED: Fetch appointments with proper dependencies and loading state
   useEffect(() => {
     async function fetchAppointments() {
@@ -432,6 +481,7 @@ export default function AppointmentPage() {
           service: appt.services?.name || "",
           status: appt.status || "",
           remarks: appt.remarks,
+          clinicalRemarks: appt.clinical_notes ?? "",
           employeeName: appt.employees?.first_name || "",
           doctorName: appt.doctors?.first_name || "",
           employeeId: appt.employees?.id || "",
@@ -559,7 +609,7 @@ export default function AppointmentPage() {
 
   const rescheduleAppointment = async (proposed) => {
     // const response = await axios.post(
-    //   `${BACKEND_URL}/appointments/appt/rescheduleAppointments`,
+  //   `${BACKEND_URL}/appointments/appt/rescheduleAppointments`
     //   proposed,
     //   {
     //     headers: { Authorization: `Bearer ${token}` },
@@ -1530,6 +1580,8 @@ export default function AppointmentPage() {
           closeDetailModal();
           setIsEditing(false);
           editForm.resetFields();
+          setShowClinicalInput(false);
+          setClinicalRemarks("");
         }}
         footer={
           isEditing
@@ -1545,11 +1597,8 @@ export default function AppointmentPage() {
             : ""
         }
         centered
+        width="min(960px, calc(100vw - 24px))"
         styles={{
-          content: {
-            width: "min(900px, calc(100vw - 24px))",
-            maxWidth: "100%",
-          },
           body: {
             padding: "16px 20px",
             maxHeight: "min(75vh, 75dvh)",
@@ -1565,7 +1614,7 @@ export default function AppointmentPage() {
 
             <Descriptions
               bordered
-              column={1}
+              column={{ xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 }}
               size="middle"
               labelStyle={{ fontWeight: "bold", width: 150 }}
             >
@@ -1638,43 +1687,22 @@ export default function AppointmentPage() {
                 />
               </Descriptions.Item>
 
-              <Descriptions.Item label="Remarks">
+              <Descriptions.Item label="Remarks" span={2}>
                 {detailAppt.remarks || (
                   <em style={{ color: "#999" }}>No remarks</em>
+                )}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Clinical Remarks" span={2}>
+                {detailAppt.clinicalRemarks || (
+                  <em style={{ color: "#999" }}>No clinical remarks</em>
                 )}
               </Descriptions.Item>
             </Descriptions>
 
             <Divider />
 
-            {!showCancelInput ? (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <Button
-                  danger
-                  type="primary"
-                  // block
-                  // style={{ marginTop: 12 }}
-                  onClick={() => setShowCancelInput(true)}
-                >
-                  Cancel Appointment
-                </Button>
-                <Button
-                  className="w-full shrink-0 sm:mr-4 sm:w-auto"
-                  type="primary"
-                  onClick={() => {
-                    setIsEditing(true);
-                    editForm.setFieldsValue({
-                      doctorId: detailAppt.doctorId || null,
-                      employeeId: detailAppt.employeeId || null,
-                      serviceId: detailAppt.serviceId || null,
-                      notes: detailAppt.remarks || "",
-                    });
-                  }}
-                >
-                  Edit
-                </Button>
-              </div>
-            ) : (
+            {showCancelInput ? (
               <div style={{ marginTop: 12 }}>
                 <Input.TextArea
                   placeholder="Enter cancellation remarks"
@@ -1701,6 +1729,78 @@ export default function AppointmentPage() {
                     Close
                   </Button>
                 </div>
+              </div>
+            ) : showClinicalInput ? (
+              <div style={{ marginTop: 12 }}>
+                <Input.TextArea
+                  placeholder="Enter clinical remarks"
+                  rows={4}
+                  value={clinicalRemarks}
+                  onChange={(e) => setClinicalRemarks(e.target.value)}
+                />
+                <div
+                  style={{
+                    marginTop: 12,
+                    display: "flex",
+                    gap: 8,
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <Button
+                    type="primary"
+                    loading={savingClinical}
+                    onClick={handleSaveClinicalRemarks}
+                  >
+                    Save Clinical Remarks
+                  </Button>
+                  <Button
+                    disabled={savingClinical}
+                    onClick={() => setShowClinicalInput(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {deleteAppointment && (
+                  <Button
+                    danger
+                    type="primary"
+                    // block
+                    // style={{ marginTop: 12 }}
+                    onClick={() => setShowCancelInput(true)}
+                  >
+                    Cancel Appointment
+                  </Button>
+                )}
+                {isAllowedToEditAppointment && (
+                  <Button
+                    className="w-full shrink-0 sm:mr-4 sm:w-auto"
+                    type="primary"
+                    onClick={() => {
+                      setIsEditing(true);
+                      editForm.setFieldsValue({
+                        doctorId: detailAppt.doctorId || null,
+                        employeeId: detailAppt.employeeId || null,
+                        serviceId: detailAppt.serviceId || null,
+                        notes: detailAppt.remarks || "",
+                      });
+                    }}
+                  >
+                    Edit
+                  </Button>
+                )}
+                {isAddClinicalNotes && (
+                  <Button
+                    onClick={() => {
+                      setClinicalRemarks(detailAppt.clinicalRemarks || "");
+                      setShowClinicalInput(true);
+                    }}
+                  >
+                    Add Clinical Remarks
+                  </Button>
+                )}
               </div>
             )}
           </div>

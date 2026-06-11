@@ -39,7 +39,7 @@ const ClientManagement = () => {
   const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
   const [sort, setSort] = useState("portalid");
@@ -51,6 +51,13 @@ const ClientManagement = () => {
   const token = localStorage.getItem("token");
 
   const [defaultState, setDefaultState] = useState(null);
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  useEffect(() => {
+    const response1 = isFeatureValid("CLIENT_LISTING", "VIEW_MOBILE");
+    setIsMobileView(response1);
+    console.log("isFeatureValid response:", response1);
+  }, []);
 
   useEffect(() => {
     const organizations = JSON.parse(localStorage.getItem("organizations"));
@@ -342,12 +349,16 @@ const ClientManagement = () => {
       render: (_, record) =>
         record.client_organization_category?.[0]?.portal_id || "-",
     },
-    {
-      title: "Mobile",
-      dataIndex: "phone",
-      key: "phone",
-      width: 132,
-    },
+    ...(isMobileView
+      ? [
+          {
+            title: "Mobile",
+            dataIndex: "phone",
+            key: "phone",
+            width: 132,
+          },
+        ]
+      : []),
     {
       title: "State",
       dataIndex: "state",

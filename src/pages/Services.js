@@ -41,7 +41,7 @@ const Services = () => {
 
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 10,
+    pageSize: 20,
     total: 0,
   });
   const [searchText, setSearchText] = useState("");
@@ -107,6 +107,7 @@ const Services = () => {
       description: service.description,
       price: service.price,
       tax_percentage: service.tax_percentage,
+      session_interval: service.session_interval,
     });
     setIsModalVisible(true);
     setErrorMsg("");
@@ -136,6 +137,9 @@ const Services = () => {
             price: values.price,
             orgId: orgId,
             tax_percentage: parseFloat(values.tax_percentage),
+            sessionInterval: values.session_interval
+              ? parseInt(values.session_interval, 10)
+              : null,
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -150,6 +154,9 @@ const Services = () => {
             price: values.price,
             orgId: orgId,
             tax_percentage: parseFloat(values.tax_percentage),
+            sessionInterval: values.session_interval
+              ? parseInt(values.session_interval, 10)
+              : null,
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -204,6 +211,13 @@ const Services = () => {
     { title: "Service Name", dataIndex: "name", key: "name" },
     { title: "Price", dataIndex: "price", key: "price" },
     { title: "GST", dataIndex: "tax_percentage", key: "tax_percentage" },
+    {
+      title: "Session Interval",
+      dataIndex: "session_interval",
+      key: "session_interval",
+      render: (v) =>
+        v != null && v !== "" ? `${v} day${Number(v) === 1 ? "" : "s"}` : "—",
+    },
     {
       title: "Description",
       dataIndex: "description",
@@ -341,7 +355,7 @@ const Services = () => {
         {/* Table */}
         <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
           <DataTable
-            columns={columns}
+            columns={columns.map((col) => ({ align: "center", ...col }))}
             dataSource={services}
             loading={tableLoading}
             rowKey="id"
@@ -420,6 +434,25 @@ const Services = () => {
 
               <Form.Item label="GST" name="tax_percentage">
                 <Input placeholder="Enter GST" />
+              </Form.Item>
+
+              <Form.Item
+                label="Session Interval (days)"
+                name="session_interval"
+                rules={[
+                  {
+                    pattern: /^\d+$/,
+                    message: "Number of days must be 0 or more!",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="Enter number of days"
+                  type="number"
+                  min="0"
+                  step="1"
+                  addonAfter="days"
+                />
               </Form.Item>
 
               {errorMsg && (

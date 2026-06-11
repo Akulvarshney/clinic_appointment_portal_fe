@@ -344,7 +344,7 @@ const ResourceManagement = () => {
 
         <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
           <DataTable
-            columns={columns}
+            columns={columns.map((col) => ({ align: "center", ...col }))}
             dataSource={resources}
             loading={tableLoading}
             rowKey="id"
