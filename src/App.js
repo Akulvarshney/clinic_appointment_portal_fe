@@ -31,6 +31,9 @@ import FeedbackManagement from "./pages/FeedbackManagement";
 import InventoryManagement from "./pages/InventoryManagement";
 import InventoryItemDetailPage from "./pages/InventoryItemDetailPage";
 
+import LeadDashboard from "./pages/LeadTracker/Dashboard";
+import FacebookConnect from "./pages/LeadTracker/FacebookConnect";
+
 // ✅ Import icons
 import {
   FaTachometerAlt,
@@ -45,6 +48,7 @@ import {
   FaUserFriends,
   FaCog,
   FaBoxes,
+  FaMagnet,
 } from "react-icons/fa";
 
 // ✅ Updated route config with icons + labels
@@ -114,7 +118,11 @@ export const ROUTE_COMPONENTS = {
     icon: <FaBoxes />,
     label: "Inventory",
   },
-
+  "/leadsTracker": {
+    component: LeadDashboard,
+    icon: <FaMagnet />,
+    label: "Lead Tracker",
+  },
 };
 
 const getUserAllowedRoutes = (selectedOrgId, userRole) => {
@@ -231,6 +239,8 @@ function App() {
           </Route>
         ) : isLoggedIn && role !== "SUPERADMIN" ? (
           <Route element={<LoggedInLayout />}>
+            <Route path="/facebook-connect" element={<FacebookConnect />} />
+            <Route path="/facebook-callback" element={<FacebookConnect />} />
             {allowedRoutes.map((routePath) => {
               const { component: Component } = ROUTE_COMPONENTS[routePath];
 
