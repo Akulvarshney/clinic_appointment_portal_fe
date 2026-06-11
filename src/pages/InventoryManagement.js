@@ -673,6 +673,24 @@ const InventoryManagement = () => {
               <Form.Item label="Unit" name="unit">
                 <Input placeholder="e.g. strip, box, unit" />
               </Form.Item>
+              <Form.Item
+                label="Reorder level"
+                name="reorderLevel"
+                rules={[
+                  {
+                    type: "number",
+                    min: 0,
+                    message: "Reorder level must be 0 or greater",
+                  },
+                ]}
+              >
+                <InputNumber
+                  min={0}
+                  precision={0}
+                  className="w-full"
+                  placeholder="e.g. 10"
+                />
+              </Form.Item>
               {/* <Form.Item label="Initial quantity" name="initialQuantity">
                 <InputNumber min={0} className="w-full" placeholder="0" />
               </Form.Item>

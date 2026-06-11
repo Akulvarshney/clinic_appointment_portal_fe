@@ -69,11 +69,14 @@ const ClientDetailPage = () => {
   const [categories, setCategories] = useState([]);
 
   const [isMobileView, setIsMobileView] = useState(false);
+  const [isAllowedToEditClient, setIsAllowedToEditClient] = useState(false);
 
   useEffect(() => {
     const response1 = isFeatureValid("CLIENT_LISTING", "VIEW_MOBILE");
     setIsMobileView(response1);
-    console.log("isFeatureValid response:", response1);
+    setIsAllowedToEditClient(
+      isFeatureValid("CLIENT_LISTING", "EDIT_CLIENT")
+    );
   }, []);
 
   const commingSoon = () => {
@@ -485,13 +488,15 @@ const ClientDetailPage = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-2">
-              <Button
-                type="primary"
-                icon={<EditOutlined />}
-                onClick={handleEditClient}
-              >
-                Edit Client
-              </Button>
+              {isAllowedToEditClient && (
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  onClick={handleEditClient}
+                >
+                  Edit Client
+                </Button>
+              )}
               <Button icon={<PlusOutlined />} onClick={() => commingSoon()}>
                 New Appointment
               </Button>
@@ -636,6 +641,14 @@ const ClientDetailPage = () => {
                                 {appointment.cancel_remarks && (
                                   <span className="text-[#b45353] text-sm block mt-1">
                                     Cancel Reason: {appointment.cancel_remarks}
+                                  </span>
+                                )}
+                                {appointment.clinical_notes && (
+                                  <span className="mt-1.5 block rounded-md border-l-2 border-gw-primary bg-gw-primary-light/30 px-2 py-1 text-sm text-gw-ink-2">
+                                    <strong className="font-semibold text-gw-primary-dark">
+                                      Clinical Notes:
+                                    </strong>{" "}
+                                    {appointment.clinical_notes}
                                   </span>
                                 )}
                               </div>

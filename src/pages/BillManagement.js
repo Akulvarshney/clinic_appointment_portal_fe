@@ -46,7 +46,7 @@ const BillManagement = () => {
   const [search, setSearch] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
-    limit: 10,
+    limit: 20,
     total: 0,
   });
 
