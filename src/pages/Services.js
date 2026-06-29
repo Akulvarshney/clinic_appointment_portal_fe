@@ -9,6 +9,7 @@ import {
   Alert,
   Tag,
   Space,
+  Checkbox,
 } from "antd";
 import DataTable from "../components/DataTable";
 import {
@@ -108,6 +109,7 @@ const Services = () => {
       price: service.price,
       tax_percentage: service.tax_percentage,
       session_interval: service.session_interval,
+      PTC: Boolean(service.ptc_required ?? service.ptc_required ?? service.ptc_required),
     });
     setIsModalVisible(true);
     setErrorMsg("");
@@ -140,6 +142,7 @@ const Services = () => {
             sessionInterval: values.session_interval
               ? parseInt(values.session_interval, 10)
               : null,
+            PTC: Boolean(values.PTC),
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -157,6 +160,7 @@ const Services = () => {
             sessionInterval: values.session_interval
               ? parseInt(values.session_interval, 10)
               : null,
+            PTC: Boolean(values.PTC),
           },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -217,6 +221,12 @@ const Services = () => {
       key: "session_interval",
       render: (v) =>
         v != null && v !== "" ? `${v} day${Number(v) === 1 ? "" : "s"}` : "—",
+    },
+    {
+      title: "PTC",
+      key: "PTC",
+      width: 72,
+      render: (_, record) => (record.ptc_required ? "Yes" : "No"),
     },
     {
       title: "Description",
@@ -392,6 +402,7 @@ const Services = () => {
               layout="vertical"
               onFinish={handleSubmit}
               autoComplete="off"
+              initialValues={{ PTC: false }}
             >
               <Form.Item
                 label="Service Name"
@@ -453,6 +464,10 @@ const Services = () => {
                   step="1"
                   addonAfter="days"
                 />
+              </Form.Item>
+
+              <Form.Item name="PTC" valuePropName="checked">
+                <Checkbox>Post Treatment Call Required (PTC)</Checkbox>
               </Form.Item>
 
               {errorMsg && (
