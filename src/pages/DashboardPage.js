@@ -20,8 +20,6 @@ import {
 import {
   UserOutlined,
   CalendarOutlined,
-  PieChartOutlined,
-  DollarOutlined,
   RightOutlined,
   FieldTimeOutlined,
 } from "@ant-design/icons";
@@ -85,15 +83,16 @@ const DashboardPage = () => {
     "Total Clients": "/clients",
     "Today Appointments": "/appointments",
     "Today's Reminders": "/reminders",
+    "New Clients this month": "/clients",
     //Balance: "/billing",
   };
 
-  const icons = [
-    <UserOutlined />,
-    <CalendarOutlined />,
-    <PieChartOutlined />,
-    <DollarOutlined />,
-  ];
+  const kpiIcons = {
+    "Total Clients": <UserOutlined />,
+    "Today Appointments": <CalendarOutlined />,
+    "Today's Reminders": <FieldTimeOutlined />,
+    "New Clients this month": <UserOutlined />,
+  };
 
   // ✅ Fetch KPI stats
   useEffect(() => {
@@ -245,7 +244,7 @@ const DashboardPage = () => {
               className="cursor-pointer relative bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl border-l-4 border-gw-primary hover:border-gw-primary-dark transition-all duration-300 transform hover:-translate-y-1 block no-underline text-inherit"
             >
               <div className="absolute top-4 right-4 text-gw-primary text-2xl">
-                {icons[i % icons.length]}
+                {kpiIcons[title] || <UserOutlined />}
               </div>
               <h4 className="text-gray-500 font-semibold text-lg">{title}</h4>
               <p className="text-3xl font-bold text-gray-900 mt-2">

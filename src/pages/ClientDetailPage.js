@@ -116,6 +116,41 @@ const ClientDetailPage = () => {
     }
   }, [clientId]);
 
+  const [bills, setBills] = useState([]);
+  const [billsLoading, setBillsLoading] = useState(false);
+
+  const fetchClientBills = async () => {
+    if (!clientId) return;
+    try {
+      setBillsLoading(true);
+      const orgId = localStorage.getItem("selectedOrgId");
+      const response = await axios.get(
+        `${BACKEND_URL}/clientadmin/invoices/getClientBills`,
+        {
+          params: {
+            orgId: orgId,
+            clientId: clientId,
+          },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const list = Array.isArray(response.data?.data) ? response.data.data : [];
+      setBills(list);
+    } catch (err) {
+      console.error("Error fetching bills:", err);
+      messageApi.error("Failed to fetch bills");
+    } finally {
+      setBillsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (clientId) {
+      fetchClientBills();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientId]);
+
   const fetchCategories = async () => {
     try {
       setLoading(true);
@@ -710,6 +745,75 @@ const ClientDetailPage = () => {
                 />
               )}
             </div>
+
+            {/* Bills History */}
+            <div className="bg-white rounded-lg shadow border border-gw-muted/40 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="!mb-0 !text-gw-primary-dark !font-semibold text-lg">
+                  Bills History
+                </h4>
+                <span className="text-gw-ink-3">
+                  {bills.length} total bills
+                </span>
+              </div>
+
+              {billsLoading ? (
+                <div className="py-8 text-center text-gw-ink-3">
+                  Loading bills...
+                </div>
+              ) : bills.length > 0 ? (
+                <div className="space-y-4">
+                  {bills.map((bill) => {
+                    const isQuotation = bill.bill_type === "QUOTATION";
+                    return (
+                      <div
+                        key={bill.invoice_id}
+                        className="border border-gw-muted/60 rounded-lg p-4 transition-shadow hover:border-gw-primary-light/70 hover:shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-grow">
+                            <strong className="block">
+                              #{bill.invoice_number}
+                            </strong>
+                            <span className="text-gw-ink-3 text-sm block">
+                              {bill.invoice_date
+                                ? formatDate(bill.invoice_date)
+                                : "-"}
+                            </span>
+                            {bill.invoice_reference &&
+                              bill.invoice_reference !== "-" && (
+                                <span className="text-gw-ink-2 text-sm block mt-1">
+                                  Invoice Ref: {bill.invoice_reference}
+                                </span>
+                              )}
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <strong className="text-gw-primary-dark">
+                              ₹{bill.final_amount}
+                            </strong>
+                            <Tag
+                              color={isQuotation ? "gold" : "blue"}
+                              style={{
+                                fontSize: "0.9rem",
+                                padding: "4px 12px",
+                                lineHeight: 1.4,
+                              }}
+                            >
+                              {isQuotation ? "Quotation" : "Invoice"}
+                            </Tag>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <Empty
+                  description="No bills found"
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+              )}
+            </div>
           </div>
 
           <div className="space-y-6">
@@ -920,6 +1024,7 @@ const ClientDetailPage = () => {
             <Form.Item
               name="phone"
               label="Phone Number"
+              hidden={!isMobileView}
               rules={[
                 { required: true, message: "Please enter phone number" },
                 {

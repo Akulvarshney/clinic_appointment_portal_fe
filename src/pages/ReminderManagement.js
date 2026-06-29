@@ -11,7 +11,7 @@ import {
   Alert,
 } from "antd";
 import DataTable from "../components/DataTable";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, DownloadOutlined } from "@ant-design/icons";
 import { Box } from "@mui/material";
 import dayjs from "dayjs";
 import axios from "axios";
@@ -21,6 +21,7 @@ import { PALETTE } from "../theme/palette";
 
 const { TextArea } = Input;
 const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const ReminderPage = () => {
   const [form] = Form.useForm();
@@ -36,6 +37,9 @@ const ReminderPage = () => {
   const [clients, setClients] = useState([]);
   const [clientOptions, setClientOptions] = useState([]);
   const [clientLoading, setClientLoading] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadRange, setDownloadRange] = useState(null);
+  const [downloading, setDownloading] = useState(false);
 
   const orgId = localStorage.getItem("selectedOrgId");
   const token = localStorage.getItem("token");
@@ -163,6 +167,63 @@ const ReminderPage = () => {
     }
   };
 
+  const handleDownloadReminders = async () => {
+    if (!downloadRange || !downloadRange[0] || !downloadRange[1]) {
+      message.error("Please select a from and to date");
+      return;
+    }
+    try {
+      setDownloading(true);
+      const response = await axios.get(
+        `${BACKEND_URL}/clientadmin/reminderManagement/downloadReminder`,
+        {
+          params: {
+            orgId,
+            fromDate: downloadRange[0].format("YYYY-MM-DD"),
+            toDate: downloadRange[1].format("YYYY-MM-DD"),
+          },
+          responseType: "blob",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const disposition =
+        response.headers?.["content-disposition"] ||
+        response.headers?.["Content-Disposition"] ||
+        "";
+      const match = /filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i.exec(
+        disposition
+      );
+      const filename =
+        match && match[1]
+          ? decodeURIComponent(match[1].trim())
+          : `reminders_${dayjs().format("DD-MMM-YY_HH:mm")}.xlsx`;
+
+      const blob = new Blob([response.data], {
+        type:
+          response.data?.type ||
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      message.success("Reminders downloaded successfully");
+      setShowDownloadModal(false);
+      setDownloadRange(null);
+    } catch (error) {
+      console.error("Error downloading reminders:", error);
+      message.error("Failed to download reminders");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const sortedReminders = [
     ...reminders.filter((r) => r.status === "unchecked"), // show unchecked first
     ...reminders.filter((r) => r.status === "checked"), // then checked
@@ -238,6 +299,13 @@ const ReminderPage = () => {
               Today
             </Button>
             <Button
+              icon={<DownloadOutlined />}
+              onClick={() => setShowDownloadModal(true)}
+              className="w-full sm:w-auto"
+            >
+              Download Reminders
+            </Button>
+            <Button
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => setShowAddModal(true)}
@@ -281,6 +349,30 @@ const ReminderPage = () => {
             scroll={{ x: 800 }}
           />
         </div>
+
+        {/* Download Reminders Modal */}
+        <Modal
+          title="Download Reminders"
+          open={showDownloadModal}
+          onOk={handleDownloadReminders}
+          onCancel={() => {
+            setShowDownloadModal(false);
+            setDownloadRange(null);
+          }}
+          okText="Download"
+          confirmLoading={downloading}
+          okButtonProps={{ icon: <DownloadOutlined /> }}
+        >
+          <p className="mb-2 text-gw-ink-3">
+            Select a date range to download reminders.
+          </p>
+          <RangePicker
+            value={downloadRange}
+            onChange={(val) => setDownloadRange(val)}
+            format="YYYY-MM-DD"
+            style={{ width: "100%" }}
+          />
+        </Modal>
 
         {/* Remark Modal */}
         <Modal

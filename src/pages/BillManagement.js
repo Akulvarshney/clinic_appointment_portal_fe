@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Button, Radio, message, Modal, Input, Tooltip, Dropdown, Menu } from "antd";
+import {
+  Button,
+  Radio,
+  message,
+  Modal,
+  Input,
+  Tooltip,
+  Dropdown,
+  Menu,
+  Popconfirm,
+  Tag,
+} from "antd";
 import DataTable from "../components/DataTable";
 import {
   EditOutlined,
@@ -61,10 +72,12 @@ const BillManagement = () => {
   const [canSaveAsInvoice, setCanSaveAsInvoice] = useState(false);
   const [canPrintInvoice, setCanPrintInvoice] = useState(false);
   const [canEditQuotation, setCanEditQuotation] = useState(false);
+  const [canDeleteBill, setCanDeleteBill] = useState(false);
   const [editingBill, setEditingBill] = useState(null);
   const [loadingBillDetails, setLoadingBillDetails] = useState(false);
   const [convertConfirmOpen, setConvertConfirmOpen] = useState(false);
   const [quotationPendingConvert, setQuotationPendingConvert] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const getinfo = async () => {
@@ -208,6 +221,9 @@ const BillManagement = () => {
 
       const varCanEditQuotation = isFeatureValid("BILLING", "EDIT_QUOTATION");
       setCanEditQuotation(varCanEditQuotation);
+
+      const varCanDeleteBill = isFeatureValid("BILLING", "DELETE_BILL");
+      setCanDeleteBill(varCanDeleteBill);
     };
     initialize();
   }, [
@@ -220,6 +236,7 @@ const BillManagement = () => {
     canSaveAsInvoice,
     canPrintInvoice,
     canEditQuotation,
+    canDeleteBill,
   ]);
 
   useEffect(() => {
@@ -349,6 +366,25 @@ const BillManagement = () => {
   const openConvertConfirm = (record) => {
     setQuotationPendingConvert(record);
     setConvertConfirmOpen(true);
+  };
+
+  const handleDeleteInvoice = async (record) => {
+    try {
+      setDeletingId(record.id);
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${BACKEND_URL}/clientadmin/invoices/deleteBill`,
+        { id: record.id, orgId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Invoice deleted successfully");
+      setRefresh((prev) => prev + 1);
+    } catch (err) {
+      console.error("Error deleting invoice:", err);
+      message.error("Failed to delete invoice");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const performConvertToInvoice = async (record) => {
@@ -508,6 +544,46 @@ const BillManagement = () => {
       : []),
     { title: "Date Generated", dataIndex: "datePrinted", key: "datePrinted" },
 
+    ...(activeTab === "invoices"
+      ? [
+        {
+          title: "Status",
+          key: "billStatus",
+          align: "center",
+          render: (_, record) => {
+            const status = record.raw?.billStatus || "ACTIVE";
+            const isClickable = status === "ACTIVE" && canDeleteBill;
+            const statusTag = (
+              <Tag
+                color={status === "DELETED" ? "red" : "green"}
+                style={{
+                  cursor: isClickable ? "pointer" : "default",
+                }}
+              >
+                {status === "DELETED" ? "CANCELLED" : status}
+              </Tag>
+            );
+
+            if (!isClickable) return statusTag;
+
+            return (
+              <Popconfirm
+                title="Delete invoice"
+                description="Are you sure you want to cancel this invoice?"
+                onConfirm={() => handleDeleteInvoice(record)}
+                okText="Yes"
+                cancelText="No"
+                okButtonProps={{ loading: deletingId === record.id }}
+                placement="topRight"
+              >
+                {statusTag}
+              </Popconfirm>
+            );
+          },
+        },
+      ]
+      : []),
+
     {
       title: "Action",
       key: "action",
@@ -550,7 +626,7 @@ const BillManagement = () => {
         );
 
         return (
-          <div className="flex flex-nowrap items-center justify-center gap-1">
+          <div className="flex flex-nowrap items-center justify-center gap-3">
             {activeTab === "quotations" && !record.invoiceReference ? (
               <Tooltip title="Edit quotation">
                 <span className="inline-flex">
@@ -585,7 +661,7 @@ const BillManagement = () => {
                   >
                     <Button
                       type="default"
-                      size="small"
+                      size="middle"
                       className="border-cyan-200 bg-cyan-50 text-cyan-700 hover:border-cyan-300 hover:bg-cyan-100 hover:text-cyan-800 disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-400"
                       icon={
                         <PrinterOutlined className="text-cyan-600" />
