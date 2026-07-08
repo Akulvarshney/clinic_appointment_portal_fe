@@ -267,22 +267,24 @@ export default function GenerateInvoiceModal({
           if (selectedOrg) {
             setBillFromOrg(selectedOrg);
 
+            // Build bill_from_text (Bill From block) from org profile: name, address, email, state.
             const orgText = [
               orgDetail.company_name,
               orgDetail.address ? orgDetail.address : "",
               orgDetail.email ? orgDetail.email : "",
               orgDetail.state ? orgDetail.state : "",
-              type === "invoice"
-                ? orgDetail.gst_number
-                  ? orgDetail.gst_number
-                  : ""
-                : "",
+              // GST append commented out just for now — re-enable when org GSTIN should appear in bill_from_text on invoices.
+              // type === "invoice"
+              //   ? orgDetail.gst_number
+              //     ? orgDetail.gst_number
+              //     : ""
+              //   : "",
             ]
               .filter(Boolean)
               .join("\n")
               .trim();
 
-            // console.log("Generated orgText:", orgText); // Debug log
+            // Stored in state; sent as bill_from_text when the invoice/quotation is saved.
             setBillFromText(orgText);
             setOrgState(selectedOrg?.state);
           } else {
@@ -351,6 +353,7 @@ export default function GenerateInvoiceModal({
         }
         //setShippingCharges(editData.shippingCharges || 0);
         setBillToText(editData.billToText || "");
+        // Edit flow: bill_from_text (incl. GST if saved on invoice) comes from the existing bill record.
         setBillFromText(editData.billFromText || "");
       } else {
         form.resetFields();
@@ -1066,7 +1069,8 @@ export default function GenerateInvoiceModal({
         grand_total_before_rounding: calculations.grandTotalBeforeRounding,
         grand_total: calculations.grandTotal,
         bill_to_text: billToText,
-        bill_from_text: billFromText, // This should now have the correct value
+        // Bill From block sent to API (org GSTIN append in loadOrgData is commented out for now).
+        bill_from_text: billFromText,
         notes,
         terms,
         round_off_enabled: roundOff,

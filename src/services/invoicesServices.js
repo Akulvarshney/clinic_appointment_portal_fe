@@ -76,6 +76,7 @@ export const saveAsInvoice = async (record, setRefresh) => {
   console.log("record ", record);
   var recordId = record.id;
   try {
+    // Convert quotation → invoice on the server; bill_from_text (incl. org GSTIN) is updated by the backend, not in GenerateInvoiceModal.
     const response = await apiPost(
       `/clientadmin/invoices/saveAsInvoices?orgId=${orgId}&id=${recordId}`,
       {},
