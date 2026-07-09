@@ -30,6 +30,8 @@ import NotificationManagement from "./pages/SuperAdmin/NotificationCreation";
 import FeedbackManagement from "./pages/FeedbackManagement";
 import InventoryManagement from "./pages/InventoryManagement";
 import InventoryItemDetailPage from "./pages/InventoryItemDetailPage";
+import WhatsappManagementPage from "./pages/WhatsappManagementPage";
+import WhatsappManagementSA from "./pages/SuperAdmin/WhatsappManagementSA";
 
 // ✅ Import icons
 import {
@@ -114,6 +116,11 @@ export const ROUTE_COMPONENTS = {
     icon: <FaBoxes />,
     label: "Inventory",
   },
+  "/whatsappNotification": {
+    component: WhatsappManagementPage,
+    icon: <FaBell />,
+    label: "WhatsApp Notifications",
+  }
 
 };
 
@@ -226,6 +233,10 @@ function App() {
             <Route
               path="/sa/NotificationManagement"
               element={<NotificationManagement />}
+            />
+            <Route
+              path="/sa/whatsapp"
+              element={<WhatsappManagementSA />}
             />
             <Route path="*" element={<Navigate to="/superadmin/dashboard" />} />
           </Route>

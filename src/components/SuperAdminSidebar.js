@@ -35,6 +35,14 @@ const SuperAdminSidebar = () => {
             <FaChartBar className="mr-3" /> NotificationCenter
           </Link>
         </li>
+        <li>
+          <Link
+            to="/sa/whatsapp"
+            className="flex items-center text-gw-primary-dark font-bold hover:text-gw-primary transition duration-300 no-underline"
+          >
+            <FaChartBar className="mr-3" /> WhatsApp Settings
+          </Link>
+        </li>
         {/* <li className="flex items-center text-gray-600 hover:text-blue-500 transition duration-300 cursor-pointer">
           <FaShoppingCart className="mr-3" /> NFT Marketplace
         </li>
