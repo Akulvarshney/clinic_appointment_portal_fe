@@ -213,7 +213,7 @@ const Sidebar = ({
       </nav>
 
       {/* AI assistant card — design.md §4 sidebar */}
-      {!collapsed && (
+      {/* {!collapsed && (
         <div className="shrink-0 px-3 pb-2">
           <div className="rounded-gw-3 border border-gw-line bg-gw-accent-soft/60 p-3">
             <div className="flex items-center gap-2">
@@ -235,7 +235,7 @@ const Sidebar = ({
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Sign out */}
       <div
