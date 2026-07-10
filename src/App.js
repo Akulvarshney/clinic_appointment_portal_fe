@@ -15,6 +15,7 @@ import Login from "./pages/SuperAdmin/Login";
 import { useAuth } from "./layouts/AuthContext";
 import DashboardSAPage from "./pages/SuperAdmin/DashboardSApage";
 import OrganisationListing from "./pages/SuperAdmin/OrganisationListing";
+import OrganisationDetailPage from "./pages/SuperAdmin/OrganisationDetailPage";
 import ResourceManagement from "./pages/ResourceManagement";
 import ServicesManagement from "./pages/Services";
 import AppointmentPage from "./pages/AppointmentPage";
@@ -229,6 +230,10 @@ function App() {
             <Route
               path="/sa/organisationListing"
               element={<OrganisationListing />}
+            />
+            <Route
+              path="/sa/organisationListing/:orgShortName"
+              element={<OrganisationDetailPage />}
             />
             <Route
               path="/sa/NotificationManagement"

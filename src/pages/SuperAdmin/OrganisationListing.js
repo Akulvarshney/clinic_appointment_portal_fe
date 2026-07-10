@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Tabs, Spin } from "antd";
 import DataTable from "../../components/DataTable";
 import { useEffect, useState } from "react";
@@ -43,6 +44,19 @@ const OrganisationListing = () => {
       title: "Organization Name",
       dataIndex: "organization_name",
       key: "organization_name",
+      render: (text, record) => {
+        if (record.application_status === "APPROVED") {
+          return (
+            <Link
+              to={`/sa/organisationListing/${record.org_short_name}`}
+              className="text-gw-primary hover:underline font-semibold"
+            >
+              {text}
+            </Link>
+          );
+        }
+        return <span>{text}</span>;
+      },
     },
     {
       title: "Short Name",

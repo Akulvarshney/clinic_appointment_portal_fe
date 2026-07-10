@@ -68,12 +68,7 @@ const Settings = () => {
     switch (activeKey) {
       case "PROFILE_PAGE":
         return <Profile />;
-      case "MANAGE_USERS":
-        return <div>Coming Soon</div>;
-      case "SYSTEM_PREFERENCES":
-        return <div>Coming Soon</div>;
       case "ORGANIZATION_INFO":
-        //return <div>Coming Soon</div>;
         return <OrganizationInfo />;
       case "ROLE_MANAGEMENT":
         return <RoleManagement />;
