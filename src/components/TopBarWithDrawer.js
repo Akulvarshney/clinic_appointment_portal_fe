@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button, Drawer } from "antd";
 import { MenuOutlined } from "@ant-design/icons";
 import { FaChartBar, FaUser } from "react-icons/fa";
+import {
+  canNavigateWhenOrgExpired,
+  getExpiredRedirectPath,
+} from "../utils/orgSubscription";
 
 const TopBarWithDrawer = ({
   organizations,
@@ -12,7 +16,19 @@ const TopBarWithDrawer = ({
   location,
   logout,
 }) => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  const handleTabClick = (event, tabPath) => {
+    if (canNavigateWhenOrgExpired(tabPath, selectedOrgId)) {
+      setOpen(false);
+      return;
+    }
+    event.preventDefault();
+    setOpen(false);
+    const redirectPath = getExpiredRedirectPath(selectedOrgId);
+    if (redirectPath) navigate(redirectPath);
+  };
 
   return (
     <div className="flex w-full min-w-0 items-center justify-between gap-3 px-3 py-3 sm:p-4 bg-gw-primary-dark text-white">
@@ -67,7 +83,7 @@ const TopBarWithDrawer = ({
                 <li key={tab.tab_id}>
                   <Link
                     to={tab.tab_path}
-                    onClick={() => setOpen(false)}
+                    onClick={(e) => handleTabClick(e, tab.tab_path)}
                     className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-300 cursor-pointer no-underline text-inherit ${location.pathname === tab.tab_path
                         ? "bg-gw-primary-light/40 text-gw-primary-dark shadow-inner"
                         : "hover:bg-gw-surface hover:shadow-md"

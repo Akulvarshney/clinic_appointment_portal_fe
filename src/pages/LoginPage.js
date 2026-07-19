@@ -35,10 +35,9 @@ const LoginPage = () => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("organizations", JSON.stringify(organizations));
-      localStorage.setItem(
-        "selectedOrgId",
-        organizations?.[0]?.organizationId || null
-      );
+      const firstOrgId = organizations?.[0]?.organizationId || null;
+      localStorage.setItem("selectedOrgId", firstOrgId);
+      localStorage.setItem("selectedOrganizationId", firstOrgId);
 
       const finalRole = user?.role || organizations?.[0]?.roles?.[0] || null;
       login(user, token, organizations, finalRole);

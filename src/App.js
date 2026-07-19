@@ -33,6 +33,11 @@ import InventoryItemDetailPage from "./pages/InventoryItemDetailPage";
 
 import LeadDashboard from "./pages/LeadTracker/Dashboard";
 import FacebookConnect from "./pages/LeadTracker/FacebookConnect";
+import SubscriptionPage from "./pages/SubscriptionPage";
+import SubscriptionExpiredPage from "./pages/SubscriptionExpiredPage";
+import {
+  SUBSCRIPTION_EXPIRED_PATH,
+} from "./utils/orgSubscription";
 
 // ✅ Import icons
 import {
@@ -49,6 +54,7 @@ import {
   FaCog,
   FaBoxes,
   FaMagnet,
+  FaCreditCard,
 } from "react-icons/fa";
 
 // ✅ Updated route config with icons + labels
@@ -122,6 +128,11 @@ export const ROUTE_COMPONENTS = {
     component: LeadDashboard,
     icon: <FaMagnet />,
     label: "Lead Tracker",
+  },
+  "/subscription": {
+    component: SubscriptionPage,
+    icon: <FaCreditCard />,
+    label: "Subscription",
   },
 };
 
@@ -241,6 +252,10 @@ function App() {
           <Route element={<LoggedInLayout />}>
             <Route path="/facebook-connect" element={<FacebookConnect />} />
             <Route path="/facebook-callback" element={<FacebookConnect />} />
+            <Route
+              path={SUBSCRIPTION_EXPIRED_PATH}
+              element={<SubscriptionExpiredPage />}
+            />
             {allowedRoutes.map((routePath) => {
               const { component: Component } = ROUTE_COMPONENTS[routePath];
 

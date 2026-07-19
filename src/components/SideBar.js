@@ -8,9 +8,13 @@ import {
   FaRegCommentDots,
 } from "react-icons/fa";
 import { Dropdown, Tooltip } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { ROUTE_COMPONENTS } from "../App";
+import {
+  canNavigateWhenOrgExpired,
+  getExpiredRedirectPath,
+} from "../utils/orgSubscription";
 
 function routeIsActive(pathname, tabPath) {
   if (pathname === tabPath) return true;
@@ -28,7 +32,15 @@ const Sidebar = ({
   location,
   logout,
 }) => {
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(collapsedDefault);
+
+  const handleTabClick = (event, tabPath) => {
+    if (canNavigateWhenOrgExpired(tabPath, selectedOrgId)) return;
+    event.preventDefault();
+    const redirectPath = getExpiredRedirectPath(selectedOrgId);
+    if (redirectPath) navigate(redirectPath);
+  };
 
   const selectedOrg = useMemo(
     () =>
@@ -177,6 +189,7 @@ const Sidebar = ({
               const inner = (
                 <Link
                   to={tab.tab_path}
+                  onClick={(e) => handleTabClick(e, tab.tab_path)}
                   className={itemClasses}
                   aria-current={active ? "page" : undefined}
                 >

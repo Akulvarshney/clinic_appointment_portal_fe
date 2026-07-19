@@ -1,12 +1,17 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../layouts/AuthContext";
 import { useEffect, useState } from "react";
 import Sidebar from "../components/SideBar";
 import TopBarWithDrawer from "../components/TopBarWithDrawer";
+import {
+  canNavigateWhenOrgExpired,
+  getExpiredRedirectPath,
+} from "../utils/orgSubscription";
 
 const LoggedInLayout = () => {
-  const { logout } = useAuth();
+  const { logout, role } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [organizations, setOrganizations] = useState([]);
   const [selectedOrgId, setSelectedOrgId] = useState("");
@@ -32,10 +37,28 @@ const LoggedInLayout = () => {
     setTabs(validTabs);
   };
 
+  // New: when org is expired, block non-allowed routes (check uses allowed URL list in util).
+  useEffect(() => {
+    if (!selectedOrgId || !organizations.length) return;
+
+    const redirectPath = getExpiredRedirectPath(selectedOrgId, role);
+    if (!redirectPath) return;
+
+    if (!canNavigateWhenOrgExpired(location.pathname, selectedOrgId, role)) {
+      navigate(redirectPath, { replace: true });
+    }
+  }, [location.pathname, selectedOrgId, organizations, navigate, role]);
+
   const handleOrgChange = (newOrgId) => {
     setSelectedOrgId(newOrgId);
     localStorage.setItem("selectedOrganizationId", newOrgId);
+    localStorage.setItem("selectedOrgId", newOrgId);
     updateTabs(organizations, newOrgId);
+
+    const redirectPath = getExpiredRedirectPath(newOrgId, role);
+    if (redirectPath) {
+      navigate(redirectPath, { replace: true });
+    }
   };
 
   return (
