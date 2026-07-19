@@ -32,6 +32,7 @@ import InventoryManagement from "./pages/InventoryManagement";
 import InventoryItemDetailPage from "./pages/InventoryItemDetailPage";
 import WhatsappManagementPage from "./pages/WhatsappManagementPage";
 import WhatsappManagementSA from "./pages/SuperAdmin/WhatsappManagementSA";
+import VoiceCallsPage from "./pages/VoiceCalls";
 
 // ✅ Import icons
 import {
@@ -47,6 +48,7 @@ import {
   FaUserFriends,
   FaCog,
   FaBoxes,
+  FaPhone,
 } from "react-icons/fa";
 
 // ✅ Updated route config with icons + labels
@@ -120,7 +122,12 @@ export const ROUTE_COMPONENTS = {
     component: WhatsappManagementPage,
     icon: <FaBell />,
     label: "WhatsApp Notifications",
-  }
+  },
+  "/voice-calls": {
+    component: VoiceCallsPage,
+    icon: <FaPhone />,
+    label: "Voice Calls",
+  },
 
 };
 
