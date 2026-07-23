@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Table, Switch, Button, Card, Space, Input, Select, Badge, Tooltip, Row, Col, Statistic, Typography, Spin, message, Tabs } from "antd";
-import { MessageOutlined, CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, SearchOutlined, SafetyCertificateOutlined, DollarOutlined } from "@ant-design/icons";
+import { Table, Switch, Button, Card, Space, Input, Select, Badge, Tooltip, Row, Col, Statistic, Typography, message, Tabs, Modal, Form, DatePicker, Upload } from "antd";
+import { MessageOutlined, CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, SearchOutlined, SafetyCertificateOutlined, DollarOutlined, CloudUploadOutlined, FileExcelOutlined, SendOutlined } from "@ant-design/icons";
 import { getOrgWhatsappDashboard, getOrgWhatsappTemplates, toggleOrgWhatsappTemplate, getOrgWhatsappLogs } from "../services/whatsappService";
+import { requestCustomTemplate, getCustomTemplates, scheduleCampaign, getCampaigns } from "../services/whatsappCampaignService";
+import * as XLSX from "xlsx";
+import moment from "moment";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { TextArea } = Input;
 
 const WhatsappManagementPage = () => {
     const orgId = localStorage.getItem("selectedOrgId");
@@ -24,6 +28,21 @@ const WhatsappManagementPage = () => {
     const [logSearch, setLogSearch] = useState("");
     const [logStatus, setLogStatus] = useState("");
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
+
+    // Bulk Messaging
+    const [customTemplates, setCustomTemplates] = useState([]);
+    const [campaigns, setCampaigns] = useState([]);
+    const [bulkLoading, setBulkLoading] = useState(false);
+
+    // Modals
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+    const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
+    const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+    const [previewMessageContent, setPreviewMessageContent] = useState("");
+    const [templateForm] = Form.useForm();
+    const [campaignForm] = Form.useForm();
+    const [excelData, setExcelData] = useState([]);
+    const [selectedTargetType, setSelectedTargetType] = useState(null);
 
     const fetchDashboard = async () => {
         if (!orgId) return;
@@ -78,11 +97,30 @@ const WhatsappManagementPage = () => {
         }
     };
 
+    const fetchBulkData = async () => {
+        if (!orgId) return;
+        setBulkLoading(true);
+        try {
+            const [cTemplates, cCampaigns] = await Promise.all([
+                getCustomTemplates(orgId),
+                getCampaigns(orgId)
+            ]);
+            setCustomTemplates(cTemplates || []);
+            setCampaigns(cCampaigns || []);
+        } catch (err) {
+            console.error("Error loading bulk data:", err);
+            message.error("Failed to load bulk messaging data");
+        } finally {
+            setBulkLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (orgId) {
             fetchDashboard();
             fetchTemplates();
             fetchLogs(1);
+            fetchBulkData();
         }
     }, [orgId]);
 
@@ -116,10 +154,91 @@ const WhatsappManagementPage = () => {
         (t) =>
             t.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
             t.body.toLowerCase().includes(templateSearch.toLowerCase()) ||
-            t.twilioTemplateName.toLowerCase().includes(templateSearch.toLowerCase())
+            t.twilioTemplateId.toLowerCase().includes(templateSearch.toLowerCase())
     );
 
-    // Columns for Templates Table
+    const handlePreviewMessage = (text) => {
+        setPreviewMessageContent(text);
+        setIsPreviewModalOpen(true);
+    };
+
+    // Bulk Messaging Handlers
+    const handleRequestTemplate = async (values) => {
+        try {
+            await requestCustomTemplate(orgId, values);
+            message.success("Custom template requested successfully.");
+            setIsTemplateModalOpen(false);
+            templateForm.resetFields();
+            fetchBulkData();
+        } catch (error) {
+            message.error("Failed to request template.");
+        }
+    };
+
+    const handleScheduleCampaign = async (values) => {
+        try {
+            let targetData = [];
+            if (values.targetType === "EXCEL_UPLOAD") {
+                if (excelData.length === 0) {
+                    return message.error("Please upload a valid Excel file containing phone numbers.");
+                }
+                targetData = excelData;
+            }
+
+            const payload = {
+                customTemplateId: values.customTemplateId,
+                scheduledAt: values.scheduledAt.toISOString(),
+                targetType: values.targetType,
+                targetData: targetData
+            };
+
+            await scheduleCampaign(orgId, payload);
+            message.success("Campaign scheduled successfully.");
+            setIsCampaignModalOpen(false);
+            campaignForm.resetFields();
+            setExcelData([]);
+            fetchBulkData();
+        } catch (error) {
+            message.error("Failed to schedule campaign.");
+        }
+    };
+
+    const handleExcelUpload = (file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                // Assuming the phone numbers are in the first column or labeled "Phone"
+                // For simplicity, we just extract the first column of each row if it looks like a phone number or just string
+                let numbers = [];
+                for (let i = 1; i < jsonData.length; i++) { // Skip header
+                    const row = jsonData[i];
+                    if (row && row.length > 0 && row[0]) {
+                        numbers.push(String(row[0]).trim());
+                    }
+                }
+
+                if (numbers.length > 0) {
+                    setExcelData(numbers);
+                    message.success(`Successfully parsed ${numbers.length} numbers.`);
+                } else {
+                    message.error("No valid data found in the Excel file.");
+                }
+            } catch (error) {
+                console.error("Excel parse error:", error);
+                message.error("Failed to parse Excel file.");
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        return false; // Prevent default upload
+    };
+
+
+    // Columns
     const templatesColumns = [
         {
             title: "Trigger Action",
@@ -130,8 +249,8 @@ const WhatsappManagementPage = () => {
         },
         {
             title: "Twilio Template Name",
-            dataIndex: "twilioTemplateName",
-            key: "twilioTemplateName",
+            dataIndex: "twilioTemplateId",
+            key: "twilioTemplateId",
             width: "20%",
             render: (text) => <Text type="secondary" style={{ fontSize: "12px" }}>{text}</Text>,
         },
@@ -140,7 +259,15 @@ const WhatsappManagementPage = () => {
             dataIndex: "body",
             key: "body",
             width: "35%",
-            render: (text) => <Text style={{ fontStyle: "italic", whiteSpace: "pre-wrap", fontSize: "12px" }}>{text}</Text>,
+            render: (text) => (
+                <Button
+                    size="small"
+                    icon={<MessageOutlined />}
+                    onClick={() => handlePreviewMessage(text)}
+                >
+                    View Message
+                </Button>
+            ),
         },
         {
             title: "Credit Cost",
@@ -165,7 +292,6 @@ const WhatsappManagementPage = () => {
         },
     ];
 
-    // Columns for Logs Table
     const logsColumns = [
         {
             title: "Client Name",
@@ -189,11 +315,14 @@ const WhatsappManagementPage = () => {
             title: "Message Body",
             dataIndex: "messageBody",
             key: "messageBody",
-            ellipsis: { showTitle: false },
             render: (text) => (
-                <Tooltip placement="topLeft" title={text}>
-                    {text}
-                </Tooltip>
+                <Button
+                    size="small"
+                    icon={<MessageOutlined />}
+                    onClick={() => handlePreviewMessage(text)}
+                >
+                    View Message
+                </Button>
             ),
         },
         {
@@ -212,7 +341,9 @@ const WhatsappManagementPage = () => {
                 } else if (status === "FAILED") {
                     return (
                         <Tooltip title={record.errorMessage || "Unknown error"}>
-                            <Badge status="error" text="Failed ⓘ" style={{ cursor: "pointer" }} />
+                            <span style={{ display: 'inline-block', cursor: "pointer" }}>
+                                <Badge status="error" text="Failed ⓘ" />
+                            </span>
                         </Tooltip>
                     );
                 }
@@ -227,6 +358,73 @@ const WhatsappManagementPage = () => {
         },
     ];
 
+    const customTemplatesColumns = [
+        {
+            title: "Template Name",
+            dataIndex: "template_name",
+            key: "template_name",
+        },
+        {
+            title: "Message Body",
+            dataIndex: "message_body",
+            key: "message_body",
+            width: "40%",
+            render: (text) => (
+                <Button
+                    size="small"
+                    icon={<MessageOutlined />}
+                    onClick={() => handlePreviewMessage(text)}
+                >
+                    View Message
+                </Button>
+            ),
+        },
+        {
+            title: "Status",
+            dataIndex: "status",
+            key: "status",
+            render: (status) => {
+                const color = status === "APPROVED" ? "green" : status === "REJECTED" ? "red" : "orange";
+                return <Badge color={color} text={status} />;
+            }
+        },
+        {
+            title: "Requested Date",
+            dataIndex: "created_at",
+            key: "created_at",
+            render: (text) => new Date(text).toLocaleDateString(),
+        }
+    ];
+
+    const campaignsColumns = [
+        {
+            title: "Template",
+            key: "template",
+            render: (_, record) => record.custom_template?.template_name
+        },
+        {
+            title: "Target Type",
+            dataIndex: "target_type",
+            key: "target_type",
+            render: (text) => text.replace("_", " ")
+        },
+        {
+            title: "Scheduled For",
+            dataIndex: "scheduled_at",
+            key: "scheduled_at",
+            render: (text) => new Date(text).toLocaleString(),
+        },
+        {
+            title: "Status",
+            dataIndex: "status",
+            key: "status",
+            render: (status) => {
+                const color = status === "COMPLETED" ? "green" : status === "FAILED" ? "red" : "blue";
+                return <Badge color={color} text={status} />;
+            }
+        }
+    ];
+
     return (
         <div className="p-6 md:p-10 bg-gw-bg min-h-screen">
             <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -234,10 +432,10 @@ const WhatsappManagementPage = () => {
                     <Title level={2} style={{ color: "#111827", margin: 0, fontWeight: "800" }}>
                         WhatsApp Notification Center
                     </Title>
-                    <Text type="secondary">Toggle Twilio approved templates and track remaining message credits.</Text>
+                    <Text type="secondary">Toggle Twilio approved templates, request bulk campaigns, and track history.</Text>
                 </div>
                 <Space>
-                    <Button icon={<SyncOutlined />} onClick={() => { fetchDashboard(); fetchTemplates(); fetchLogs(1); }}>
+                    <Button icon={<SyncOutlined />} onClick={() => { fetchDashboard(); fetchTemplates(); fetchLogs(1); fetchBulkData(); }}>
                         Refresh Data
                     </Button>
                 </Space>
@@ -254,11 +452,6 @@ const WhatsappManagementPage = () => {
                             valueStyle={{ color: (dashboardStats?.whatsappCredits ?? 0) > 15 ? "#10B981" : "#EF4444", fontWeight: "700" }}
                             prefix={<DollarOutlined />}
                         />
-                        {/* <div className="mt-2">
-              <Text type="secondary" size="small">
-                Value per credit: <strong>${dashboardStats?.creditValue?.toFixed(2) ?? "1.00"}</strong>
-              </Text>
-            </div> */}
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} md={6}>
@@ -300,13 +493,13 @@ const WhatsappManagementPage = () => {
                     <Tabs.TabPane
                         tab={
                             <span>
-                                <SafetyCertificateOutlined /> Default WhatsApp Templates
+                                <SafetyCertificateOutlined /> Default Templates
                             </span>
                         }
                         key="templates"
                     >
                         <div className="mb-4 flex justify-between items-center">
-                            <Text type="secondary">List of all templates available for your clinic notifications.</Text>
+                            <Text type="secondary">List of all system templates available for your clinic notifications.</Text>
                             <Input
                                 placeholder="Search templates..."
                                 prefix={<SearchOutlined />}
@@ -326,11 +519,50 @@ const WhatsappManagementPage = () => {
                         />
                     </Tabs.TabPane>
 
-                    {/* Tab 2: Message Logs History Tabular View */}
+                    {/* Tab 2: Bulk Messaging & Custom Templates */}
                     <Tabs.TabPane
                         tab={
                             <span>
-                                <MessageOutlined /> Message History Logs
+                                <CloudUploadOutlined /> Bulk Messaging
+                            </span>
+                        }
+                        key="bulk"
+                    >
+                        <div className="mb-8">
+                            <div className="flex justify-between items-center mb-4">
+                                <Title level={4} style={{ margin: 0 }}>Custom Templates</Title>
+                                <Button type="primary" onClick={() => setIsTemplateModalOpen(true)}>Request New Template</Button>
+                            </div>
+                            <Table
+                                dataSource={customTemplates}
+                                columns={customTemplatesColumns}
+                                rowKey="id"
+                                loading={bulkLoading}
+                                pagination={{ pageSize: 5 }}
+                                size="small"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <div className="flex justify-between items-center mb-4">
+                                <Title level={4} style={{ margin: 0 }}>Broadcast Campaigns</Title>
+                                <Button type="primary" icon={<SendOutlined />} onClick={() => setIsCampaignModalOpen(true)}>Schedule Campaign</Button>
+                            </div>
+                            <Table
+                                dataSource={campaigns}
+                                columns={campaignsColumns}
+                                rowKey="id"
+                                loading={bulkLoading}
+                                pagination={{ pageSize: 5 }}
+                                size="small"
+                            />
+                        </div>
+                    </Tabs.TabPane>
+
+                    {/* Tab 3: Message Logs History Tabular View */}
+                    <Tabs.TabPane
+                        tab={
+                            <span>
+                                <MessageOutlined /> Message History
                             </span>
                         }
                         key="logs"
@@ -376,6 +608,172 @@ const WhatsappManagementPage = () => {
                     </Tabs.TabPane>
                 </Tabs>
             </Card>
+
+            {/* Request Template Modal */}
+            <Modal
+                title="Request Custom Template"
+                open={isTemplateModalOpen}
+                onCancel={() => setIsTemplateModalOpen(false)}
+                onOk={() => templateForm.submit()}
+            >
+                <Form form={templateForm} layout="vertical" onFinish={handleRequestTemplate}>
+                    <Form.Item name="templateName" label="Template Name" rules={[{ required: true, message: 'Please enter a name for this template' }]}>
+                        <Input placeholder="e.g. DIWALI_OFFER_2026" />
+                    </Form.Item>
+                    <Form.Item name="messageBody" label="Message Body (Static Text Only)" rules={[{ required: true, message: 'Please enter the message body' }]}>
+                        <TextArea rows={4} placeholder="Enter your static message here without any variables." />
+                    </Form.Item>
+                    <Text type="secondary">Note: Custom templates require approval from Glorywellnic before they can be used in campaigns.</Text>
+                </Form>
+            </Modal>
+
+            {/* Message Preview Modal */}
+            <Modal
+                title="WhatsApp Message Preview"
+                open={isPreviewModalOpen}
+                onCancel={() => setIsPreviewModalOpen(false)}
+                footer={null}
+                centered
+                width={380}
+            >
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px 0' }}>
+                    <div style={{
+                        width: '320px',
+                        height: '620px',
+                        border: '14px solid #333',
+                        borderRadius: '36px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        backgroundColor: '#efeae2',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+                    }}>
+                        {/* Phone Camera Notch */}
+                        <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '120px',
+                            height: '25px',
+                            backgroundColor: '#333',
+                            borderBottomLeftRadius: '16px',
+                            borderBottomRightRadius: '16px',
+                            zIndex: 10
+                        }}></div>
+
+                        {/* WhatsApp Header */}
+                        <div style={{
+                            backgroundColor: '#075e54',
+                            color: 'white',
+                            padding: '35px 15px 10px 15px', // extra top padding for the notch
+                            display: 'flex',
+                            alignItems: 'center',
+                            fontSize: '16px',
+                            fontWeight: '600'
+                        }}>
+                            Glorywellnic
+                        </div>
+
+                        {/* WhatsApp Message Area */}
+                        <div style={{
+                            padding: '20px 15px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            height: 'calc(100% - 140px)',
+                            overflowY: 'auto'
+                        }}>
+                            <div style={{
+                                backgroundColor: '#dcf8c6',
+                                padding: '10px 12px',
+                                borderRadius: '8px',
+                                borderTopLeftRadius: '0px',
+                                alignSelf: 'flex-start',
+                                maxWidth: '90%',
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word',
+                                fontSize: '10px',
+                                color: '#111',
+                                boxShadow: '0 1px 1px rgba(0,0,0,0.1)'
+                            }}>
+                                {previewMessageContent}
+                            </div>
+                        </div>
+
+                        {/* WhatsApp Input Area (Mock) */}
+                        <div style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            padding: '10px',
+                            backgroundColor: '#f0f0f0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px'
+                        }}>
+                            <div style={{
+                                flex: 1,
+                                backgroundColor: 'white',
+                                borderRadius: '20px',
+                                padding: '10px 15px',
+                                color: '#888',
+                                fontSize: '14px'
+                            }}>
+                                Message
+                            </div>
+                            <div style={{
+                                width: '40px',
+                                height: '40px',
+                                backgroundColor: '#128C7E',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                color: 'white'
+                            }}>
+                                <SendOutlined />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Schedule Campaign Modal */}
+            <Modal
+                title="Schedule Broadcast Campaign"
+                open={isCampaignModalOpen}
+                onCancel={() => setIsCampaignModalOpen(false)}
+                onOk={() => campaignForm.submit()}
+            >
+                <Form form={campaignForm} layout="vertical" onFinish={handleScheduleCampaign}>
+                    <Form.Item name="customTemplateId" label="Select Approved Template" rules={[{ required: true }]}>
+                        <Select placeholder="Select a template">
+                            {customTemplates.filter(t => t.status === "APPROVED").map(t => (
+                                <Option key={t.id} value={t.id}>{t.template_name}</Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                    <Form.Item name="scheduledAt" label="Scheduled Date & Time" rules={[{ required: true }]}>
+                        <DatePicker showTime style={{ width: '100%' }} disabledDate={d => !d || d.isBefore(moment().startOf('day'))} />
+                    </Form.Item>
+                    <Form.Item name="targetType" label="Target Audience" rules={[{ required: true }]}>
+                        <Select placeholder="Select audience" onChange={(val) => setSelectedTargetType(val)}>
+                            <Option value="ALL_CLIENTS">All Associated Clients</Option>
+                            {/* <Option value="SELECTED_CLIENTS">Select Few Clients</Option> */}
+                            <Option value="EXCEL_UPLOAD">Upload Excel of Numbers</Option>
+                        </Select>
+                    </Form.Item>
+
+                    {selectedTargetType === "EXCEL_UPLOAD" && (
+                        <Form.Item label="Upload Excel File">
+                            <Upload beforeUpload={handleExcelUpload} accept=".xlsx, .xls, .csv" maxCount={1}>
+                                <Button icon={<FileExcelOutlined />}>Click to Upload Excel</Button>
+                            </Upload>
+                            {excelData.length > 0 && <div className="mt-2 text-green-600">{excelData.length} numbers ready.</div>}
+                        </Form.Item>
+                    )}
+                </Form>
+            </Modal>
         </div>
     );
 };

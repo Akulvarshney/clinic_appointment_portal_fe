@@ -3,12 +3,29 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./layouts/AuthContext";
+import { AuthProvider, clearPersistedAuth } from "./layouts/AuthContext";
 import { App as AntdApp, ConfigProvider } from "antd";
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
 import { NotificationProvider } from "./utils/messageWrapper";
 import { PALETTE } from "./theme/palette";
 import muiTheme from "./theme/muiTheme";
+import axios from "axios";
+import toast from "react-hot-toast";
+
+// --- GLOBAL AXIOS INTERCEPTOR ---
+// This ensures that EVEN IF a service uses raw `axios.get` instead of `apiGet`, 
+// a 401 Unauthorized response will automatically log the user out globally.
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      toast.error("Unauthorized or Session Expired, please Sign In again");
+      clearPersistedAuth();
+      window.location.href = "/login"; // Safely redirect without full reload loop issues
+    }
+    return Promise.reject(error);
+  }
+);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

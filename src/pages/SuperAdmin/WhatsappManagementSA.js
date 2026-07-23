@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Table, Switch, Button, Modal, InputNumber, Card, Form, Space, message, Spin, Typography } from "antd";
-import { CreditCardOutlined, SafetyOutlined, SettingOutlined } from "@ant-design/icons";
+import { Table, Switch, Button, Modal, InputNumber, Card, Form, Space, message, Spin, Typography, Input, Tabs } from "antd";
+import { CreditCardOutlined, SafetyOutlined, SettingOutlined, MessageOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import {
   getSAOrganizationsWhatsapp,
   toggleWhatsappForOrg,
   addCreditsToOrg,
   getGlobalCreditRate,
   updateGlobalCreditRate,
+  getSACustomTemplates,
+  approveSACustomTemplate
 } from "../../services/whatsappService";
 
 const { Title, Text } = Typography;
@@ -16,6 +18,13 @@ const WhatsappManagementSA = () => {
   const [loading, setLoading] = useState(false);
   const [creditRate, setCreditRate] = useState(1.0);
   const [rateLoading, setRateLoading] = useState(false);
+  
+  // Custom Templates states
+  const [customTemplates, setCustomTemplates] = useState([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [approveModalVisible, setApproveModalVisible] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [approveForm] = Form.useForm();
   
   // Modal states
   const [creditsModalVisible, setCreditsModalVisible] = useState(false);
@@ -48,9 +57,22 @@ const WhatsappManagementSA = () => {
     }
   };
 
+  const fetchSACustomTemplates = async () => {
+    setTemplatesLoading(true);
+    try {
+      const data = await getSACustomTemplates();
+      setCustomTemplates(data || []);
+    } catch (error) {
+      console.error("Error loading SA custom templates:", error);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchSAData();
     fetchGlobalRate();
+    fetchSACustomTemplates();
   }, []);
 
   const handleToggleWhatsapp = async (orgId, checked) => {
@@ -90,6 +112,23 @@ const WhatsappManagementSA = () => {
       message.error("Failed to top up credit balance");
     } finally {
       setCreditingLoading(false);
+    }
+  };
+
+  const handleApproveTemplateSubmit = async (values) => {
+    if (!selectedTemplate) return;
+    try {
+      await approveSACustomTemplate(selectedTemplate.id, {
+        twilioTemplateId: values.twilioTemplateId,
+        creditCost: values.creditCost
+      });
+      message.success("Template approved successfully.");
+      setApproveModalVisible(false);
+      approveForm.resetFields();
+      setSelectedTemplate(null);
+      fetchSACustomTemplates();
+    } catch (error) {
+      message.error("Failed to approve template.");
     }
   };
 
@@ -154,13 +193,71 @@ const WhatsappManagementSA = () => {
     },
   ];
 
+  const templatesColumns = [
+    {
+      title: "Organization",
+      dataIndex: ["organizations", "name"],
+      key: "orgName",
+      render: (text) => <strong>{text}</strong>
+    },
+    {
+      title: "Template Name",
+      dataIndex: "template_name",
+      key: "templateName",
+    },
+    {
+      title: "Message Body",
+      dataIndex: "message_body",
+      key: "messageBody",
+      width: "35%",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <span style={{ fontWeight: 'bold', color: status === "APPROVED" ? "#10B981" : status === "PENDING" ? "#F59E0B" : "#EF4444" }}>
+          {status}
+        </span>
+      ),
+    },
+    {
+      title: "Twilio Registered Name",
+      dataIndex: "twilio_template_id",
+      key: "twilio_template_id",
+      render: (text) => text ? <Text code>{text}</Text> : "-"
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Button
+          type="primary"
+          size="small"
+          disabled={record.status === "APPROVED"}
+          icon={<CheckCircleOutlined />}
+          onClick={() => {
+            setSelectedTemplate(record);
+            approveForm.setFieldsValue({
+              twilioTemplateId: record.template_name.toLowerCase().replace(/\s+/g, '_'),
+              creditCost: 1.0
+            });
+            setApproveModalVisible(true);
+          }}
+        >
+          {record.status === "APPROVED" ? "Approved" : "Review & Approve"}
+        </Button>
+      ),
+    }
+  ];
+
   return (
     <div className="p-6 md:p-10 bg-[#FAFBFC] min-h-screen">
       <div className="mb-8">
         <Title level={2} style={{ color: "#111827", margin: 0, fontWeight: "800" }}>
           WhatsApp System Management
         </Title>
-        <Text type="secondary">Portal Admin view to control WhatsApp configurations, organization toggles, and credits top-ups.</Text>
+        <Text type="secondary">Portal Admin view to control WhatsApp configurations, organization toggles, credits top-ups, and template approvals.</Text>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -231,23 +328,40 @@ const WhatsappManagementSA = () => {
         </Card>
       </div>
 
-      <Card
-        title="Tenant Organizations WhatsApp Details"
-        className="shadow-sm border border-gray-100 rounded-xl"
-      >
-        {loading ? (
-          <div className="text-center py-10">
-            <Spin tip="Fetching tenant details..." />
-          </div>
-        ) : (
-          <Table
-            dataSource={organizations}
-            columns={columns}
-            rowKey="id"
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 800 }}
-          />
-        )}
+      <Card className="shadow-sm border border-gray-100 rounded-xl mb-8">
+        <Tabs defaultActiveKey="orgs">
+            <Tabs.TabPane tab={<span><CreditCardOutlined /> Tenant Organizations</span>} key="orgs">
+                {loading ? (
+                <div className="text-center py-10">
+                    <Spin tip="Fetching tenant details..." />
+                </div>
+                ) : (
+                <Table
+                    dataSource={organizations}
+                    columns={columns}
+                    rowKey="id"
+                    pagination={{ pageSize: 10 }}
+                    scroll={{ x: 800 }}
+                />
+                )}
+            </Tabs.TabPane>
+            
+            <Tabs.TabPane tab={<span><MessageOutlined /> Custom Template Approvals</span>} key="templates">
+                {templatesLoading ? (
+                <div className="text-center py-10">
+                    <Spin tip="Fetching templates..." />
+                </div>
+                ) : (
+                <Table
+                    dataSource={customTemplates}
+                    columns={templatesColumns}
+                    rowKey="id"
+                    pagination={{ pageSize: 10 }}
+                    scroll={{ x: 800 }}
+                />
+                )}
+            </Tabs.TabPane>
+        </Tabs>
       </Card>
 
       {/* Add Credits Modal */}
@@ -279,6 +393,45 @@ const WhatsappManagementSA = () => {
           </Form>
         </div>
       </Modal>
+
+      {/* Approve Template Modal */}
+      <Modal
+        title="Approve Custom Template"
+        open={approveModalVisible}
+        onOk={() => approveForm.submit()}
+        onCancel={() => {
+          setApproveModalVisible(false);
+          setSelectedTemplate(null);
+          approveForm.resetFields();
+        }}
+        destroyOnClose
+      >
+        <div className="py-4">
+          <p className="mb-4">
+            Please make sure you have successfully registered this template in your Twilio console before approving it here. 
+          </p>
+          <div className="bg-gray-50 p-3 rounded mb-4 italic text-sm">
+             "{selectedTemplate?.message_body}"
+          </div>
+          <Form form={approveForm} layout="vertical" onFinish={handleApproveTemplateSubmit}>
+            <Form.Item 
+                name="twilioTemplateId" 
+                label="Registered Twilio Template Name" 
+                rules={[{ required: true, message: 'Please enter the registered template name from Twilio' }]}
+            >
+              <Input placeholder="e.g. diwali_offer_2026" />
+            </Form.Item>
+            <Form.Item 
+                name="creditCost" 
+                label="Credit Cost per Message" 
+                rules={[{ required: true }]}
+            >
+              <InputNumber style={{ width: "100%" }} min={0.1} step={0.1} />
+            </Form.Item>
+          </Form>
+        </div>
+      </Modal>
+
     </div>
   );
 };

@@ -58,6 +58,22 @@ export const updateGlobalCreditRate = async (creditValue) => {
   return response.data.data;
 };
 
+export const getSACustomTemplates = async () => {
+  const response = await axios.get(
+    `${BACKEND_URL}/admin/whatsapp/custom-templates`,
+    getAuthHeaders()
+  );
+  return response.data;
+};
+
+export const approveSACustomTemplate = async (templateId, payload) => {
+  const response = await axios.put(
+    `${BACKEND_URL}/admin/whatsapp/custom-templates/${templateId}/approve`,
+    payload,
+    getAuthHeaders()
+  );
+  return response.data;
+};
 // ==========================================
 // CLIENT ADMIN (ORGANIZATION) ENDPOINTS
 // ==========================================
