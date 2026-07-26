@@ -222,7 +222,7 @@ const WhatsappManagementSA = () => {
       ),
     },
     {
-      title: "Twilio Registered Name",
+      title: "Twilio Template ID",
       dataIndex: "twilio_template_id",
       key: "twilio_template_id",
       render: (text) => text ? <Text code>{text}</Text> : "-"
@@ -239,7 +239,7 @@ const WhatsappManagementSA = () => {
           onClick={() => {
             setSelectedTemplate(record);
             approveForm.setFieldsValue({
-              twilioTemplateId: record.template_name.toLowerCase().replace(/\s+/g, '_'),
+              twilioTemplateId: record.twilio_template_id || '',
               creditCost: 1.0
             });
             setApproveModalVisible(true);
@@ -416,10 +416,10 @@ const WhatsappManagementSA = () => {
           <Form form={approveForm} layout="vertical" onFinish={handleApproveTemplateSubmit}>
             <Form.Item 
                 name="twilioTemplateId" 
-                label="Registered Twilio Template Name" 
-                rules={[{ required: true, message: 'Please enter the registered template name from Twilio' }]}
+                label="Twilio Template ID" 
+                rules={[{ required: true, message: 'Please enter the Twilio Template ID' }]}
             >
-              <Input placeholder="e.g. diwali_offer_2026" />
+              <Input placeholder="e.g. HX1234567890abcdef" />
             </Form.Item>
             <Form.Item 
                 name="creditCost" 
