@@ -13,6 +13,7 @@ const basic_config = {
   headers: { Authorization: `Bearer ${token}` },
 };
 
+pp
 const { Option } = Select;
 
 const START_HOUR = 8;
@@ -111,6 +112,7 @@ export default function AppointmentPage() {
   const [showClinicalInput, setShowClinicalInput] = useState(false);
   const [clinicalRemarks, setClinicalRemarks] = useState("");
   const [savingClinical, setSavingClinical] = useState(false);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
 
   const [clientOptions, setClientOptions] = useState([]);
   const [clientLoading, setClientLoading] = useState(false);
@@ -609,7 +611,7 @@ export default function AppointmentPage() {
 
   const rescheduleAppointment = async (proposed) => {
     // const response = await axios.post(
-  //   `${BACKEND_URL}/appointments/appt/rescheduleAppointments`
+    //   `${BACKEND_URL}/appointments/appt/rescheduleAppointments`
     //   proposed,
     //   {
     //     headers: { Authorization: `Bearer ${token}` },
@@ -704,10 +706,10 @@ export default function AppointmentPage() {
         prev.map((a) =>
           a.id === id
             ? {
-                ...a,
-                start: direction === "top" ? newStart : a.start,
-                end: direction === "bottom" ? newEnd : a.end,
-              }
+              ...a,
+              start: direction === "top" ? newStart : a.start,
+              end: direction === "bottom" ? newEnd : a.end,
+            }
             : a,
         ),
       );
@@ -1446,7 +1448,7 @@ export default function AppointmentPage() {
             .then((vals) => {
               saveNewAppointment(vals);
             })
-            .catch(() => {});
+            .catch(() => { });
         }}
         onCancel={closeNewApptModal}
         okText="Save"
@@ -1555,12 +1557,12 @@ export default function AppointmentPage() {
             Slot:{" "}
             {newApptInfo
               ? `${timeLabel(
-                  newApptInfo.start.getHours(),
-                  newApptInfo.start.getMinutes(),
-                )} — ${timeLabel(
-                  newApptInfo.end.getHours(),
-                  newApptInfo.end.getMinutes(),
-                )}`
+                newApptInfo.start.getHours(),
+                newApptInfo.start.getMinutes(),
+              )} — ${timeLabel(
+                newApptInfo.end.getHours(),
+                newApptInfo.end.getMinutes(),
+              )}`
               : "not selected"}
           </div>
         </Form>
@@ -1586,14 +1588,14 @@ export default function AppointmentPage() {
         footer={
           isEditing
             ? [
-                <Button
-                  key="save"
-                  type="primary"
-                  onClick={() => editForm.submit()}
-                >
-                  Save
-                </Button>,
-              ]
+              <Button
+                key="save"
+                type="primary"
+                onClick={() => editForm.submit()}
+              >
+                Save
+              </Button>,
+            ]
             : ""
         }
         centered
@@ -1663,7 +1665,9 @@ export default function AppointmentPage() {
                 <Select
                   value={detailAppt.status}
                   style={{ width: 180 }}
+                  loading={isStatusUpdating}
                   onChange={async (value) => {
+                    setIsStatusUpdating(true);
                     try {
                       await updateAppointmentStatus(detailAppt.id, value);
                       setDetailAppt((prev) => ({ ...prev, status: value }));
@@ -1676,6 +1680,8 @@ export default function AppointmentPage() {
                       );
                     } catch {
                       message.error("Could not update status");
+                    } finally {
+                      setIsStatusUpdating(false);
                     }
                   }}
                   options={[
@@ -1851,21 +1857,21 @@ export default function AppointmentPage() {
                   prev.map((appt) =>
                     appt.id === detailAppt.id
                       ? {
-                          ...appt,
-                          doctorId: values.doctorId,
-                          employeeId: values.employeeId,
-                          serviceId: values.serviceId,
-                          remarks: values.notes,
-                          doctorName:
-                            Doctor.find((d) => d.id === values.doctorId)
-                              ?.name || "",
-                          employeeName:
-                            Employees.find((e) => e.id === values.employeeId)
-                              ?.name || "",
-                          service:
-                            Services.find((s) => s.id === values.serviceId)
-                              ?.name || "",
-                        }
+                        ...appt,
+                        doctorId: values.doctorId,
+                        employeeId: values.employeeId,
+                        serviceId: values.serviceId,
+                        remarks: values.notes,
+                        doctorName:
+                          Doctor.find((d) => d.id === values.doctorId)
+                            ?.name || "",
+                        employeeName:
+                          Employees.find((e) => e.id === values.employeeId)
+                            ?.name || "",
+                        service:
+                          Services.find((s) => s.id === values.serviceId)
+                            ?.name || "",
+                      }
                       : appt,
                   ),
                 );

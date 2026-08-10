@@ -33,6 +33,8 @@ import InventoryManagement from "./pages/InventoryManagement";
 import InventoryItemDetailPage from "./pages/InventoryItemDetailPage";
 import WhatsappManagementPage from "./pages/WhatsappManagementPage";
 import WhatsappManagementSA from "./pages/SuperAdmin/WhatsappManagementSA";
+import SurveyBuilder from "./pages/SurveyBuilder";
+import PublicFeedback from "./pages/PublicFeedback";
 
 // ✅ Import icons
 import {
@@ -121,7 +123,8 @@ export const ROUTE_COMPONENTS = {
     component: WhatsappManagementPage,
     icon: <FaBell />,
     label: "WhatsApp Notifications",
-  }
+  },
+
 
 };
 
@@ -224,6 +227,7 @@ function App() {
     <>
       <Toaster position="top-center" reverseOrder={false} />
       <Routes>
+        <Route path="/feedback/:feedbackId" element={<PublicFeedback />} />
         {isLoggedIn && role === "SUPERADMIN" ? (
           <Route element={<SuperAdminLayout />}>
             <Route path="/superadmin/dashboard" element={<DashboardSAPage />} />
@@ -243,6 +247,7 @@ function App() {
               path="/sa/whatsapp"
               element={<WhatsappManagementSA />}
             />
+
             <Route path="*" element={<Navigate to="/superadmin/dashboard" />} />
           </Route>
         ) : isLoggedIn && role !== "SUPERADMIN" ? (
@@ -258,6 +263,15 @@ function App() {
                       path="detail/:clientId"
                       element={<ClientDetailPage />}
                     />
+                  </Route>
+                );
+              }
+
+              if (routePath === "/feedbackManagement") {
+                return (
+                  <Route key={routePath} path="feedbackManagement">
+                    <Route index element={<FeedbackManagement />} />
+                    <Route path="surveyBuilder" element={<SurveyBuilder />} />
                   </Route>
                 );
               }
