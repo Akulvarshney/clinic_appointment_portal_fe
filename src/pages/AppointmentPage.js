@@ -13,7 +13,6 @@ const basic_config = {
   headers: { Authorization: `Bearer ${token}` },
 };
 
-pp
 const { Option } = Select;
 
 const START_HOUR = 8;
