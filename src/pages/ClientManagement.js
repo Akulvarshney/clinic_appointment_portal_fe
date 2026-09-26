@@ -12,8 +12,13 @@ import {
   message,
   Alert,
 } from "antd";
+import dayjs from "dayjs";
 import DataTable from "../components/DataTable";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  PlusOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { BACKEND_URL, isFeatureValid, states } from "../assets/constants";
 import { PALETTE } from "../theme/palette";
 import { Link } from "react-router-dom";
@@ -46,6 +51,9 @@ const ClientManagement = () => {
   const [sortDir, setSortDir] = useState("desc");
   const [categorySelected, setCategorySelected] = useState(null);
   const [isAddClientFeatureValid, setIsAddClientFeatureValid] = useState(false);
+  const [isExportClientsFeatureValid, setIsExportClientsFeatureValid] =
+    useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const orgId = localStorage.getItem("selectedOrgId");
   const token = localStorage.getItem("token");
@@ -76,6 +84,7 @@ const ClientManagement = () => {
       await fetchRoleId();
       fetchCategories();
       checkAddClientFeatureValid();
+      checkExportClientsFeatureValid();
     };
     initialize();
   }, []);
@@ -126,6 +135,27 @@ const ClientManagement = () => {
     return response;
   };
 
+  const checkExportClientsFeatureValid = () => {
+    const response = isFeatureValid("CLIENT_LISTING", "EXPORT_CLIENTS");
+    setIsExportClientsFeatureValid(response);
+    return response;
+  };
+
+  const buildClientParams = ({ paginated }) => {
+    const params = {
+      search,
+      orgId,
+      categoryId: categorySelected,
+      sort,
+      sortDir,
+    };
+    if (paginated) {
+      params.page = pagination.current;
+      params.limit = pagination.pageSize;
+    }
+    return params;
+  };
+
   const fetchClients = async () => {
     setTableLoading(true);
     try {
@@ -146,15 +176,7 @@ const ClientManagement = () => {
       // );
 
       const response = await apiGet(`/patient/clients/clientListing`, {
-        params: {
-          search,
-          page: pagination.current,
-          limit: pagination.pageSize,
-          orgId,
-          categoryId: categorySelected,
-          sort,
-          sortDir,
-        },
+        params: buildClientParams({ paginated: true }),
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log("clients?? ", response);
@@ -173,6 +195,55 @@ const ClientManagement = () => {
       message.error("Failed to fetch clients");
     } finally {
       setTableLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!orgId || !isExportClientsFeatureValid) return;
+    setDownloading(true);
+    try {
+      const response = await axios.get(
+        `${BACKEND_URL}/patient/clients/downloadClients`,
+        {
+          params: {
+            ...buildClientParams({ paginated: false }),
+            includeMobile: isMobileView,
+          },
+          responseType: "blob",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const disposition =
+        response.headers?.["content-disposition"] ||
+        response.headers?.["Content-Disposition"] ||
+        "";
+      const match = /filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i.exec(
+        disposition
+      );
+      const filename =
+        match && match[1]
+          ? decodeURIComponent(match[1].trim())
+          : `clients_${dayjs().format("DD-MMM-YY_HH:mm")}.xlsx`;
+
+      const blob = new Blob([response.data], {
+        type:
+          response.data?.type ||
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading clients:", err);
+      message.error("Failed to download clients");
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -465,6 +536,19 @@ const ClientManagement = () => {
                 style={{ width: "100%" }}
               />
             </div>
+
+            {isExportClientsFeatureValid ? (
+              <Button
+                size="large"
+                icon={<DownloadOutlined />}
+                onClick={handleDownload}
+                loading={downloading}
+                disabled={downloading}
+                className="w-full shrink-0 sm:w-auto"
+              >
+                Download
+              </Button>
+            ) : null}
 
             {isAddClientFeatureValid ? (
               <Button

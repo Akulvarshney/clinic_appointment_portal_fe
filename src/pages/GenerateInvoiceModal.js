@@ -273,12 +273,11 @@ export default function GenerateInvoiceModal({
               orgDetail.address ? orgDetail.address : "",
               orgDetail.email ? orgDetail.email : "",
               orgDetail.state ? orgDetail.state : "",
-              // GST append commented out just for now — re-enable when org GSTIN should appear in bill_from_text on invoices.
-              // type === "invoice"
-              //   ? orgDetail.gst_number
-              //     ? orgDetail.gst_number
-              //     : ""
-              //   : "",
+              type === "invoice"
+                ? orgDetail.gst_number
+                  ? orgDetail.gst_number
+                  : ""
+                : "",
             ]
               .filter(Boolean)
               .join("\n")
@@ -1069,7 +1068,6 @@ export default function GenerateInvoiceModal({
         grand_total_before_rounding: calculations.grandTotalBeforeRounding,
         grand_total: calculations.grandTotal,
         bill_to_text: billToText,
-        // Bill From block sent to API (org GSTIN append in loadOrgData is commented out for now).
         bill_from_text: billFromText,
         notes,
         terms,
