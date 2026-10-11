@@ -12,6 +12,7 @@ import {
   Tag,
   Tooltip,
   Switch,
+  Radio,
 } from "antd";
 import {
   PlusOutlined,
@@ -20,6 +21,8 @@ import {
   FileTextOutlined,
   UserOutlined,
   DollarOutlined,
+  CreditCardOutlined,
+  MobileOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import debounce from "lodash/debounce";
@@ -72,6 +75,7 @@ export default function GenerateInvoiceModal({
   const [billTo, setBillTo] = useState(null);
   const [serviceItems, setServiceItems] = useState([]);
   const [inventoryItems, setInventoryItems] = useState([]);
+  const [paymentMode, setPaymentMode] = useState(null);
 
   const lineItemsCombined = useMemo(
     () => [
@@ -350,6 +354,13 @@ export default function GenerateInvoiceModal({
         if (hasBankCharges) {
           setShowAdvanced(true);
         }
+        if (editData.payment_mode || editData.paymentMode) {
+          setPaymentMode(editData.payment_mode || editData.paymentMode);
+        } else if (hasBankCharges) {
+          setPaymentMode("CARD");
+        } else {
+          setPaymentMode(null);
+        }
         //setShippingCharges(editData.shippingCharges || 0);
         setBillToText(editData.billToText || "");
         // Edit flow: bill_from_text (incl. GST if saved on invoice) comes from the existing bill record.
@@ -380,6 +391,7 @@ export default function GenerateInvoiceModal({
         setDiscountPercent(0);
         setNotes("");
         setTerms("");
+        setPaymentMode(null);
         // setShippingCharges(0);
         setBankChargesEnabled(false);
         // setInvoiceNumber(newInvoiceNumber);
@@ -774,11 +786,12 @@ export default function GenerateInvoiceModal({
     const totalTax = totalCGST + totalSGST + totalIGST;
 
     // 5. Final calculations
+    const amountWithTax = taxableAfterDiscount + totalTax;
     const bankCharges = bankChargesEnabled
-      ? roundTo2Decimals(taxableAfterDiscount * 0.02)
+      ? roundTo2Decimals(amountWithTax * 0.02)
       : 0;
     const grandTotalBeforeRounding =
-      taxableAfterDiscount + totalTax + bankCharges;
+      amountWithTax + bankCharges;
     const grandTotal = roundOff
       ? Math.round(grandTotalBeforeRounding)
       : grandTotalBeforeRounding;
@@ -815,7 +828,10 @@ export default function GenerateInvoiceModal({
     //const shippingAmount = shippingCharges || 0;
 
     // Calculate what the total would be with 0% discount
-    const totalWithoutDiscount = subTotal + calculations.totalTax;
+    const baseWithoutDiscount = subTotal + calculations.totalTax;
+    const totalWithoutDiscount = bankChargesEnabled
+      ? baseWithoutDiscount + roundTo2Decimals(baseWithoutDiscount * 0.02)
+      : baseWithoutDiscount;
 
     // If desired total is greater than or equal to total without discount, set discount to 0
     if (desiredTotal >= totalWithoutDiscount) {
@@ -855,7 +871,11 @@ export default function GenerateInvoiceModal({
         }
       });
 
-      const testGrandTotal = testTaxableAmount + testTotalTax;
+      const testAmountWithTax = testTaxableAmount + testTotalTax;
+      const testBankCharges = bankChargesEnabled
+        ? roundTo2Decimals(testAmountWithTax * 0.02)
+        : 0;
+      const testGrandTotal = testAmountWithTax + testBankCharges;
 
       if (Math.abs(testGrandTotal - desiredTotal) < 0.01) {
         bestDiscount = testDiscount;
@@ -988,6 +1008,16 @@ export default function GenerateInvoiceModal({
         return;
       }
 
+      // Payment mode validation
+      if (!paymentMode) {
+        notification.error({
+          message: "Payment mode is mandatory. Please select Cash, UPI, or Card.",
+        });
+        setLoading(false);
+        setRefresh(Math.random());
+        return;
+      }
+
       // Minimum one line item validation (service or inventory)
       if (!lineItemsCombined || lineItemsCombined.length === 0) {
         notification.error({
@@ -1049,6 +1079,7 @@ export default function GenerateInvoiceModal({
       const payload = {
         organization_id: selectedOrgId,
         client_id: billTo.id,
+        payment_mode: paymentMode,
         invoice_date: invoiceDate,
         due_date: dueDateFormatted,
         sub_total: calculations.subTotal,
@@ -1774,6 +1805,68 @@ export default function GenerateInvoiceModal({
               size="small"
               bodyStyle={{ padding: "12px" }}
             >
+              {/* Payment Mode Selector */}
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Payment through <span className="text-red-500 font-bold">*</span>
+                  </span>
+                  {paymentMode ? (
+                    <Tag
+                      color={
+                        paymentMode === "CASH"
+                          ? "green"
+                          : paymentMode === "UPI"
+                          ? "blue"
+                          : "purple"
+                      }
+                      className="font-medium m-0"
+                    >
+                      {paymentMode}
+                    </Tag>
+                  ) : (
+                    <Tag color="warning" className="font-medium m-0">
+                      Required
+                    </Tag>
+                  )}
+                </div>
+                <Radio.Group
+                  value={paymentMode}
+                  onChange={(e) => setPaymentMode(e.target.value)}
+                  buttonStyle="solid"
+                  size="middle"
+                  className="w-full grid grid-cols-3 gap-2"
+                >
+                  <Radio.Button
+                    value="CASH"
+                    className="!flex !items-center !justify-center !h-10 !rounded-lg text-center font-medium shadow-sm transition-all duration-200"
+                  >
+                    <Space size={6}>
+                      <DollarOutlined />
+                      <span>Cash</span>
+                    </Space>
+                  </Radio.Button>
+                  <Radio.Button
+                    value="UPI"
+                    className="!flex !items-center !justify-center !h-10 !rounded-lg text-center font-medium shadow-sm transition-all duration-200"
+                  >
+                    <Space size={6}>
+                      <MobileOutlined />
+                      <span>UPI</span>
+                    </Space>
+                  </Radio.Button>
+                  <Radio.Button
+                    value="CARD"
+                    className="!flex !items-center !justify-center !h-10 !rounded-lg text-center font-medium shadow-sm transition-all duration-200"
+                  >
+                    <Space size={6}>
+                      <CreditCardOutlined />
+                      <span>Card</span>
+                    </Space>
+                  </Radio.Button>
+                </Radio.Group>
+              </div>
+
               <Form.Item
                 name="notes"
                 label="Notes"
@@ -1821,7 +1914,12 @@ export default function GenerateInvoiceModal({
                       </span>
                       <Switch
                         checked={bankChargesEnabled}
-                        onChange={setBankChargesEnabled}
+                        onChange={(checked) => {
+                          setBankChargesEnabled(checked);
+                          if (checked) {
+                            setPaymentMode("CARD");
+                          }
+                        }}
                         checkedChildren="On"
                         unCheckedChildren="Off"
                       />
@@ -1958,6 +2056,24 @@ export default function GenerateInvoiceModal({
                         maximumFractionDigits: 2,
                       })}
                     </span>
+                  </div>
+                )}
+
+                {paymentMode && (
+                  <div className="flex justify-between items-center text-xs text-gray-600">
+                    <span>Payment Mode:</span>
+                    <Tag
+                      color={
+                        paymentMode === "CASH"
+                          ? "green"
+                          : paymentMode === "UPI"
+                          ? "blue"
+                          : "purple"
+                      }
+                      className="m-0 font-medium"
+                    >
+                      {paymentMode}
+                    </Tag>
                   </div>
                 )}
 

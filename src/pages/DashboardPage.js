@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
-import { Select, Spin } from "antd";
+import { Select, Spin, Dropdown, Modal, Form, Input, message, Button } from "antd";
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
 import { BACKEND_URL } from "../assets/constants";
@@ -22,6 +22,10 @@ import {
   CalendarOutlined,
   RightOutlined,
   FieldTimeOutlined,
+  DollarOutlined,
+  KeyOutlined,
+  LockOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 import { CHART_COLORS, PALETTE } from "../theme/palette";
 
@@ -48,6 +52,7 @@ const UPCOMING_PREVIEW_LIMIT = 6;
 
 const DashboardPage = () => {
   const orgId = localStorage.getItem("selectedOrgId");
+  const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
   const [stats, setStats] = useState([]);
   const [pieData, setPieData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +62,11 @@ const DashboardPage = () => {
   const { Option } = Select;
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  // Reset Password Modal states
+  const [resetModalVisible, setResetModalVisible] = useState(false);
+  const [resetForm] = Form.useForm();
+  const [resetSubmitting, setResetSubmitting] = useState(false);
 
   const monthsList = [
     { label: "All", value: null },
@@ -84,7 +94,8 @@ const DashboardPage = () => {
     "Today Appointments": "/appointments",
     "Today's Reminders": "/reminders",
     "New Clients this month": "/clients",
-    //Balance: "/billing",
+    "Total Sale Today": "/billing",
+    "Total Sale this month": "/billing",
   };
 
   const kpiIcons = {
@@ -92,6 +103,71 @@ const DashboardPage = () => {
     "Today Appointments": <CalendarOutlined />,
     "Today's Reminders": <FieldTimeOutlined />,
     "New Clients this month": <UserOutlined />,
+    "Total Sale Today": <DollarOutlined />,
+    "Total Sale this month": <DollarOutlined />,
+  };
+  console.log("loggedInUser>>> ", loggedInUser);
+  const displayName =
+    loggedInUser?.full_name ||
+    loggedInUser?.email ||
+    "Account";
+
+  const userMenuItems = [
+    {
+      key: "user-info",
+      label: (
+        <div className="px-3 py-2 border-b border-gray-100">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Signed in as</p>
+          <p className="text-sm font-bold text-gray-900 truncate max-w-[200px]">
+            {displayName}
+          </p>
+        </div>
+      ),
+      disabled: true,
+    },
+    {
+      key: "reset-password",
+      icon: <KeyOutlined className="text-base text-gw-primary" />,
+      label: <span className="text-sm font-semibold text-gray-700 py-1 inline-block">Reset Password</span>,
+      onClick: () => {
+        resetForm.resetFields();
+        setResetModalVisible(true);
+      },
+    },
+  ];
+
+  const handleResetPassword = async (values) => {
+    try {
+      setResetSubmitting(true);
+      const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+      const response = await axios.post(
+        `${BACKEND_URL}/clientadmin/resetpassword`,
+        {
+          resetUserId: user?.id,
+          newpassword: values.newPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      message.success("Password reset successfully!");
+      resetForm.resetFields();
+      setResetModalVisible(false);
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      message.error(
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to reset password. Please try again."
+      );
+    } finally {
+      setResetSubmitting(false);
+    }
   };
 
   // ✅ Fetch KPI stats
@@ -230,9 +306,25 @@ const DashboardPage = () => {
           <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gw-primary-dark to-gw-primary drop-shadow-sm">
             Dashboard Overview
           </h2>
-          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-gw-primary to-gw-primary-light shadow-lg border-4 border-white flex items-center justify-center text-white font-bold text-xl">
-            ✨
-          </div>
+          <Dropdown
+            menu={{
+              items: userMenuItems,
+              className: "min-w-[220px] p-2 shadow-2xl rounded-2xl border border-gray-100/80 bg-white/95 backdrop-blur-md",
+            }}
+            trigger={["click"]}
+            placement="bottomRight"
+          >
+            <button
+              type="button"
+              className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white hover:bg-gray-50 text-gw-ink font-semibold shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 border border-gray-200/80 cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-gw-primary to-gw-primary-light text-white flex items-center justify-center text-base shadow-sm">
+                <UserOutlined />
+              </div>
+              <span className="text-sm font-bold text-gray-800">{displayName}</span>
+              <DownOutlined className="text-xs text-gray-400" />
+            </button>
+          </Dropdown>
         </header>
 
         {/* KPI CARDS */}
@@ -248,7 +340,9 @@ const DashboardPage = () => {
               </div>
               <h4 className="text-gray-500 font-semibold text-lg">{title}</h4>
               <p className="text-3xl font-bold text-gray-900 mt-2">
-                {amount} {badge}
+                {typeof amount === "number" && title.toLowerCase().includes("sale")
+                  ? `Rs. ${amount.toLocaleString("en-IN")}`
+                  : `${amount ?? 0} ${badge || ""}`}
               </p>
             </Link>
           ))}
@@ -442,6 +536,87 @@ const DashboardPage = () => {
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* RESET PASSWORD MODAL */}
+        <Modal
+          title={
+            <div className="flex items-center gap-2 text-gw-primary-dark font-bold text-lg">
+              <LockOutlined />
+              <span>Reset Password</span>
+            </div>
+          }
+          open={resetModalVisible}
+          onCancel={() => {
+            resetForm.resetFields();
+            setResetModalVisible(false);
+          }}
+          footer={null}
+          destroyOnClose
+        >
+          <Form
+            form={resetForm}
+            layout="vertical"
+            onFinish={handleResetPassword}
+            className="mt-4"
+          >
+            <Form.Item
+              label="New Password"
+              name="newPassword"
+              rules={[
+                { required: true, message: "Please enter your new password" },
+                { min: 6, message: "Password must be at least 6 characters" },
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined className="text-gray-400" />}
+                placeholder="Enter new password"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Confirm New Password"
+              name="confirmPassword"
+              dependencies={["newPassword"]}
+              rules={[
+                { required: true, message: "Please confirm your new password" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("newPassword") === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("Passwords do not match!")
+                    );
+                  },
+                }),
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined className="text-gray-400" />}
+                placeholder="Confirm new password"
+              />
+            </Form.Item>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                onClick={() => {
+                  resetForm.resetFields();
+                  setResetModalVisible(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={resetSubmitting}
+                className="bg-gw-primary hover:bg-gw-primary-dark"
+              >
+                Save Password
+              </Button>
+            </div>
+          </Form>
+        </Modal>
       </main>
     </div>
   );

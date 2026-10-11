@@ -169,11 +169,12 @@ const BillManagement = () => {
           })) || [],
         discountPercent: Number(billDetails.discount_percentage) || 0,
         notes: billDetails.notes || "",
-        terms: billDetails.terms ,
+        terms: billDetails.terms,
         shippingCharges: Number(billDetails.shipping_charges) || 0,
         bankCharges: billDetails.bank_charges || null,
         billToText: billDetails.bill_to_text || "",
         billFromText: billDetails.bill_from_text || "",
+        payment_mode: billDetails.payment_mode || null,
       };
 
       setEditingBill(formattedData);
@@ -291,6 +292,7 @@ const BillManagement = () => {
                 amount: entry.final_amount,
                 datePrinted: new Date(entry.invoice_date).toLocaleDateString(),
                 invoiceReference: entry.invoice_reference || "-",
+                paymentMode: entry.payment_mode || null,
                 raw: entry,
               }));
             setIsLoading(false);
@@ -547,6 +549,30 @@ const BillManagement = () => {
     ...(activeTab === "invoices"
       ? [
         {
+          title: "Payment Mode",
+          key: "paymentMode",
+          align: "center",
+          render: (_, record) => {
+            const mode = record.paymentMode || record.raw?.payment_mode;
+            if (!mode) return "";
+            const colorMap = {
+              CASH: "green",
+              UPI: "blue",
+              CARD: "purple",
+            };
+            return (
+              <Tag color={colorMap[mode] || "default"} className="font-semibold">
+                {mode}
+              </Tag>
+            );
+          },
+        },
+      ]
+      : []),
+
+    ...(activeTab === "invoices"
+      ? [
+        {
           title: "Status",
           key: "billStatus",
           align: "center",
@@ -706,21 +732,21 @@ const BillManagement = () => {
         </h1>
         <div className="flex min-w-0 w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
           <div className="w-full shrink-0 sm:w-[280px] md:w-[300px]">
-          <Search
-            placeholder="Search by bill id, bill to..."
-            allowClear
-            enterButton={<SearchOutlined />}
-            size="large"
-            style={{ width: "100%" }}
-            onSearch={handleSearch}
-            onChange={(e) => {
-              if (!e.target.value) {
-                handleSearch("");
-              } else {
-                handleSearch(e.target.value);
-              }
-            }}
-          />
+            <Search
+              placeholder="Search by bill id, bill to..."
+              allowClear
+              enterButton={<SearchOutlined />}
+              size="large"
+              style={{ width: "100%" }}
+              onSearch={handleSearch}
+              onChange={(e) => {
+                if (!e.target.value) {
+                  handleSearch("");
+                } else {
+                  handleSearch(e.target.value);
+                }
+              }}
+            />
           </div>
           {activeTab === "invoices" && canCreateInvoice && (
             <Button
@@ -777,47 +803,47 @@ const BillManagement = () => {
 
       {activeTab === "receipts" ? (
         <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
-        <DataTable
-          className="bill-management-table"
-          dataSource={receiptData} // separate receipt data
-          columns={ReceiptColumns} // separate receipt columns
-          rowKey="receiptId"
-          scroll={{ x: "max-content" }}
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.limit,
-            total: pagination.total,
-          }}
-          onChange={(newPagination) => {
-            setPagination((prev) => ({
-              ...prev,
-              current: newPagination.current,
-              limit: newPagination.pageSize,
-            }));
-          }}
-        />
+          <DataTable
+            className="bill-management-table"
+            dataSource={receiptData} // separate receipt data
+            columns={ReceiptColumns} // separate receipt columns
+            rowKey="receiptId"
+            scroll={{ x: "max-content" }}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.limit,
+              total: pagination.total,
+            }}
+            onChange={(newPagination) => {
+              setPagination((prev) => ({
+                ...prev,
+                current: newPagination.current,
+                limit: newPagination.pageSize,
+              }));
+            }}
+          />
         </div>
       ) : (
         <div className="min-w-0 overflow-hidden rounded-lg bg-white shadow">
-        <DataTable
-          className="bill-management-table"
-          dataSource={data[activeTab]} // invoices or quotations
-          columns={columns}
-          rowKey="billId"
-          scroll={{ x: "max-content" }}
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.limit,
-            total: pagination.total,
-          }}
-          onChange={(newPagination) => {
-            setPagination((prev) => ({
-              ...prev,
-              current: newPagination.current,
-              limit: newPagination.pageSize,
-            }));
-          }}
-        />
+          <DataTable
+            className="bill-management-table"
+            dataSource={data[activeTab]} // invoices or quotations
+            columns={columns}
+            rowKey="billId"
+            scroll={{ x: "max-content" }}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.limit,
+              total: pagination.total,
+            }}
+            onChange={(newPagination) => {
+              setPagination((prev) => ({
+                ...prev,
+                current: newPagination.current,
+                limit: newPagination.pageSize,
+              }));
+            }}
+          />
         </div>
       )}
 
@@ -873,7 +899,7 @@ const BillManagement = () => {
         <p className="m-0 text-gray-700">
           This will create an invoice from quotation{" "}
           <strong>{quotationPendingConvert?.billId}</strong> for{" "}
-          <strong>{quotationPendingConvert?.clientName}</strong>. You can review
+          <strong>{quotationPendingConvert?.clientName}</strong>. You can view
           it on the Invoices tab after conversion.
         </p>
       </Modal>
