@@ -6,11 +6,26 @@ import { clearPersistedAuth } from "../layouts/AuthContext";
 
 function handleError(error) {
   if (error.response) {
+    const url = error.config?.url || "";
+    const isAuthRequest =
+      url.includes("/noAuth/") ||
+      url.includes("/login") ||
+      url.includes("/forgotPassword") ||
+      url.includes("/resetPassword") ||
+      url.includes("/trackApplication");
+
     if (error.response.status === 401) {
-      toast.error("Unauthorized or Session Expired, please Sign In again");
-      console.log("Unauthorized or Session Expired, please Sign In again");
-      clearPersistedAuth();
-      window.location.reload();
+      if (!isAuthRequest) {
+        toast.error("Unauthorized or Session Expired, please Sign In again");
+        console.log("Unauthorized or Session Expired, please Sign In again");
+        clearPersistedAuth();
+        if (window.location.pathname !== "/login") {
+          window.location.reload();
+        }
+      } else {
+        const msg = error.response.data?.message || "Invalid credentials";
+        toast.error(msg);
+      }
     } else if (error.response.status === 500) {
       toast.error("Internal Server Error Occurred");
       console.log("Internal Server Error Occurred");

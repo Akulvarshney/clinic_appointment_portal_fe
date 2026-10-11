@@ -5,6 +5,7 @@ import { BACKEND_URL } from "../assets/constants";
 import { PALETTE } from "../theme/palette";
 import { useAuth } from "../layouts/AuthContext";
 import { Form, Input, Button, Card, Alert, Space } from "antd";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -17,7 +18,9 @@ const LoginPage = () => {
   const handleLogin = async () => {
     setErrorMsg("");
     if (!loginId || !password) {
-      setErrorMsg("Login ID and password are required.");
+      const msg = "Login ID and password are required.";
+      setErrorMsg(msg);
+      toast.error(msg);
       return;
     }
 
@@ -44,14 +47,15 @@ const LoginPage = () => {
       login(user, token, organizations, finalRole);
       window.location.reload();
     } catch (error) {
-      if (error.response?.status === 401) {
-        setErrorMsg(error.response.data.message);
-      } else {
-        setErrorMsg("An error occurred. Please try again.");
-      }
+      const errMsg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Invalid credentials. Please try again.";
+      setErrorMsg(errMsg);
+      toast.error(errMsg);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

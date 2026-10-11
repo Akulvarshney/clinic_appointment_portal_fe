@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
-import { Select, Spin, Dropdown, Modal, Form, Input, message, Button } from "antd";
+import { Select, Spin, Dropdown, Modal, Form, Input, message, Button, Alert } from "antd";
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
 import { BACKEND_URL } from "../assets/constants";
@@ -67,6 +68,8 @@ const DashboardPage = () => {
   const [resetModalVisible, setResetModalVisible] = useState(false);
   const [resetForm] = Form.useForm();
   const [resetSubmitting, setResetSubmitting] = useState(false);
+  const [resetErrorMsg, setResetErrorMsg] = useState("");
+  const [resetSuccessMsg, setResetSuccessMsg] = useState("");
 
   const monthsList = [
     { label: "All", value: null },
@@ -131,12 +134,16 @@ const DashboardPage = () => {
       label: <span className="text-sm font-semibold text-gray-700 py-1 inline-block">Reset Password</span>,
       onClick: () => {
         resetForm.resetFields();
+        setResetErrorMsg("");
+        setResetSuccessMsg("");
         setResetModalVisible(true);
       },
     },
   ];
 
   const handleResetPassword = async (values) => {
+    setResetErrorMsg("");
+    setResetSuccessMsg("");
     try {
       setResetSubmitting(true);
       const token = localStorage.getItem("token");
@@ -155,16 +162,26 @@ const DashboardPage = () => {
         }
       );
 
-      message.success("Password reset successfully!");
-      resetForm.resetFields();
-      setResetModalVisible(false);
+      const successMessage =
+        response.data?.message || "Password reset successfully!";
+      setResetSuccessMsg(successMessage);
+      toast.success(successMessage);
+      message.success(successMessage);
+
+      setTimeout(() => {
+        resetForm.resetFields();
+        setResetModalVisible(false);
+        setResetSuccessMsg("");
+      }, 1200);
     } catch (error) {
       console.error("Error resetting password:", error);
-      message.error(
+      const errorMessage =
         error.response?.data?.message ||
         error.response?.data?.error ||
-        "Failed to reset password. Please try again."
-      );
+        "Failed to reset password. Please try again.";
+      setResetErrorMsg(errorMessage);
+      toast.error(errorMessage);
+      message.error(errorMessage);
     } finally {
       setResetSubmitting(false);
     }
@@ -548,11 +565,31 @@ const DashboardPage = () => {
           open={resetModalVisible}
           onCancel={() => {
             resetForm.resetFields();
+            setResetErrorMsg("");
+            setResetSuccessMsg("");
             setResetModalVisible(false);
           }}
           footer={null}
           destroyOnClose
         >
+          {resetSuccessMsg && (
+            <Alert
+              message={resetSuccessMsg}
+              type="success"
+              showIcon
+              className="mt-3 mb-2"
+            />
+          )}
+
+          {resetErrorMsg && (
+            <Alert
+              message={resetErrorMsg}
+              type="error"
+              showIcon
+              className="mt-3 mb-2"
+            />
+          )}
+
           <Form
             form={resetForm}
             layout="vertical"
@@ -601,6 +638,8 @@ const DashboardPage = () => {
               <Button
                 onClick={() => {
                   resetForm.resetFields();
+                  setResetErrorMsg("");
+                  setResetSuccessMsg("");
                   setResetModalVisible(false);
                 }}
               >

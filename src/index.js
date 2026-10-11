@@ -14,14 +14,27 @@ import toast from "react-hot-toast";
 
 // --- GLOBAL AXIOS INTERCEPTOR ---
 // This ensures that EVEN IF a service uses raw `axios.get` instead of `apiGet`, 
-// a 401 Unauthorized response will automatically log the user out globally.
+// a 401 Unauthorized response will automatically log the user out globally,
+// EXCEPT for public/login endpoints where a 401 indicates invalid credentials.
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      toast.error("Unauthorized or Session Expired, please Sign In again");
-      clearPersistedAuth();
-      window.location.href = "/login"; // Safely redirect without full reload loop issues
+      const url = error.config?.url || "";
+      const isAuthRequest =
+        url.includes("/noAuth/") ||
+        url.includes("/login") ||
+        url.includes("/forgotPassword") ||
+        url.includes("/resetPassword") ||
+        url.includes("/trackApplication");
+
+      if (!isAuthRequest) {
+        toast.error("Unauthorized or Session Expired, please Sign In again");
+        clearPersistedAuth();
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      }
     }
     return Promise.reject(error);
   }

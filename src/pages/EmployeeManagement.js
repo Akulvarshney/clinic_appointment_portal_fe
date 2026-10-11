@@ -10,12 +10,15 @@ import {
   DatePicker,
   message,
   Alert,
+  Popconfirm,
+  Tooltip,
 } from "antd";
 import DataTable from "../components/DataTable";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, KeyOutlined } from "@ant-design/icons";
 
 import { BACKEND_URL, isFeatureValid } from "../assets/constants";
 import { PALETTE } from "../theme/palette";
+import toast from "react-hot-toast";
 
 const { Option } = Select;
 const { Search } = Input;
@@ -29,6 +32,7 @@ const UserManagement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
   const [rowLoadingStates, setRowLoadingStates] = useState({});
+  const [resetLoadingStates, setResetLoadingStates] = useState({});
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [pagination, setPagination] = useState({
@@ -36,6 +40,7 @@ const UserManagement = () => {
     total: 0,
   });
   const [searchText, setSearchText] = useState("");
+  const [defaultPassword, setDefaultPassword] = useState("");
 
   const orgId = localStorage.getItem("selectedOrgId");
   const token = localStorage.getItem("token");
@@ -54,6 +59,7 @@ const UserManagement = () => {
     );
     fetchRoles();
     fetchEmployeeDetails(pagination.current, searchText);
+    fetchDefaultPassword();
   }, []);
 
   // Separate effect for search changes
@@ -64,6 +70,22 @@ const UserManagement = () => {
 
     return () => clearTimeout(timeoutId);
   }, [searchText]);
+
+  const fetchDefaultPassword = async () => {
+    try {
+      const response = await axios.get(
+        `${BACKEND_URL}/clientAdmin/userMgmt/getDefaultPassword`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.data?.defaultPassword) {
+        setDefaultPassword(response.data.defaultPassword);
+      }
+    } catch (error) {
+      console.error("Failed to fetch default password:", error);
+    }
+  };
 
   const fetchRoles = async () => {
     try {
@@ -205,6 +227,60 @@ const UserManagement = () => {
     }
   };
 
+  const handleResetPassword = async (record) => {
+    const targetUserId = record?.userid;
+    if (!targetUserId) {
+      const err = "User ID not found for this employee.";
+      setErrorMsg(err);
+      toast.error(err);
+      message.error(err);
+      return;
+    }
+
+    setResetLoadingStates((prev) => ({ ...prev, [targetUserId]: true }));
+    setErrorMsg("");
+    setSuccessMsg("");
+    try {
+      const response = await axios.post(
+        `${BACKEND_URL}/clientAdmin/userMgmt/resetEmployeePassword`,
+        {
+          userId: targetUserId,
+          employeeId: record?.id,
+          orgId: orgId,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 200) {
+        const pass = response.data?.defaultPassword || defaultPassword;
+        const msg = pass
+          ? `Password reset successfully! Default password is: ${pass}`
+          : response.data?.message || "Password reset to default successfully.";
+        setSuccessMsg(msg);
+        toast.success(msg, { duration: 6000 });
+        message.success(msg, 6);
+      } else {
+        const err = response.data?.message || "Failed to reset password.";
+        setErrorMsg(err);
+        toast.error(err);
+        message.error(err);
+      }
+    } catch (error) {
+      console.error("Failed to reset password:", error);
+      const err =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to reset password. Please try again.";
+      setErrorMsg(err);
+      toast.error(err);
+      message.error(err);
+    } finally {
+      setResetLoadingStates((prev) => ({ ...prev, [targetUserId]: false }));
+    }
+  };
+
   // Handle table pagination changes
   const handleTableChange = (paginationInfo) => {
     const { current } = paginationInfo;
@@ -282,6 +358,45 @@ const UserManagement = () => {
         );
       },
     },
+    {
+      title: "Actions",
+      key: "actions",
+      width: 150,
+      render: (_, record) => {
+        const empName =
+          `${record.first_name || ""} ${record.last_name || ""}`.trim() ||
+          record?.users?.login_id ||
+          "this employee";
+        return (
+          <Popconfirm
+            title="Reset Password"
+            description={`Reset password for ${empName} to default?`}
+            onConfirm={() => handleResetPassword(record)}
+            okText="Yes, Reset"
+            cancelText="Cancel"
+            placement="left"
+          >
+            <Tooltip title="Reset Password to default">
+              <Button
+                type="link"
+                icon={<KeyOutlined />}
+                loading={resetLoadingStates[record.userid]}
+                size="small"
+                style={{
+                  color: PALETTE.primaryDark || "#1B3B6F",
+                  padding: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  fontWeight: 500,
+                }}
+              >
+                Reset Password
+              </Button>
+            </Tooltip>
+          </Popconfirm>
+        );
+      },
+    },
   ];
 
   return (
@@ -315,19 +430,19 @@ const UserManagement = () => {
               /> */}
 
               <div className="w-full shrink-0 sm:w-[280px] md:w-[300px]">
-              <Search
-                placeholder="Search employees..."
-                allowClear
-                onSearch={handleSearch}
-                onChange={(e) => {
-                  if (e.target.value === "") {
-                    setSearchText("");
-                  }
-                }}
-                size="large"
-                enterButton={<SearchOutlined />}
-                style={{ width: "100%" }}
-              />
+                <Search
+                  placeholder="Search employees..."
+                  allowClear
+                  onSearch={handleSearch}
+                  onChange={(e) => {
+                    if (e.target.value === "") {
+                      setSearchText("");
+                    }
+                  }}
+                  size="large"
+                  enterButton={<SearchOutlined />}
+                  style={{ width: "100%" }}
+                />
               </div>
               {isAllowedToAddEmployee ? (
                 <Button
@@ -377,7 +492,7 @@ const UserManagement = () => {
                 pageSize: 10,
               }}
               onChange={handleTableChange}
-              scroll={{ x: 800 }}
+              scroll={{ x: 1000 }}
             />
           </div>
         </div>
